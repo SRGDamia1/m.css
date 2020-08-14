@@ -3819,6 +3819,7 @@ if __name__ == '__main__': # pragma: no cover
     parser.add_argument('--search-no-lookahead-barriers', help="don't insert search lookahead barriers", action='store_true')
     parser.add_argument('--search-no-prefix-merging', help="don't merge search result prefixes", action='store_true')
     parser.add_argument('--sort-globbed-files', help="sort globbed files for better reproducibility", action='store_true')
+    parser.add_argument('-o', '--output', help='file to save output to')
     parser.add_argument('--debug', help="verbose debug output", action='store_true')
     args = parser.parse_args()
 
