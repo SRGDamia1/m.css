@@ -1,0 +1,29 @@
+{% extends 'base-reference.html' %}
+
+{% block title %}{% for name, _ in compound.breadcrumb %}{{ name }}/{% endfor %} directory | {{ super() }}{% endblock %}
+
+{% block header %}
+          {%+ for name, target in compound.breadcrumb %}
+          <span class="m-breadcrumb">
+          <a href="{{ target }}">{{ name }}</a>
+          /
+          </span>
+          {% endfor %}
+
+          <header class="gp-entry-header">
+            <h1 class="gp-entry-title" itemprop="headline">
+
+            {{ compound.breadcrumb[-1][0] }}
+            <span class="m-breadcrumb">
+            /
+            </span>
+            <span class="m-thin">
+            directory
+            </span>
+            {% if compound.since %} {{ compound.since }}{% endif %}
+            {# need an explicit space here otherwise the newline gets removed #}
+
+
+            </h1>
+          </header>
+{% endblock %}

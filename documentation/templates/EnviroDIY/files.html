@@ -1,0 +1,25 @@
+{% set navbar_current = 'files' %}
+{% extends 'base-index.html' %}
+
+{% block main %}
+        <header class="gp-entry-header">
+          <h1 class="gp-entry-title" itemprop="headline">
+            Files
+          </h1>
+        </header>
+        <ul class="m-doc">
+          {% for i in index.files recursive %}
+          {% if i.children %}
+          <li class="m-doc-collapsible{% if loop.depth > FILE_INDEX_EXPAND_LEVELS %} collapsed{% endif %}">
+            <a href="#" onclick="return toggle(this)">{{ i.kind }}</a> <a href="{{ i.url }}" class="m-doc">{{ i.name }}</a>{% if i.deprecated %} <span class="m-label m-danger">{{ i.deprecated }}</span>{% endif %}{% if i.since %} {{ i.since }}{% endif %} <span class="m-doc">{{ i.brief }}</span>
+            <ul class="m-doc">
+{{ loop(i.children)|rtrim|indent(4, true) }}
+            </ul>
+          </li>
+          {% else %}
+          <li>{{ i.kind }} <a href="{{ i.url }}" class="m-doc">{{ i.name }}</a>{% if i.deprecated %} <span class="m-label m-danger">{{ i.deprecated }}</span>{% endif %}{% if i.since %} {{ i.since }}{% endif %} <span class="m-doc">{{ i.brief }}</span></li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+{{ super() -}}
+{% endblock %}

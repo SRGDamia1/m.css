@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}{{ PROJECT_NAME }}{% endblock %}</title>
+  {% for css in STYLESHEETS %}
+  <link rel="stylesheet" href="{{ css|basename_or_url|e }}" />
+  {% endfor %}
+  {% include 'gp_stylesheets.html' %}
+  {% if FAVICON %}
+  <link rel="icon" href="{{ FAVICON[0]|basename_or_url|e }}" type="{{ FAVICON[1] }}" />
+  {% endif %}
+  {% if not SEARCH_DISABLED and SEARCH_BASE_URL %}
+  <link rel="search" type="application/opensearchdescription+xml" href="opensearch.xml" title="Search {{ PROJECT_NAME }} documentation" />
+  {% endif %}
+  {% block header_links %}
+  {% endblock %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  {% if THEME_COLOR %}
+  <meta name="theme-color" content="{{ THEME_COLOR }}" />
+  {% endif %}
+  {% if HTML_HEADER %}
+  {{ HTML_HEADER|rtrim|indent(2) }}
+  {% endif %}
+</head>
+
+<body class="bp-legacy page-template-default page page-id-2063 page-parent gp-theme gp-responsive gp-wide-layout gp-retina gp-normal-scrolling gp-back-to-top-all gp-relative-header gp-header-standard gp-cart-disabled gp-search-all gp-profile-disabled gp-small-header-all gp-standard-page-header gp-right-sidebar gp-sticky-sidebars wpb-js-composer js-comp-ver-6.2.0 vc_responsive no-js">
+	<div id="gp-site-wrapper">
+
+  <nav id="gp-mobile-nav">
+    <div id="gp-mobile-nav-close-button"></div>
+    <ul class="menu">
+      {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
+        {% if not sub %}
+          <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page">
+          {% if html %}{{ html }}{% else %}<a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>{% endif %}
+          </li>
+        {% else %}
+        <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+          {% if html %}
+            {{ html }}
+          {% else %}
+            <a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>
+          {% endif %}
+          <ul class="sub-menu menu-odd menu-depth-1">
+            {% for html, title, link, id in sub %}
+              <li class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-type-post_type menu-item-object-page">
+              {% if html %}
+                {{ html }}
+              {% else %}
+                <a class="menu-link sub-menu-link" href="{{ link }}">{{ title }}</a>
+              {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </nav> {#- gp-mobile-nav -#}
+  <div id="gp-mobile-nav-bg"></div>
+
+  <div id="gp-page-wrapper">
+
+    <header id="gp-main-header">
+      <div class="gp-container">
+        <div id="gp-logo">
+          <a href="index.html" title="{{ PROJECT_NAME }}">
+            <img
+              src="{{ PROJECT_LOGO|basename_or_url|e }}"
+              alt="{{ PROJECT_NAME }}"
+              width="264"
+              height="55"
+              class="gp-desktop-logo"
+            />
+            <img
+              src="{{ PROJECT_LOGO|basename_or_url|e }}"
+              alt="{{ PROJECT_NAME }}"
+              width="264"
+              height="55"
+              class="gp-scrolling-logo"
+            />
+            <img
+              src="{{ PROJECT_LOGO|basename_or_url|e }}"
+              alt="{{ PROJECT_NAME }}"
+              width="132"
+              height="28"
+              class="gp-mobile-logo"
+            />
+          </a>
+        </div>
+
+        <a id="gp-mobile-nav-button"></a>
+
+        <nav id="gp-main-nav" class="gp-nav">
+          <nav id="gp-primary-main-nav">
+            {% if LINKS_NAVBAR1 %}
+              <ul id="menu-main-menu-1" class="menu">
+              {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
+                {% if not sub %}
+                  <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page">
+                  {% if html %}{{ html }}{% else %}<a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>{% endif %}
+                  </li>
+                {% else %}
+                <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                  {% if html %}
+                    {{ html }}
+                  {% else %}
+                    <a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>
+                  {% endif %}
+                  <ul class="sub-menu menu-odd menu-depth-1">
+                    {% for html, title, link, id in sub %}
+                      <li class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-type-post_type menu-item-object-page">
+                      {% if html %}
+                        {{ html }}
+                      {% else %}
+                        <a class="menu-link sub-menu-link" href="{{ link }}">{{ title }}</a>
+                      {% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+                {% endif %}
+              {% endfor %}
+              </ul>
+            {% endif %}
+          </nav>
+
+          {% if not SEARCH_DISABLED %}
+          <li class="m-show-m">
+            <a href="#search" class="gp-search-button" title="Search" onclick="return showSearch()">
+              <svg style="height: 0.9rem;" viewBox="0 0 16 16">
+                <use href="#m-doc-search-icon-path" />
+              </svg>
+            </a>
+          </li>
+          {% endif %}
+
+          <nav id="gp-secondary-main-nav"></nav>
+        </nav> {#- gp-main-nav -#}
+      </div>
+    </header> {#- gp-main-header -#}
+
+    <header id="gp-small-header">
+      <div class="gp-container">
+        <div class="gp-left-triangle"></div>
+        <div class="gp-right-triangle"></div>
+
+        <nav id="gp-top-nav" class="gp-nav">
+          <div id="gp-left-top-nav">
+            <ul id="menu-secondary-menu" class="menu">
+              <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page">
+                {% if PROJECT_BRIEF %}
+                  {{ PROJECT_BRIEF }}
+                {% else %}
+                  <a
+                    title="Learn more"
+                    href="https://www.envirodiy.org/about/"
+                    class="menu-link main-menu-link"
+                    >An Initiative of Stroud Water Research Center</a
+                  >
+                {% endif %}
+              </li>
+            </ul>
+          </div>
+
+          {% if REPO_LINK %}
+          <div id="gp-right-top-nav">
+            <ul id="menu-icon-links" class="menu">
+              <li
+                class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 fa fa-github menu-item menu-item-type-custom menu-item-object-custom"
+              >
+                <a
+                  title="See it on GitHub"
+                  href={{ REPO_LINK }}
+                  class="menu-link main-menu-link"
+                  >Source on GitHub</a
+                >
+              </li>
+            </ul>
+          </div>
+          {% endif %}
+
+        </nav>
+      </div>
+    </header> {#- gp-small-header -#}
+
+    <div id="gp-fixed-header-padding"></div>
+    {# <div id="gp-header-area"></div> #}
+    <div class="gp-clear"></div>
+
+    <div id="gp-content-wrapper" class="gp-container">
+      <div id="gp-inner-container">
+        {# <div id="gp-left-column"> #}
+          <div id="gp-content">
+
+            <main>
+              <article>
+                <div class="m-container m-container-inflatable">
+                  <div class="m-row">
+                    <div class="m-col-l-10 m-push-l-1">
+              {% block main %}
+              {% endblock %}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </main>
+
+          </div> {#- gp-content -#}
+        {# </div> - gp-left-column - #}
+      </div> {#- gp-inner-container -#}
+    </div> {#- gp-content-wrapper -#}
+
+    {% if not SEARCH_DISABLED %}
+    <div class="m-doc-search" id="search">
+      <a href="#!" onclick="return hideSearch()"></a>
+      <div class="m-container">
+        <div class="m-row">
+          <div class="m-col-m-8 m-push-m-2">
+            <div class="m-doc-search-header m-text m-small">
+              <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
+              <div id="search-symbolcount">&hellip;</div>
+            </div>
+            <div class="m-doc-search-content">
+              <form{% if SEARCH_BASE_URL %} action="{{ SEARCH_BASE_URL }}#search"{% endif %}>
+                <input type="search" name="q" id="search-input" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
+              </form>
+              <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.{% if SEARCH_EXTERNAL_URL %} Enable it or <a href="{{ SEARCH_EXTERNAL_URL|replace('{query}', '') }}">use an external search engine</a>.{% endif %}</noscript>
+              <div id="search-help" class="m-text m-dim m-text-center">
+                {{ SEARCH_HELP|rtrim|indent(12) }}
+              </div>
+              <div id="search-notfound" class="m-text m-warning m-text-center">Sorry, nothing was found.{% if SEARCH_EXTERNAL_URL %}<br />Maybe try a full-text <a href="#" id="search-external" data-search-engine="{{ SEARCH_EXTERNAL_URL }}">search with external engine</a>?{% endif %}</div>
+              <ul id="search-results"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="search-v{{ SEARCHDATA_FORMAT_VERSION }}.js"></script>
+    {% if SEARCH_DOWNLOAD_BINARY %}
+    <script>
+      Search.download(window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/') + 1) + 'searchdata-v{{ SEARCHDATA_FORMAT_VERSION }}.bin');
+    </script>
+    {% else %}
+    <script src="searchdata-v{{ SEARCHDATA_FORMAT_VERSION }}.js" async="async"></script>
+    {% endif %}
+    {% endif %}
+
+
+
+    <footer id="gp-footer">
+      <div id="gp-copyright">
+        <div class="gp-container">
+          <div id="gp-copyright-text">
+            <p>
+              <a href="http://www.stroudcenter.org/" target="_blank"
+                ><img
+                  style="float: left; margin-right: 20px;"
+                  src="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-content/uploads/2017/01/stroud-white-white-165px.png"
+                  alt=""
+                  width="165"
+                  height="70" /></a
+              >EnviroDIY™ is a community for do-it-yourself ideas for
+              environmental science and monitoring. EnviroDIY is an
+              initiative of
+              <a href="http://www.stroudcenter.org/" target="_blank"
+                >Stroud™ Water Research Center</a
+              >, which seeks to advance knowledge and stewardship of
+              freshwater systems through global research, education, and
+              watershed restoration.
+            </p>
+            <p>
+              All content on EnviroDIY is licensed as Creative Commons
+              Attribution-ShareAlike 4.0 International (CC-BY-SA). Hardware
+              designs on this website are released under the CERN Open
+              Hardware License 1.2.
+              <a href="https://envirodiy.org/licenses/"
+                >Alternative licenses are available.</a
+              >
+              <a href="https://envirodiy.org/terms/">Terms of Use</a> |
+              <a href="https://envirodiy.org/privacy/">Privacy Policy</a> |
+              <a href="https://envirodiy.org/cookies/">Cookie Policy</a> |
+              <a href="https://envirodiy.org/contact/">Contact</a>
+            </p>
+            <p>
+              Created with {% if DOXYGEN_VERSION %}<a href="https://doxygen.org/">Doxygen</a> {{ DOXYGEN_VERSION }} and {% endif %}<a href="https://mcss.mosra.cz/">m.css</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <div class="gp-clear"></div>
+
+    </div> {#- gp-site-wrapper -#}
+  </div> {#- gp-site-wrapper -#}
+
+
+  {% include 'gp_scripts.html' %}
+
+</body>
+</html>
+
+{#- sanity checks for variables that should be always defined -#}
+{% if FILENAME is not defined %}{{ FILENAME.is_not_defined_the_script_is_broken }}{% endif %}
+{% if DOXYGEN_VERSION is not defined %}{{ DOXYGEN_VERSION.is_not_defined_the_script_is_broken }}{% endif %}
+{% if SEARCHDATA_FORMAT_VERSION is not defined %}{{ SEARCHDATA_FORMAT_VERSION.is_not_defined_the_script_is_broken }}{% endif %}
