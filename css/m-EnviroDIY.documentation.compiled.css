@@ -48,7 +48,7 @@ ul.m-doc li.m-doc-collapsible > a:first-child:active {
 a.m-doc-self,
 ul.m-doc li.m-doc-expansible > a:first-child:before,
 ul.m-doc li.m-doc-collapsible > a:first-child:before {
-  color: #000000;
+  color: #26a9e0;
 }
 a.m-doc-self:hover, a.m-doc-self:focus, a.m-doc-self:active,
 ul.m-doc li.m-doc-expansible > a:first-child:hover::before,
@@ -57,7 +57,7 @@ ul.m-doc li.m-doc-expansible > a:first-child:active::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:hover::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:focus::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:active::before {
-  color: #000000;
+  color: #26a9e0;
 }
 h3 a.m-doc-external {
   font-weight: normal;
@@ -121,6 +121,7 @@ ul.m-doc li.m-doc-collapsible > a:first-child:before { content: '⊖'; }
 h1 .m-doc-template, h1 .m-doc-include {
   font-size: 1.3rem;
   font-weight: normal;
+  float: right;
 }
 h1 .m-doc-include:last-child {
   margin-bottom: -0.5rem;
@@ -169,7 +170,7 @@ article section.m-doc-details > div::before {
   z-index: -1;
   border-style: solid;
   border-width: 0.125rem;
-  border-radius: 0.1rem;
+  border-radius: 5px;
   border-color: #f7f7f7;
 }
 article section.m-doc-details > div > h3:first-child {
@@ -177,8 +178,8 @@ article section.m-doc-details > div > h3:first-child {
   margin: -1rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
   background-color: #f7f7f7;
-  border-top-left-radius: 0.1rem;
-  border-top-right-radius: 0.1rem;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
@@ -249,7 +250,7 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
 }
 .m-doc-search-content {
   background-color: #000000;
-  border-radius: 0.1rem;
+  border-radius: 5px;
   padding: 1rem;
 }
 .m-doc-search input {
@@ -259,7 +260,7 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   border-width: 0;
   color: #000000;
   background-color: transparent;
-  border-radius: 0.1rem;
+  border-radius: 5px;
   margin-bottom: 1rem;
   padding: 0 1rem;
 }

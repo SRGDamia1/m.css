@@ -326,6 +326,20 @@ article h1 a:active {
 }
 
 /* Article elements */
+article hr {
+  width: 75%;
+  border-width: 2px 0 0 0 ;
+  border-style: solid;
+  border-color: var(--line-color-hr);
+  margin: auto;
+}
+article section hr {
+  width: 50%;
+  border-width: 1px 0 0 0;
+  border-style: solid;
+  border-color: var(--line-color);
+  margin: auto;
+}
 article > header h1 {
   font-size: 2rem;
   margin-bottom: 0.5rem;

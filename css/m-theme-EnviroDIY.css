@@ -45,7 +45,7 @@
   --heading-font-size: 16px;
 
   /* Shapes */
-  --border-radius: 0.1rem;
+  --border-radius: 0px;
   --border-color: #ddd;
 
   /* Basics */
@@ -171,7 +171,7 @@
   /* --info-color: #2e7dc5; */
   --info-color: #31708f;
   --info-link-active-color: #67cce0;
-  --info-filled-color: #31708f;
+  --info-filled-color: #81bcda;
   --info-filled-background-color: transparent;
   --info-filled-link-color: #67cce0;
   --info-filled-link-active-color: #67cce0;
@@ -184,4 +184,11 @@
   --dim-filled-link-color: #c0c0c0;
   --dim-filled-link-active-color: #949494;
   --dim-button-active-color: #c0c0c0;
+
+  --type-color: #9ad36a;
+  --type-link-active-color: #9ad36a;
+  --type-filled-color: #3c763d;
+  --type-filled-background-color: transparent;
+  --type-filled-link-color: #9ad36a;
+  --type-filled-link-active-color: #9ad36a;
 }

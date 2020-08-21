@@ -29,7 +29,7 @@ html {
 }
 body {
   font-family: var(--font);
-  font-size: 1rem;
+  font-size: var(--font-size);
   line-height: var(--line-height);
   color: var(--color);
 }
@@ -425,7 +425,7 @@ dl.m-footnote dd span.m-footnote a {
   padding: 1rem;
   border-width: 2px;
   border-style: solid;
-  padding-top: 0
+  padding-top: 0;
 }
 .m-frame {
   background-color: var(--background-color);
@@ -444,6 +444,12 @@ dl.m-footnote dd span.m-footnote a {
   padding: 0.9375rem 0.9375rem 0.9375rem 0.75rem;
 }
 .m-block.hr {
+  width: 75%;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line-color-hr);
+}
+.m-block.m-row.hr {
   width: 75%;
   border-width: 0.0625rem;
   border-style: solid;
@@ -476,7 +482,7 @@ div.m-button {
 }
 div.m-button a {
   display: inline-block;
-  border-radius: var(--border-radius);
+  border-radius: 2rem;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   padding-left: 1.5rem;
@@ -499,7 +505,7 @@ div.m-button a .m-small:last-child {
 
 /* Label */
 .m-label {
-  border-radius: var(--border-radius);
+  border-radius: 2rem;
   font-size: 75%;
   font-weight: normal;
   padding: 0.125rem 0.25rem;
@@ -538,14 +544,24 @@ table.m-table td {
   border-bottom-width: 0;
   border-color: var(--line-color);
 }
-table.m-table tr:first-child td,
-table.m-table tr:last-child td {
+table.m-table tr:first-child th,
+table.m-table tr:first-child td {
   vertical-align: top;
   border-style: solid;
   border-top-width: 0.0625rem;
   border-left-width: 0;
   border-right-width: 0;
   border-bottom-width: 0;
+  border-color: var(--line-color);
+}
+table.m-table tr:last-child th,
+table.m-table tr:last-child td {
+  vertical-align: top;
+  border-style: solid;
+  border-top-width: 0.0625rem;
+  border-bottom-width: 0.0625rem;
+  border-left-width: 0;
+  border-right-width: 0;
   border-color: var(--line-color);
 }
 table.m-table caption {
@@ -595,7 +611,9 @@ table.m-table th.m-danger,
 table.m-table td.m-info,
 table.m-table th.m-info,
 table.m-table td.m-dim,
-table.m-table th.m-dim {
+table.m-table th.m-dim,
+table.m-table td.m-type,
+table.m-table th.m-type {
   padding-left: 0.4375rem;
   padding-right: 0.4375rem;
   border-left-width: 0.0625rem;
@@ -614,7 +632,9 @@ table.m-table.m-big th.m-danger,
 table.m-table.m-big td.m-info,
 table.m-table.m-big th.m-info,
 table.m-table.m-big td.m-dim,
-table.m-table.m-big th.m-dim {
+table.m-table.m-big th.m-dim,
+table.m-table.m-big td.m-type,
+table.m-table.m-big th.m-type {
   padding-left: 0.9375rem;
   padding-right: 0.9375rem;
   border-left-width: 0.0625rem;
@@ -648,7 +668,11 @@ table.m-table th.m-info,
 table.m-table tr.m-dim td,
 table.m-table td.m-dim,
 table.m-table tr.m-dim th,
-table.m-table th.m-dim {
+table.m-table th.m-dim,
+table.m-table tr.m-type td,
+table.m-table td.m-type,
+table.m-table tr.m-type th,
+table.m-table th.m-type {
   border-color: var(--background-color);
 }
 
@@ -696,7 +720,13 @@ table.m-table tr.m-dim code,
 table.m-table td.m-dim pre,
 table.m-table td.m-dim code,
 table.m-table th.m-dim pre,
-table.m-table th.m-dim code {
+table.m-table th.m-dim code,
+table.m-table tr.m-type pre,
+table.m-table tr.m-type code,
+table.m-table td.m-type pre,
+table.m-table td.m-type code,
+table.m-table th.m-type pre,
+table.m-table th.m-type code {
   background-color: var(--code-note-background-color);
 }
 
@@ -1367,8 +1397,132 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-label.m-flat.m-info {
   color: var(--info-color);
 }
+.m-block.m-type h3,
+.m-block.m-type h4,
+.m-block.m-type h5,
+.m-block.m-type h6,
+.m-block.m-type h3 a,
+.m-block.m-type h4 a,
+.m-block.m-type h5 a,
+.m-block.m-type h6 a,
+.m-text.m-type,
+.m-label.m-flat.m-type {
+  color: var(--type-color);
+}
 .m-block.m-dim {
   border-left-color: var(--dim-color);
+}
+span.m-default {
+  color: var(--default-color);
+  background-color: transparent;
+}
+span.m-default a {
+  color: var(--default-link-color);
+  background-color: transparent;
+}
+span.m-default a:hover,
+span.m-default a:focus,
+span.m-default a:active {
+  color: var(--default-link-active-color);
+  background-color: transparent;
+}
+span.m-primary {
+  color: var(--primary-color);
+  background-color: transparent;
+}
+span.m-primary a {
+  color: var(--primary-link-color);
+  background-color: transparent;
+}
+span.m-primary a:hover,
+span.m-primary a:focus,
+span.m-primary a:active {
+  color: var(--primary-link-active-color);
+  background-color: transparent;
+}
+span.m-success {
+  color: var(--success-color);
+  background-color: transparent;
+}
+span.m-success a {
+  color: var(--success-link-color);
+  background-color: transparent;
+}
+span.m-success a:hover,
+span.m-success a:focus,
+span.m-success a:active {
+  color: var(--success-link-active-color);
+  background-color: transparent;
+}
+span.m-warning {
+  color: var(--warning-color);
+  background-color: transparent;
+}
+span.m-warning a {
+  color: var(--warning-link-color);
+  background-color: transparent;
+}
+span.m-warning a:hover,
+span.m-warning a:focus,
+span.m-warning a:active {
+  color: var(--warning-link-active-color);
+  background-color: transparent;
+}
+span.m-danger {
+  color: var(--danger-color);
+  background-color: transparent;
+}
+span.m-danger a {
+  color: var(--danger-link-color);
+  background-color: transparent;
+}
+span.m-danger a:hover,
+span.m-danger a:focus,
+span.m-danger a:active {
+  color: var(--danger-link-active-color);
+  background-color: transparent;
+}
+span.m-info {
+  color: var(--info-color);
+  background-color: transparent;
+}
+span.m-info a {
+  color: var(--info-link-color);
+  background-color: transparent;
+}
+span.m-info a:hover,
+span.m-info a:focus,
+span.m-info a:active {
+  color: var(--info-link-active-color);
+  background-color: transparent;
+}
+span.m-type {
+  color: var(--type-color);
+  background-color: transparent;
+}
+span.m-type a {
+  color: var(--type-link-color);
+  background-color: transparent;
+}
+span.m-type a:hover,
+span.m-type a:focus,
+span.m-type a:active {
+  color: var(--type-link-active-color);
+  background-color: transparent;
+}
+span.m-dim {
+  color: var(--dim-color);
+  background-color: transparent;
+}
+span.m-dim a {
+  color: var(--dim-link-color);
+  background-color: transparent;
+}
+span.m-dim a:hover,
+span.m-dim a:focus,
+span.m-dim a:active {
+  color: var(--dim-link-active-color);
+  background-color: transparent;
 }
 .m-block.m-dim,
 .m-text.m-dim,
@@ -1386,6 +1540,21 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-text.m-dim a:focus,
 .m-text.m-dim a:active {
   color: var(--dim-link-active-color);
+}
+.m-block.m-type {
+  border-left-color: var(--type-color);
+}
+.m-block.m-type h3,
+.m-block.m-type h4,
+.m-block.m-type h5,
+.m-block.m-type h6,
+.m-block.m-type h3 a,
+.m-block.m-type h4 a,
+.m-block.m-type h5 a,
+.m-block.m-type h6 a,
+.m-text.m-type,
+.m-label.m-flat.m-type {
+  color: var(--type-color);
 }
 .m-block.m-flat {
   border-color: transparent;
@@ -1483,6 +1652,20 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-block.m-info h6 a:active {
   color: var(--info-link-active-color);
 }
+.m-block.m-type h3 a:hover,
+.m-block.m-type h3 a:focus,
+.m-block.m-type h3 a:active,
+.m-block.m-type h4 a:hover,
+.m-block.m-type h4 a:focus,
+.m-block.m-type h4 a:active,
+.m-block.m-type h5 a:hover,
+.m-block.m-type h5 a:focus,
+.m-block.m-type h5 a:active,
+.m-block.m-type h6 a:hover,
+.m-block.m-type h6 a:focus,
+.m-block.m-type h6 a:active {
+  color: var(--type-link-active-color);
+}
 
 /* Colored button, non-flat label */
 div.m-button a,
@@ -1500,30 +1683,42 @@ div.m-button.m-default a:active {
 div.m-button.m-default a,
 .m-label:not(.m-flat).m-default {
   background-color: var(--default-color);
+  color: var(--default-filled-color);
 }
 div.m-button.m-primary a,
 .m-label:not(.m-flat).m-primary {
   background-color: var(--primary-color);
+  color: var(--primary-filled-color);
 }
 div.m-button.m-success a,
 .m-label:not(.m-flat).m-success {
   background-color: var(--success-color);
+  color: var(--success-filled-color);
 }
 div.m-button.m-warning a,
 .m-label:not(.m-flat).m-warning {
   background-color: var(--warning-color);
+  color: var(--warning-filled-color);
 }
 div.m-button.m-danger a,
 .m-label:not(.m-flat).m-danger {
   background-color: var(--danger-color);
+  color: var(--danger-filled-color);
 }
 div.m-button.m-info a,
 .m-label:not(.m-flat).m-info {
   background-color: var(--info-color);
+  color: var(--info-filled-color);
 }
 div.m-button.m-dim a,
 .m-label:not(.m-flat).m-dim {
   background-color: var(--dim-color);
+  color: var(--dim-filled-color);
+}
+div.m-button.m-type a,
+.m-label:not(.m-flat).m-type {
+  background-color: var(--type-color);
+  color: var(--type-filled-color);
 }
 div.m-button.m-default a:hover,
 div.m-button.m-default a:focus,
@@ -1562,6 +1757,11 @@ div.m-button.m-dim a:active {
      not highlighted as other links */
   background-color: var(--dim-button-active-color);
 }
+div.m-button.m-type a:hover,
+div.m-button.m-type a:focus,
+div.m-button.m-type a:active {
+  background-color: var(--type-link-active-color);
+}
 
 /* Colored note, table coloring */
 .m-note.m-default {
@@ -1574,7 +1774,11 @@ div.m-button.m-dim a:active {
 table.m-table tr.m-default td,
 table.m-table td.m-default,
 table.m-table tr.m-default th,
-table.m-table th.m-default {
+table.m-table th.m-default,
+table.m-table tr.m-default strong,
+table.m-table strong.m-default,
+table.m-table tr.m-default em,
+table.m-table em.m-default {
   /* No background for default table to keep the row hover */
   color: var(--default-filled-color);
 }
@@ -1612,7 +1816,11 @@ table.m-table th.m-primary a {
 table.m-table tr.m-primary td,
 table.m-table td.m-primary,
 table.m-table tr.m-primary th,
-table.m-table th.m-primary {
+table.m-table th.m-primary,
+table.m-table tr.m-primary strong,
+table.m-table strong.m-primary,
+table.m-table tr.m-primary em,
+table.m-table em.m-primary {
   background-color: var(--primary-filled-background-color);
   color: var(--primary-filled-color);
 }
@@ -1650,7 +1858,11 @@ table.m-table th.m-primary a:active {
 table.m-table tr.m-success td,
 table.m-table td.m-success,
 table.m-table tr.m-success th,
-table.m-table th.m-success {
+table.m-table th.m-success,
+table.m-table tr.m-success strong,
+table.m-table strong.m-success,
+table.m-table tr.m-success em,
+table.m-table em.m-success {
   background-color: var(--success-filled-background-color);
   color: var(--success-filled-color);
 }
@@ -1688,7 +1900,11 @@ table.m-table th.m-success a:active {
 table.m-table tr.m-warning td,
 table.m-table td.m-warning,
 table.m-table tr.m-warning th,
-table.m-table th.m-warning {
+table.m-table th.m-warning,
+table.m-table tr.m-warning strong,
+table.m-table strong.m-warning,
+table.m-table tr.m-warning em,
+table.m-table em.m-warning {
   background-color: var(--warning-filled-background-color);
   color: var(--warning-filled-color);
 }
@@ -1726,7 +1942,11 @@ table.m-table th.m-warning a:active {
 table.m-table tr.m-danger td,
 table.m-table td.m-danger,
 table.m-table tr.m-danger th,
-table.m-table th.m-danger {
+table.m-table th.m-danger,
+table.m-table tr.m-danger strong,
+table.m-table strong.m-danger,
+table.m-table tr.m-danger em,
+table.m-table em.m-danger {
   background-color: var(--danger-filled-background-color);
   color: var(--danger-filled-color);
 }
@@ -1764,7 +1984,11 @@ table.m-table th.m-danger a:active {
 table.m-table tr.m-info td,
 table.m-table td.m-info,
 table.m-table tr.m-info th,
-table.m-table th.m-info {
+table.m-table th.m-info,
+table.m-table tr.m-info strong,
+table.m-table strong.m-info,
+table.m-table tr.m-info em,
+table.m-table em.m-info {
   background-color: var(--info-filled-background-color);
   color: var(--info-filled-color);
 }
@@ -1802,7 +2026,11 @@ table.m-table th.m-info a:active {
 table.m-table tr.m-dim td,
 table.m-table td.m-dim,
 table.m-table tr.m-dim th,
-table.m-table th.m-dim {
+table.m-table th.m-dim,
+table.m-table tr.m-dim strong,
+table.m-table strong.m-dim,
+table.m-table tr.m-dim em,
+table.m-table em.m-dim {
   background-color: var(--dim-filled-background-color);
   color: var(--dim-filled-color);
 }
@@ -1829,6 +2057,48 @@ table.m-table td.m-dim a:active,
 table.m-table tr.m-dim th a:active,
 table.m-table th.m-dim a:active {
   color: var(--dim-filled-link-active-color);
+}
+.m-note.m-type {
+  border-color: var(--type-color);
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
+}
+.m-note.m-type,
+table.m-table tr.m-type td,
+table.m-table td.m-type,
+table.m-table tr.m-type th,
+table.m-table th.m-type,
+table.m-table tr.m-type strong,
+table.m-table strong.m-type,
+table.m-table tr.m-type em,
+table.m-table em.m-type {
+  background-color: var(--type-filled-background-color);
+  color: var(--type-filled-color);
+}
+.m-note.m-type a,
+table.m-table tr.m-type td a,
+table.m-table td.m-type a,
+table.m-table tr.m-type th a,
+table.m-table th.m-type a {
+  color: var(--type-filled-link-color);
+}
+.m-note.m-type a:hover,
+table.m-table tr.m-type td a:hover,
+table.m-table td.m-type a:hover,
+table.m-table tr.m-type th a:hover,
+table.m-table th.m-type a:hover,
+.m-note.m-type a:focus,
+table.m-table tr.m-type td a:focus,
+table.m-table td.m-type a:focus,
+table.m-table tr.m-type th a:focus,
+table.m-table th.m-type a:focus,
+.m-note.m-type a:active,
+table.m-table tr.m-type td a:active,
+table.m-table td.m-type a:active,
+table.m-table tr.m-type th a:active,
+table.m-table th.m-type a:active {
+  color: var(--type-filled-link-active-color);
 }
 
 /* Colored figure */
@@ -1867,6 +2137,12 @@ figure.m-figure.m-info:before {
 }
 figure.m-figure.m-info figcaption {
   color: var(--info-color);
+}
+figure.m-figure.m-type:before {
+  border-color: var(--type-filled-background-color);
+}
+figure.m-figure.m-type figcaption {
+  color: var(--type-color);
 }
 figure.m-figure.m-dim:before {
   border-color: var(--dim-filled-background-color);
@@ -2028,6 +2304,24 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph.m-dim g.m-node polyline {
   stroke: var(--dim-color);
 }
+.m-math.m-type,
+.m-math g.m-type,
+.m-math rect.m-type,
+div.m-plot svg .m-bar.m-type,
+.m-graph.m-type g.m-edge polygon,
+.m-graph.m-type g.m-node:not(.m-flat) ellipse,
+.m-graph.m-type g.m-node:not(.m-flat) polygon,
+.m-graph.m-type g.m-edge text,
+.m-graph.m-type g.m-node.m-flat text {
+  fill: var(--type-color);
+}
+.m-graph.m-type g.m-edge polygon,
+.m-graph.m-type g.m-edge path,
+.m-graph.m-type g.m-node ellipse,
+.m-graph.m-type g.m-node polygon,
+.m-graph.m-type g.m-node polyline {
+  stroke: var(--type-color);
+}
 
 /* Local-colored graphs. Later so it overrides global coloring. Applies to
    either div.m-graph svg or svg.m-graph, so using just .m-graph. This is not
@@ -2129,6 +2423,20 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-node.m-dim polygon,
 .m-graph g.m-node.m-dim polyline {
   stroke: var(--dim-color);
+}
+.m-graph g.m-edge.m-type polygon,
+.m-graph g.m-node.m-type:not(.m-flat) ellipse,
+.m-graph g.m-node.m-type:not(.m-flat) polygon,
+.m-graph g.m-edge.m-type text,
+.m-graph g.m-node.m-type.m-flat text {
+  fill: var(--type-color);
+}
+.m-graph g.m-edge.m-type polygon,
+.m-graph g.m-edge.m-type path,
+.m-graph g.m-node.m-type ellipse,
+.m-graph g.m-node.m-type polygon,
+.m-graph g.m-node.m-type polyline {
+  stroke: var(--type-color);
 }
 
 /* Spacing after every block element, but not after the last and not when

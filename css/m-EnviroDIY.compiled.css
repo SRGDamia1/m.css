@@ -344,7 +344,7 @@ html {
 }
 body {
   font-family: 'Roboto', sans-serif;
-  font-size: 1rem;
+  font-size: 14px;
   line-height: normal;
   color: #000000;
 }
@@ -483,7 +483,7 @@ code.m-console {
 }
 pre {
   padding: 0.5rem 1rem;
-  border-radius: 0.1rem;
+  border-radius: 5px;
   overflow-x: auto;
   margin-top: 0;
 }
@@ -706,17 +706,17 @@ dl.m-footnote dd span.m-footnote a {
   background-color: #ffffff;
 }
 .m-note {
-  border-radius: 0.1rem;
+  border-radius: 5px;
   padding: 1rem;
   border-width: 2px;
   border-style: solid;
-  padding-top: 0
+  padding-top: 0;
 }
 .m-frame {
   background-color: #e8e8e8;
   border-style: solid;
   border-width: 0.125rem;
-  border-radius: 0.1rem;
+  border-radius: 5px;
   border-color: #ddd;
   padding: 0.875rem;
 }
@@ -724,11 +724,17 @@ dl.m-footnote dd span.m-footnote a {
   border-style: solid;
   border-width: 0.0625rem;
   border-left-width: 0.25rem;
-  border-radius: 0.1rem;
+  border-radius: 5px;
   border-color: #ddd;
   padding: 0.9375rem 0.9375rem 0.9375rem 0.75rem;
 }
 .m-block.hr {
+  width: 75%;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: #92d050;
+}
+.m-block.m-row.hr {
   width: 75%;
   border-width: 0.0625rem;
   border-style: solid;
@@ -757,7 +763,7 @@ div.m-button {
 }
 div.m-button a {
   display: inline-block;
-  border-radius: 0.1rem;
+  border-radius: 5px;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   padding-left: 1.5rem;
@@ -778,7 +784,7 @@ div.m-button a .m-small:last-child {
   font-size: 0.854rem;
 }
 .m-label {
-  border-radius: 0.1rem;
+  border-radius: 5px;
   font-size: 75%;
   font-weight: normal;
   padding: 0.125rem 0.25rem;
@@ -815,8 +821,8 @@ table.m-table td {
   border-bottom-width: 0;
   border-color: #ddd;
 }
-table.m-table tr:first-child td,
-table.m-table tr:last-child td {
+table.m-table tr:first-child th,
+table.m-table tr:first-child td {
   vertical-align: top;
   border-style: solid;
   border-top-width: 0.0625rem;
@@ -825,17 +831,31 @@ table.m-table tr:last-child td {
   border-bottom-width: 0;
   border-color: #ddd;
 }
+table.m-table tr:last-child th,
+table.m-table tr:last-child td {
+  vertical-align: top;
+  border-style: solid;
+  border-top-width: 0.0625rem;
+  border-bottom-width: 0.0625rem;
+  border-left-width: 0;
+  border-right-width: 0;
+  border-color: #ddd;
+}
 table.m-table caption {
   padding-bottom: 0.5rem;
 }
 table.m-table thead tr:first-child th,
 table.m-table thead tr:first-child td {
   border-top-width: 0.125rem;
+  border-left-width: 0;
+  border-right-width: 0;
 }
 table.m-table thead th,
 table.m-table thead td {
   border-bottom-width: 0.125rem;
   vertical-align: bottom;
+  border-left-width: 0;
+  border-right-width: 0;
 }
 table.m-table tfoot th,
 table.m-table tfoot td {
@@ -868,7 +888,9 @@ table.m-table th.m-danger,
 table.m-table td.m-info,
 table.m-table th.m-info,
 table.m-table td.m-dim,
-table.m-table th.m-dim {
+table.m-table th.m-dim,
+table.m-table td.m-type,
+table.m-table th.m-type {
   padding-left: 0.4375rem;
   padding-right: 0.4375rem;
   border-left-width: 0.0625rem;
@@ -886,7 +908,9 @@ table.m-table.m-big th.m-danger,
 table.m-table.m-big td.m-info,
 table.m-table.m-big th.m-info,
 table.m-table.m-big td.m-dim,
-table.m-table.m-big th.m-dim {
+table.m-table.m-big th.m-dim,
+table.m-table.m-big td.m-type,
+table.m-table.m-big th.m-type {
   padding-left: 0.9375rem;
   padding-right: 0.9375rem;
   border-left-width: 0.0625rem;
@@ -918,7 +942,11 @@ table.m-table th.m-info,
 table.m-table tr.m-dim td,
 table.m-table td.m-dim,
 table.m-table tr.m-dim th,
-table.m-table th.m-dim {
+table.m-table th.m-dim,
+table.m-table tr.m-type td,
+table.m-table td.m-type,
+table.m-table tr.m-type th,
+table.m-table th.m-type {
   border-color: #e8e8e8;
 }
 .m-note pre,
@@ -964,7 +992,13 @@ table.m-table tr.m-dim code,
 table.m-table td.m-dim pre,
 table.m-table td.m-dim code,
 table.m-table th.m-dim pre,
-table.m-table th.m-dim code {
+table.m-table th.m-dim code,
+table.m-table tr.m-type pre,
+table.m-table tr.m-type code,
+table.m-table td.m-type pre,
+table.m-table td.m-type code,
+table.m-table th.m-type pre,
+table.m-table th.m-type code {
   background-color: rgba(251, 240, 236, 0.5);
 }
 img.m-image,
@@ -981,7 +1015,7 @@ svg.m-image,
 div.m-image img,
 div.m-image svg {
   max-width: 100%;
-  border-radius: 0.1rem;
+  border-radius: 5px;
 }
 div.m-image.m-fullwidth img,
 div.m-image.m-fullwidth svg {
@@ -1009,7 +1043,7 @@ figure.m-figure:before {
   z-index: -1;
   border-style: solid;
   border-width: 0.125rem;
-  border-radius: 0.1rem;
+  border-radius: 5px;
   border-color: #ddd;
 }
 figure.m-figure.m-flat:before {
@@ -1033,14 +1067,14 @@ figure.m-figure svg {
   margin-left: 0;
   margin-right: 0;
   margin-bottom: 0;
-  border-top-left-radius: 0.1rem;
-  border-top-right-radius: 0.1rem;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
   max-width: 100%;
 }
 figure.m-figure.m-flat img,
 figure.m-figure.m-flat svg {
-  border-bottom-left-radius: 0.1rem;
-  border-bottom-right-radius: 0.1rem;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 figure.m-figure a img,
 figure.m-figure a svg {
@@ -1083,7 +1117,7 @@ figure.m-figure.m-fullwidth:after {
   z-index: -1;
   border-style: solid;
   border-width: 0.125rem;
-  border-radius: 0.1rem;
+  border-radius: 5px;
 }
 .m-code-figure:before {
   border-color: #f7f7f7;
@@ -1585,8 +1619,132 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-label.m-flat.m-info {
   color: #31708f;
 }
+.m-block.m-type h3,
+.m-block.m-type h4,
+.m-block.m-type h5,
+.m-block.m-type h6,
+.m-block.m-type h3 a,
+.m-block.m-type h4 a,
+.m-block.m-type h5 a,
+.m-block.m-type h6 a,
+.m-text.m-type,
+.m-label.m-flat.m-type {
+  color: #9ad36a;
+}
 .m-block.m-dim {
   border-left-color: #bdbdbd;
+}
+span.m-default {
+  color: #000000;
+  background-color: transparent;
+}
+span.m-default a {
+  color: var(--default-link-color);
+  background-color: transparent;
+}
+span.m-default a:hover,
+span.m-default a:focus,
+span.m-default a:active {
+  color: #26a9e0;
+  background-color: transparent;
+}
+span.m-primary {
+  color: #31708f;
+  background-color: transparent;
+}
+span.m-primary a {
+  color: var(--primary-link-color);
+  background-color: transparent;
+}
+span.m-primary a:hover,
+span.m-primary a:focus,
+span.m-primary a:active {
+  color: #31708f;
+  background-color: transparent;
+}
+span.m-success {
+  color: #9ad36a;
+  background-color: transparent;
+}
+span.m-success a {
+  color: var(--success-link-color);
+  background-color: transparent;
+}
+span.m-success a:hover,
+span.m-success a:focus,
+span.m-success a:active {
+  color: #9ad36a;
+  background-color: transparent;
+}
+span.m-warning {
+  color: #f9cf79;
+  background-color: transparent;
+}
+span.m-warning a {
+  color: var(--warning-link-color);
+  background-color: transparent;
+}
+span.m-warning a:hover,
+span.m-warning a:focus,
+span.m-warning a:active {
+  color: #f9cf79;
+  background-color: transparent;
+}
+span.m-danger {
+  color: #f60000;
+  background-color: transparent;
+}
+span.m-danger a {
+  color: var(--danger-link-color);
+  background-color: transparent;
+}
+span.m-danger a:hover,
+span.m-danger a:focus,
+span.m-danger a:active {
+  color: #f60000;
+  background-color: transparent;
+}
+span.m-info {
+  color: #31708f;
+  background-color: transparent;
+}
+span.m-info a {
+  color: var(--info-link-color);
+  background-color: transparent;
+}
+span.m-info a:hover,
+span.m-info a:focus,
+span.m-info a:active {
+  color: #67cce0;
+  background-color: transparent;
+}
+span.m-type {
+  color: #9ad36a;
+  background-color: transparent;
+}
+span.m-type a {
+  color: var(--type-link-color);
+  background-color: transparent;
+}
+span.m-type a:hover,
+span.m-type a:focus,
+span.m-type a:active {
+  color: #9ad36a;
+  background-color: transparent;
+}
+span.m-dim {
+  color: #bdbdbd;
+  background-color: transparent;
+}
+span.m-dim a {
+  color: #c0c0c0;
+  background-color: transparent;
+}
+span.m-dim a:hover,
+span.m-dim a:focus,
+span.m-dim a:active {
+  color: #949494;
+  background-color: transparent;
 }
 .m-block.m-dim,
 .m-text.m-dim,
@@ -1604,6 +1762,21 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-text.m-dim a:focus,
 .m-text.m-dim a:active {
   color: #949494;
+}
+.m-block.m-type {
+  border-left-color: #9ad36a;
+}
+.m-block.m-type h3,
+.m-block.m-type h4,
+.m-block.m-type h5,
+.m-block.m-type h6,
+.m-block.m-type h3 a,
+.m-block.m-type h4 a,
+.m-block.m-type h5 a,
+.m-block.m-type h6 a,
+.m-text.m-type,
+.m-label.m-flat.m-type {
+  color: #9ad36a;
 }
 .m-block.m-flat {
   border-color: transparent;
@@ -1698,6 +1871,20 @@ figure.m-figure:not(.m-flat) > svg.m-graph:first-child {
 .m-block.m-info h6 a:active {
   color: #67cce0;
 }
+.m-block.m-type h3 a:hover,
+.m-block.m-type h3 a:focus,
+.m-block.m-type h3 a:active,
+.m-block.m-type h4 a:hover,
+.m-block.m-type h4 a:focus,
+.m-block.m-type h4 a:active,
+.m-block.m-type h5 a:hover,
+.m-block.m-type h5 a:focus,
+.m-block.m-type h5 a:active,
+.m-block.m-type h6 a:hover,
+.m-block.m-type h6 a:focus,
+.m-block.m-type h6 a:active {
+  color: #9ad36a;
+}
 div.m-button a,
 .m-label {
   color: #ffffff;
@@ -1713,30 +1900,42 @@ div.m-button.m-default a:active {
 div.m-button.m-default a,
 .m-label:not(.m-flat).m-default {
   background-color: #000000;
+  color: #000000;
 }
 div.m-button.m-primary a,
 .m-label:not(.m-flat).m-primary {
   background-color: #31708f;
+  color: #67cce0;
 }
 div.m-button.m-success a,
 .m-label:not(.m-flat).m-success {
   background-color: #9ad36a;
+  color: #3c763d;
 }
 div.m-button.m-warning a,
 .m-label:not(.m-flat).m-warning {
   background-color: #f9cf79;
+  color: #8a6d3b;
 }
 div.m-button.m-danger a,
 .m-label:not(.m-flat).m-danger {
   background-color: #f60000;
+  color: #920000;
 }
 div.m-button.m-info a,
 .m-label:not(.m-flat).m-info {
   background-color: #31708f;
+  color: #81bcda;
 }
 div.m-button.m-dim a,
 .m-label:not(.m-flat).m-dim {
   background-color: #bdbdbd;
+  color: #7c7c7c;
+}
+div.m-button.m-type a,
+.m-label:not(.m-flat).m-type {
+  background-color: #9ad36a;
+  color: #3c763d;
 }
 div.m-button.m-default a:hover,
 div.m-button.m-default a:focus,
@@ -1773,6 +1972,11 @@ div.m-button.m-dim a:focus,
 div.m-button.m-dim a:active {
   background-color: #c0c0c0;
 }
+div.m-button.m-type a:hover,
+div.m-button.m-type a:focus,
+div.m-button.m-type a:active {
+  background-color: #9ad36a;
+}
 .m-note.m-default {
   background-color: transparent;
   border-width: 2px;
@@ -1783,7 +1987,11 @@ div.m-button.m-dim a:active {
 table.m-table tr.m-default td,
 table.m-table td.m-default,
 table.m-table tr.m-default th,
-table.m-table th.m-default {
+table.m-table th.m-default,
+table.m-table tr.m-default strong,
+table.m-table strong.m-default,
+table.m-table tr.m-default em,
+table.m-table em.m-default {
   color: #000000;
 }
 .m-note.m-default a:hover,
@@ -1820,7 +2028,11 @@ table.m-table th.m-primary a {
 table.m-table tr.m-primary td,
 table.m-table td.m-primary,
 table.m-table tr.m-primary th,
-table.m-table th.m-primary {
+table.m-table th.m-primary,
+table.m-table tr.m-primary strong,
+table.m-table strong.m-primary,
+table.m-table tr.m-primary em,
+table.m-table em.m-primary {
   background-color: transparent;
   color: #67cce0;
 }
@@ -1858,7 +2070,11 @@ table.m-table th.m-primary a:active {
 table.m-table tr.m-success td,
 table.m-table td.m-success,
 table.m-table tr.m-success th,
-table.m-table th.m-success {
+table.m-table th.m-success,
+table.m-table tr.m-success strong,
+table.m-table strong.m-success,
+table.m-table tr.m-success em,
+table.m-table em.m-success {
   background-color: transparent;
   color: #3c763d;
 }
@@ -1896,7 +2112,11 @@ table.m-table th.m-success a:active {
 table.m-table tr.m-warning td,
 table.m-table td.m-warning,
 table.m-table tr.m-warning th,
-table.m-table th.m-warning {
+table.m-table th.m-warning,
+table.m-table tr.m-warning strong,
+table.m-table strong.m-warning,
+table.m-table tr.m-warning em,
+table.m-table em.m-warning {
   background-color: transparent;
   color: #8a6d3b;
 }
@@ -1934,7 +2154,11 @@ table.m-table th.m-warning a:active {
 table.m-table tr.m-danger td,
 table.m-table td.m-danger,
 table.m-table tr.m-danger th,
-table.m-table th.m-danger {
+table.m-table th.m-danger,
+table.m-table tr.m-danger strong,
+table.m-table strong.m-danger,
+table.m-table tr.m-danger em,
+table.m-table em.m-danger {
   background-color: transparent;
   color: #920000;
 }
@@ -1972,9 +2196,13 @@ table.m-table th.m-danger a:active {
 table.m-table tr.m-info td,
 table.m-table td.m-info,
 table.m-table tr.m-info th,
-table.m-table th.m-info {
+table.m-table th.m-info,
+table.m-table tr.m-info strong,
+table.m-table strong.m-info,
+table.m-table tr.m-info em,
+table.m-table em.m-info {
   background-color: transparent;
-  color: #31708f;
+  color: #81bcda;
 }
 .m-note.m-info a,
 table.m-table tr.m-info td a,
@@ -2010,7 +2238,11 @@ table.m-table th.m-info a:active {
 table.m-table tr.m-dim td,
 table.m-table td.m-dim,
 table.m-table tr.m-dim th,
-table.m-table th.m-dim {
+table.m-table th.m-dim,
+table.m-table tr.m-dim strong,
+table.m-table strong.m-dim,
+table.m-table tr.m-dim em,
+table.m-table em.m-dim {
   background-color: transparent;
   color: #7c7c7c;
 }
@@ -2037,6 +2269,48 @@ table.m-table td.m-dim a:active,
 table.m-table tr.m-dim th a:active,
 table.m-table th.m-dim a:active {
   color: #949494;
+}
+.m-note.m-type {
+  border-color: #9ad36a;
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
+}
+.m-note.m-type,
+table.m-table tr.m-type td,
+table.m-table td.m-type,
+table.m-table tr.m-type th,
+table.m-table th.m-type,
+table.m-table tr.m-type strong,
+table.m-table strong.m-type,
+table.m-table tr.m-type em,
+table.m-table em.m-type {
+  background-color: transparent;
+  color: #3c763d;
+}
+.m-note.m-type a,
+table.m-table tr.m-type td a,
+table.m-table td.m-type a,
+table.m-table tr.m-type th a,
+table.m-table th.m-type a {
+  color: #9ad36a;
+}
+.m-note.m-type a:hover,
+table.m-table tr.m-type td a:hover,
+table.m-table td.m-type a:hover,
+table.m-table tr.m-type th a:hover,
+table.m-table th.m-type a:hover,
+.m-note.m-type a:focus,
+table.m-table tr.m-type td a:focus,
+table.m-table td.m-type a:focus,
+table.m-table tr.m-type th a:focus,
+table.m-table th.m-type a:focus,
+.m-note.m-type a:active,
+table.m-table tr.m-type td a:active,
+table.m-table td.m-type a:active,
+table.m-table tr.m-type th a:active,
+table.m-table th.m-type a:active {
+  color: #9ad36a;
 }
 figure.m-figure.m-default:before {
   border-color: transparent;
@@ -2073,6 +2347,12 @@ figure.m-figure.m-info:before {
 }
 figure.m-figure.m-info figcaption {
   color: #31708f;
+}
+figure.m-figure.m-type:before {
+  border-color: transparent;
+}
+figure.m-figure.m-type figcaption {
+  color: #9ad36a;
 }
 figure.m-figure.m-dim:before {
   border-color: transparent;
@@ -2227,6 +2507,24 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph.m-dim g.m-node polyline {
   stroke: #bdbdbd;
 }
+.m-math.m-type,
+.m-math g.m-type,
+.m-math rect.m-type,
+div.m-plot svg .m-bar.m-type,
+.m-graph.m-type g.m-edge polygon,
+.m-graph.m-type g.m-node:not(.m-flat) ellipse,
+.m-graph.m-type g.m-node:not(.m-flat) polygon,
+.m-graph.m-type g.m-edge text,
+.m-graph.m-type g.m-node.m-flat text {
+  fill: #9ad36a;
+}
+.m-graph.m-type g.m-edge polygon,
+.m-graph.m-type g.m-edge path,
+.m-graph.m-type g.m-node ellipse,
+.m-graph.m-type g.m-node polygon,
+.m-graph.m-type g.m-node polyline {
+  stroke: #9ad36a;
+}
 .m-graph g.m-edge.m-default polygon,
 .m-graph g.m-node.m-default:not(.m-flat) ellipse,
 .m-graph g.m-node.m-default:not(.m-flat) polygon,
@@ -2324,6 +2622,20 @@ div.m-plot svg .m-bar.m-dim,
 .m-graph g.m-node.m-dim polygon,
 .m-graph g.m-node.m-dim polyline {
   stroke: #bdbdbd;
+}
+.m-graph g.m-edge.m-type polygon,
+.m-graph g.m-node.m-type:not(.m-flat) ellipse,
+.m-graph g.m-node.m-type:not(.m-flat) polygon,
+.m-graph g.m-edge.m-type text,
+.m-graph g.m-node.m-type.m-flat text {
+  fill: #9ad36a;
+}
+.m-graph g.m-edge.m-type polygon,
+.m-graph g.m-edge.m-type path,
+.m-graph g.m-node.m-type ellipse,
+.m-graph g.m-node.m-type polygon,
+.m-graph g.m-node.m-type polyline {
+  stroke: #9ad36a;
 }
 p,
 ul,
@@ -2735,6 +3047,20 @@ article h1 .m-breadcrumb a:hover,
 article h1 a:focus,
 article h1 a:active {
   color: #26a9e0;
+}
+article hr {
+  width: 75%;
+  border-width: 2px 0 0 0 ;
+  border-style: solid;
+  border-color: #92d050;
+  margin: auto;
+}
+article section hr {
+  width: 50%;
+  border-width: 1px 0 0 0;
+  border-style: solid;
+  border-color: #ddd;
+  margin: auto;
 }
 article > header h1 {
   font-size: 2rem;
@@ -3152,19 +3478,19 @@ article section:last-child {
     > figure.m-console-figure
     > pre:first-child {
     border-left-width: 0;
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     padding-left: 1rem;
   }
   .m-container-inflatable section:target .m-center-s > .m-block,
   .m-container-inflatable section:target .m-right-s > .m-block {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
   }
   .m-container-inflatable section:target .m-center-s > .m-frame,
   .m-container-inflatable section:target .m-right-s > .m-frame {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     border-left-width: 0.125rem;
     padding-left: 0.875rem;
   }
@@ -3174,8 +3500,8 @@ article section:last-child {
   }
   .m-container-inflatable section:target .m-right-s > .m-note,
   .m-container-inflatable section:target .m-right-s > pre {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     margin-left: 0;
     border-left-width: 0;
     padding-left: 1rem;
@@ -3196,8 +3522,8 @@ article section:last-child {
     section:target
     .m-right-s
     > figure.m-console-figure::before {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     border-left-width: 0.125rem;
   }
 }
@@ -3225,19 +3551,19 @@ article section:last-child {
     > figure.m-console-figure
     > pre:first-child {
     border-left-width: 0;
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     padding-left: 1rem;
   }
   .m-container-inflatable section:target .m-center-m > .m-block,
   .m-container-inflatable section:target .m-right-m > .m-block {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
   }
   .m-container-inflatable section:target .m-center-m > .m-frame,
   .m-container-inflatable section:target .m-right-m > .m-frame {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     border-left-width: 0.125rem;
     padding-left: 0.875rem;
   }
@@ -3247,8 +3573,8 @@ article section:last-child {
   }
   .m-container-inflatable section:target .m-right-m > .m-note,
   .m-container-inflatable section:target .m-right-m > pre {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     margin-left: 0;
     border-left-width: 0;
     padding-left: 1rem;
@@ -3269,8 +3595,8 @@ article section:last-child {
     section:target
     .m-right-m
     > figure.m-console-figure::before {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     border-left-width: 0.125rem;
   }
 }
@@ -3298,19 +3624,19 @@ article section:last-child {
     > figure.m-console-figure
     > pre:first-child {
     border-left-width: 0;
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     padding-left: 1rem;
   }
   .m-container-inflatable section:target .m-center-l > .m-block,
   .m-container-inflatable section:target .m-right-l > .m-block {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
   }
   .m-container-inflatable section:target .m-center-l > .m-frame,
   .m-container-inflatable section:target .m-right-l > .m-frame {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     border-left-width: 0.125rem;
     padding-left: 0.875rem;
   }
@@ -3320,8 +3646,8 @@ article section:last-child {
   }
   .m-container-inflatable section:target .m-right-l > .m-note,
   .m-container-inflatable section:target .m-right-l > pre {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     margin-left: 0;
     border-left-width: 0;
     padding-left: 1rem;
@@ -3342,8 +3668,8 @@ article section:last-child {
     section:target
     .m-right-l
     > figure.m-console-figure::before {
-    border-top-left-radius: 0.1rem;
-    border-bottom-left-radius: 0.1rem;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     border-left-width: 0.125rem;
   }
 }

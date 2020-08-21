@@ -124,6 +124,7 @@ ul.m-doc li.m-doc-collapsible > a:first-child:before { content: '⊖'; }
 h1 .m-doc-template, h1 .m-doc-include {
   font-size: 1.3rem;
   font-weight: normal;
+  float: right;
 }
 /* If there's no template, the include is shown after in a slightly more packed
    layout */
