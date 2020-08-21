@@ -756,8 +756,10 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         elif i.tag == 'table':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
-            out.parsed += '<table class="m-table{}">'.format(
-                ' ' + add_css_class if add_css_class else '')
+            out.parsed += '<table {}>'.format(
+                'class="m-table ' + add_css_class  + '' if add_css_class else '')
+            # out.parsed += '<table class="m-table{}">'.format(
+            #     ' ' + add_css_class if add_css_class else '')
             thead_written = False
             inside_tbody = False
 
@@ -3471,6 +3473,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         ('PROJECT_NAME', None, str),
         ('PROJECT_BRIEF', None, str),
         ('PROJECT_LOGO', None, str),
+        ('PROJECT_REPOSITORY', None, str),
         ('M_MAIN_PROJECT_URL', 'MAIN_PROJECT_URL', str),
 
         ('OUTPUT_DIRECTORY', None, str),
@@ -3823,6 +3826,13 @@ if __name__ == '__main__': # pragma: no cover
     parser.add_argument('--debug', help="verbose debug output", action='store_true')
     args = parser.parse_args()
 
+    if args.output is not None:
+        if args.debug:
+            logging.basicConfig(filename=args.output, filemode='w', level=logging.DEBUG)
+        else:
+            logging.basicConfig(filename=args.output, filemode='w', level=logging.INFO)
+
+    else:
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
@@ -3850,5 +3860,7 @@ if __name__ == '__main__': # pragma: no cover
     if not args.no_doxygen:
         logging.debug("running Doxygen on {}".format(doxyfile))
         subprocess.run(["doxygen", doxyfile], cwd=os.path.dirname(doxyfile), check=True)
+
+    logging.debug("Template directory: {}".format(args.templates))
 
     run(state, templates=os.path.abspath(args.templates), wildcard=args.wildcard, index_pages=args.index_pages, search_merge_subtrees=not args.search_no_subtree_merging, search_add_lookahead_barriers=not args.search_no_lookahead_barriers, search_merge_prefixes=not args.search_no_prefix_merging)
