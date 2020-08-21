@@ -3,12 +3,25 @@
 {% block title %}{% for name, _ in compound.breadcrumb %}{{ name }}/{% endfor %} directory | {{ super() }}{% endblock %}
 
 {% block header %}
-          {%+ for name, target in compound.breadcrumb %}
+          <span class="m-breadcrumb">
+            <a href="index.html">
+              SDI-12
+            </a> &gt; <wbr/>
+          </span>
+          <span class="m-breadcrumb">
+            <a href="files.html">
+              Files
+            </a> &gt; <wbr/>
+          </span>
+          {%+ for name, target in compound.breadcrumb[:-1] %}
           <span class="m-breadcrumb">
           <a href="{{ target }}">{{ name }}</a>
           /
           </span>
           {% endfor %}
+          <span class="m-breadcrumb">
+            {{ compound.breadcrumb[-1][0] }}
+          </span>
 
           <header class="gp-entry-header">
             <h1 class="gp-entry-title" itemprop="headline">

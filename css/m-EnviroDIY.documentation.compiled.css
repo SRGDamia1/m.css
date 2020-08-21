@@ -64,6 +64,8 @@ h3 a.m-doc-external {
 }
 span.m-doc-wrap-bumper {
   margin-right: -1rem;
+  display: inline-block;
+  vertical-align: text-top;
 }
 span.m-doc-wrap {
   padding-left: 1rem;
@@ -256,7 +258,7 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   font-size: 1.2rem;
   border-width: 0;
   color: #000000;
-  background-color: #e8e8e8;
+  background-color: transparent;
   border-radius: 0.1rem;
   margin-bottom: 1rem;
   padding: 0 1rem;
@@ -297,10 +299,10 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   margin-right: -0.75rem;
 }
 .m-doc-search ul#search-results li#search-current a {
-  background-color: #e8e8e8;
+  background-color: transparent;
 }
 .m-doc-search ul#search-results li#search-current.m-doc-search-copied a {
-  background-color: #4dd376;
+  background-color: transparent;
 }
 .m-doc-search-typed {
   color: #26a9e0;

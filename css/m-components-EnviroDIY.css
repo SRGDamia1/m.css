@@ -81,6 +81,8 @@ dd > p,
 table.m-table td > p {
   text-indent: 0;
   text-align: left;
+  /* border-left-width: 0; */
+  /* border-right-width: 0; */
 }
 blockquote {
   margin-top: 0;
@@ -421,6 +423,9 @@ dl.m-footnote dd span.m-footnote a {
 .m-note {
   border-radius: var(--border-radius);
   padding: 1rem;
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0
 }
 .m-frame {
   background-color: var(--background-color);
@@ -437,6 +442,12 @@ dl.m-footnote dd span.m-footnote a {
   border-radius: var(--border-radius);
   border-color: var(--line-color);
   padding: 0.9375rem 0.9375rem 0.9375rem 0.75rem;
+}
+.m-block.hr {
+  width: 75%;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--line-color-hr);
 }
 
 /* Badge */
@@ -516,8 +527,19 @@ div.m-scroll > table.m-table:last-child {
 table.m-table:not(.m-flat) tbody tr:hover {
   background-color: var(--line-color);
 }
+table.m-table tr,
 table.m-table th,
 table.m-table td {
+  vertical-align: top;
+  border-style: solid;
+  border-top-width: 0.0625rem;
+  border-left-width: 0;
+  border-right-width: 0;
+  border-bottom-width: 0;
+  border-color: var(--line-color);
+}
+table.m-table tr:first-child td,
+table.m-table tr:last-child td {
   vertical-align: top;
   border-style: solid;
   border-top-width: 0.0625rem;
@@ -532,11 +554,15 @@ table.m-table caption {
 table.m-table thead tr:first-child th,
 table.m-table thead tr:first-child td {
   border-top-width: 0.125rem;
+  border-left-width: 0;
+  border-right-width: 0;
 }
 table.m-table thead th,
 table.m-table thead td {
   border-bottom-width: 0.125rem;
   vertical-align: bottom;
+  border-left-width: 0;
+  border-right-width: 0;
 }
 table.m-table tfoot th,
 table.m-table tfoot td {
@@ -1540,6 +1566,9 @@ div.m-button.m-dim a:active {
 /* Colored note, table coloring */
 .m-note.m-default {
   background-color: var(--default-filled-background-color);
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
 }
 .m-note.m-default,
 table.m-table tr.m-default td,
@@ -1565,6 +1594,12 @@ table.m-table td.m-default a:active,
 table.m-table tr.m-default th a:active,
 table.m-table th.m-default a:active {
   color: var(--default-filled-link-active-color);
+}
+.m-note.m-primary {
+  border-color: var(--primary-color);
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
 }
 .m-note.m-primary a,
 table.m-table tr.m-primary td a,
@@ -1605,6 +1640,12 @@ table.m-table tr.m-primary th a:active,
 table.m-table th.m-primary a:active {
   color: var(--primary-filled-link-active-color);
 }
+.m-note.m-success {
+  border-color: var(--success-color);
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
+}
 .m-note.m-success,
 table.m-table tr.m-success td,
 table.m-table td.m-success,
@@ -1636,6 +1677,12 @@ table.m-table td.m-success a:active,
 table.m-table tr.m-success th a:active,
 table.m-table th.m-success a:active {
   color: var(--success-filled-link-active-color);
+}
+.m-note.m-warning {
+  border-color: var(--warning-color);
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
 }
 .m-note.m-warning,
 table.m-table tr.m-warning td,
@@ -1669,6 +1716,12 @@ table.m-table tr.m-warning th a:active,
 table.m-table th.m-warning a:active {
   color: var(--warning-filled-link-active-color);
 }
+.m-note.m-danger {
+  border-color: var(--danger-color);
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
+}
 .m-note.m-danger,
 table.m-table tr.m-danger td,
 table.m-table td.m-danger,
@@ -1701,6 +1754,12 @@ table.m-table tr.m-danger th a:active,
 table.m-table th.m-danger a:active {
   color: var(--danger-filled-link-active-color);
 }
+.m-note.m-info {
+  border-color: var(--info-color);
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
+}
 .m-note.m-info,
 table.m-table tr.m-info td,
 table.m-table td.m-info,
@@ -1732,6 +1791,12 @@ table.m-table td.m-info a:active,
 table.m-table tr.m-info th a:active,
 table.m-table th.m-info a:active {
   color: var(--info-filled-link-active-color);
+}
+.m-note.m-dim {
+  border-color: var(--dim-color);
+  border-width: 2px;
+  border-style: solid;
+  padding-top: 0;
 }
 .m-note.m-dim,
 table.m-table tr.m-dim td,

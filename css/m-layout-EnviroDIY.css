@@ -54,7 +54,10 @@ body > header > nav.m-navbar-cover:target {
 body > header > nav.m-navbar-landing #m-navbar-brand.m-navbar-brand-hidden {
   visibility: hidden;
 }
-body > header > nav.m-navbar-landing:target #m-navbar-brand.m-navbar-brand-hidden {
+body
+  > header
+  > nav.m-navbar-landing:target
+  #m-navbar-brand.m-navbar-brand-hidden {
   visibility: visible;
 }
 body > header > nav {
@@ -71,31 +74,6 @@ body > header > nav a {
   /* line-height: 6rem; */
   color: var(--header-link-color);
 }
-/* .gp-nav .menu a.fa:before {
-  font-family: "FontAwesome";
-  padding-right: 5px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  content: "f107";
-}
-
-#gp-mobile-nav .menu li > .gp-mobile-dropdown-icon {
-  font-family: "FontAwesome";
-  cursor: pointer;
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-size: 20px;
-  padding: 0 25px;
-  line-height: 44px;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#gp-mobile-nav .menu li > .gp-mobile-dropdown-icon:before {
-  content: "f107";
-} */
 body > header > nav #m-navbar-brand,
 body > header > nav a#m-navbar-show,
 body > header > nav a#m-navbar-hide {
@@ -645,8 +623,16 @@ article section:last-child {
 .m-container-inflatable section:target section > .m-frame,
 .m-container-inflatable section:target section > .m-block,
 .m-container-inflatable section:target section > pre,
-.m-container-inflatable section:target section > .m-code-figure > pre:first-child,
-.m-container-inflatable section:target section > .m-console-figure > pre:first-child,
+.m-container-inflatable
+  section:target
+  section
+  > .m-code-figure
+  > pre:first-child,
+.m-container-inflatable
+  section:target
+  section
+  > .m-console-figure
+  > pre:first-child,
 .m-container-inflatable section:target [class*="m-center-"] > .m-note,
 .m-container-inflatable section:target [class*="m-center-"] > .m-frame,
 .m-container-inflatable section:target [class*="m-center-"] > .m-block,
@@ -714,13 +700,34 @@ article section:last-child {
 .m-container-inflatable section:target > .m-console-figure::before,
 .m-container-inflatable section:target section > .m-code-figure::before,
 .m-container-inflatable section:target section > .m-console-figure::before,
-.m-container-inflatable section:target [class*="m-center-"] > .m-code-figure::before,
-.m-container-inflatable section:target [class*="m-center-"] > .m-console-figure::before,
-.m-container-inflatable section:target [class*="m-left-"] > .m-code-figure::before,
-.m-container-inflatable section:target [class*="m-left-"] > .m-console-figure::before,
-.m-container-inflatable section:target [class*="m-right-"] > .m-code-figure::before,
-.m-container-inflatable section:target [class*="m-right-"] > .m-console-figure::before,
-.m-container-inflatable section:target .m-container-inflate > .m-code-figure::before,
+.m-container-inflatable
+  section:target
+  [class*="m-center-"]
+  > .m-code-figure::before,
+.m-container-inflatable
+  section:target
+  [class*="m-center-"]
+  > .m-console-figure::before,
+.m-container-inflatable
+  section:target
+  [class*="m-left-"]
+  > .m-code-figure::before,
+.m-container-inflatable
+  section:target
+  [class*="m-left-"]
+  > .m-console-figure::before,
+.m-container-inflatable
+  section:target
+  [class*="m-right-"]
+  > .m-code-figure::before,
+.m-container-inflatable
+  section:target
+  [class*="m-right-"]
+  > .m-console-figure::before,
+.m-container-inflatable
+  section:target
+  .m-container-inflate
+  > .m-code-figure::before,
 .m-container-inflatable
   section:target
   .m-container-inflate
@@ -794,10 +801,22 @@ article section:last-child {
     border-left-width: 0;
     padding-left: 1rem;
   }
-  .m-container-inflatable section:target .m-center-s > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-center-s > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-s > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-s > figure.m-console-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-s
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-center-s
+    > figure.m-console-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-s
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-s
+    > figure.m-console-figure::before {
     /* Reverting thin figure border, keeping -1rem margin */
     border-top-left-radius: var(--border-radius);
     border-bottom-left-radius: var(--border-radius);
@@ -861,10 +880,22 @@ article section:last-child {
     border-left-width: 0;
     padding-left: 1rem;
   }
-  .m-container-inflatable section:target .m-center-m > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-center-m > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-m > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-m > figure.m-console-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-m
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-center-m
+    > figure.m-console-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-m
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-m
+    > figure.m-console-figure::before {
     /* Reverting thin figure border, keeping -1rem margin */
     border-top-left-radius: var(--border-radius);
     border-bottom-left-radius: var(--border-radius);
@@ -928,10 +959,22 @@ article section:last-child {
     border-left-width: 0;
     padding-left: 1rem;
   }
-  .m-container-inflatable section:target .m-center-l > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-center-l > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-l > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-l > figure.m-console-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-l
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-center-l
+    > figure.m-console-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-l
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-l
+    > figure.m-console-figure::before {
     /* Reverting thin figure border, keeping -1rem margin */
     border-top-left-radius: var(--border-radius);
     border-bottom-left-radius: var(--border-radius);
@@ -944,7 +987,10 @@ article section:last-child {
 .m-container-inflatable section:target > figure.m-code-figure::before,
 .m-container-inflatable section:target > figure.m-console-figure::before,
 .m-container-inflatable section:target section > figure.m-code-figure::before,
-.m-container-inflatable section:target section > figure.m-console-figure::before,
+.m-container-inflatable
+  section:target
+  section
+  > figure.m-console-figure::before,
 .m-container-inflatable
   section:target
   [class*="m-center-"]
@@ -983,32 +1029,68 @@ article section:last-child {
    conditionally revert that. Left-aligned content is touching the left border
    both in full size and aligned, so we revert it only for center and right. */
 @media screen and (min-width: 576px) {
-  .m-container-inflatable section:target .m-center-s > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-s > figure.m-code-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-s
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-s
+    > figure.m-code-figure::before {
     border-color: var(--code-background-color);
   }
-  .m-container-inflatable section:target .m-center-s > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-s > figure.m-console-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-s
+    > figure.m-console-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-s
+    > figure.m-console-figure::before {
     border-color: var(--console-background-color);
   }
 }
 @media screen and (min-width: 768px) {
-  .m-container-inflatable section:target .m-center-m > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-m > figure.m-code-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-m
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-m
+    > figure.m-code-figure::before {
     border-color: var(--code-background-color);
   }
-  .m-container-inflatable section:target .m-center-m > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-m > figure.m-console-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-m
+    > figure.m-console-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-m
+    > figure.m-console-figure::before {
     border-color: var(--console-background-color);
   }
 }
 @media screen and (min-width: 992px) {
-  .m-container-inflatable section:target .m-center-l > figure.m-code-figure::before,
-  .m-container-inflatable section:target .m-right-l > figure.m-code-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-l
+    > figure.m-code-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-l
+    > figure.m-code-figure::before {
     border-color: var(--code-background-color);
   }
-  .m-container-inflatable section:target .m-center-l > figure.m-console-figure::before,
-  .m-container-inflatable section:target .m-right-l > figure.m-console-figure::before {
+  .m-container-inflatable
+    section:target
+    .m-center-l
+    > figure.m-console-figure::before,
+  .m-container-inflatable
+    section:target
+    .m-right-l
+    > figure.m-console-figure::before {
     border-color: var(--console-background-color);
   }
 }
@@ -1017,7 +1099,10 @@ article section:last-child {
    selectors or border sides like above. */
 .m-container-inflatable section:target pre,
 .m-container-inflatable section:target figure.m-code-figure > pre:first-child,
-.m-container-inflatable section:target figure.m-console-figure > pre:first-child {
+.m-container-inflatable
+  section:target
+  figure.m-console-figure
+  > pre:first-child {
   border-color: var(--line-color);
 }
 .m-container-inflatable section:target .m-note.m-default {
