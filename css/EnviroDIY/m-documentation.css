@@ -47,7 +47,7 @@ ul.m-doc li.m-doc-collapsible > a:first-child:active {
 a.m-doc-self,
 ul.m-doc li.m-doc-expansible > a:first-child:before,
 ul.m-doc li.m-doc-collapsible > a:first-child:before {
-  color: var(--article-heading-color);
+  color: var(--article-link-color);
 }
 a.m-doc-self:hover, a.m-doc-self:focus, a.m-doc-self:active,
 ul.m-doc li.m-doc-expansible > a:first-child:hover::before,
@@ -56,13 +56,15 @@ ul.m-doc li.m-doc-expansible > a:first-child:active::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:hover::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:focus::before,
 ul.m-doc li.m-doc-collapsible > a:first-child:active::before {
-  color: var(--article-heading-active-color);
+  color: var(--article-link-active-color);
 }
 h3 a.m-doc-external {
   font-weight: normal;
 }
 span.m-doc-wrap-bumper {
   margin-right: -1rem;
+  display: inline-block;
+  vertical-align: text-top;
 }
 span.m-doc-wrap {
   padding-left: 1rem;
@@ -122,6 +124,7 @@ ul.m-doc li.m-doc-collapsible > a:first-child:before { content: '⊖'; }
 h1 .m-doc-template, h1 .m-doc-include {
   font-size: 1.3rem;
   font-weight: normal;
+  float: right;
 }
 /* If there's no template, the include is shown after in a slightly more packed
    layout */
