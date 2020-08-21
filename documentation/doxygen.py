@@ -3833,10 +3833,10 @@ if __name__ == '__main__': # pragma: no cover
             logging.basicConfig(filename=args.output, filemode='w', level=logging.INFO)
 
     else:
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+        if args.debug:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.INFO)
 
     config = copy.deepcopy(default_config)
 
