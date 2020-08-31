@@ -425,13 +425,13 @@ article > footer p {
 }
 
 /* Article -- dynamic section headers */
-article section:target {
+/* article section:target {
   margin-left: -1rem;
   border-left-style: solid;
   border-left-width: 0.25rem;
   padding-left: 0.75rem;
   border-color: var(--article-heading-color);
-}
+} */
 article h1 a,
 article > header h1 a,
 article section > h2 a,
