@@ -3542,7 +3542,8 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         'namespaces': ("Namespaces", 'namespaces.html'),
         'modules': ("Modules", 'modules.html'),
         'annotated': ("Classes", 'annotated.html'),
-        'files': ("Files", 'files.html')
+        'files': ("Files", 'files.html'),
+        'index': ("Main Page", 'index.html')
     }
     def extract_link(link):
         # If this is a HTML code, return it as a one-item tuple
@@ -3603,6 +3604,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         if len(link) == 1:
             return (link[0], None, None, None)
         else:
+            logging.debug(link)
             assert len(link) == 2
             if link[1] in predefined:
                 url = predefined[link[1]][1]
