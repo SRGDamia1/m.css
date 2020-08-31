@@ -339,6 +339,8 @@ article section hr {
   border-style: solid;
   border-color: var(--line-color);
   margin: auto;
+  padding-top: 5px;
+  padding-bottom: 10px;
 }
 article > header h1 {
   font-size: 2rem;
@@ -784,21 +786,21 @@ article section:last-child {
     /* Centers have -1rem margin on both sides *always* and pre inside figures
        as well, don't revert that */
     border-left-width: 0;
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     padding-left: 1rem;
   }
   .m-container-inflatable section:target .m-center-s > .m-block,
   .m-container-inflatable section:target .m-right-s > .m-block {
     /* Block keep the same left border width at all times */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
   }
   .m-container-inflatable section:target .m-center-s > .m-frame,
   .m-container-inflatable section:target .m-right-s > .m-frame {
     /* Frame has a thinner border */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     border-left-width: 0.125rem;
     padding-left: 0.875rem;
   }
@@ -809,8 +811,8 @@ article section:last-child {
   .m-container-inflatable section:target .m-right-s > .m-note,
   .m-container-inflatable section:target .m-right-s > pre {
     /* Note and pre has no border */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     margin-left: 0;
     border-left-width: 0;
     padding-left: 1rem;
@@ -832,8 +834,8 @@ article section:last-child {
     .m-right-s
     > figure.m-console-figure::before {
     /* Reverting thin figure border, keeping -1rem margin */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     border-left-width: 0.125rem;
   }
 }
@@ -863,21 +865,21 @@ article section:last-child {
     /* Centers have -1rem margin on both sides *always* and pre inside figures
        as well, don't revert that */
     border-left-width: 0;
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     padding-left: 1rem;
   }
   .m-container-inflatable section:target .m-center-m > .m-block,
   .m-container-inflatable section:target .m-right-m > .m-block {
     /* Block keep the same left border width at all times */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
   }
   .m-container-inflatable section:target .m-center-m > .m-frame,
   .m-container-inflatable section:target .m-right-m > .m-frame {
     /* Frame has a thinner border */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     border-left-width: 0.125rem;
     padding-left: 0.875rem;
   }
@@ -888,8 +890,8 @@ article section:last-child {
   .m-container-inflatable section:target .m-right-m > .m-note,
   .m-container-inflatable section:target .m-right-m > pre {
     /* Note and pre has no border */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     margin-left: 0;
     border-left-width: 0;
     padding-left: 1rem;
@@ -911,8 +913,8 @@ article section:last-child {
     .m-right-m
     > figure.m-console-figure::before {
     /* Reverting thin figure border, keeping -1rem margin */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     border-left-width: 0.125rem;
   }
 }
@@ -942,21 +944,21 @@ article section:last-child {
     /* Centers have -1rem margin on both sides *always* and pre inside figures
        as well, don't revert that */
     border-left-width: 0;
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     padding-left: 1rem;
   }
   .m-container-inflatable section:target .m-center-l > .m-block,
   .m-container-inflatable section:target .m-right-l > .m-block {
     /* Block keep the same left border width at all times */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
   }
   .m-container-inflatable section:target .m-center-l > .m-frame,
   .m-container-inflatable section:target .m-right-l > .m-frame {
     /* Frame has a thinner border */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     border-left-width: 0.125rem;
     padding-left: 0.875rem;
   }
@@ -967,8 +969,8 @@ article section:last-child {
   .m-container-inflatable section:target .m-right-l > .m-note,
   .m-container-inflatable section:target .m-right-l > pre {
     /* Note and pre has no border */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     margin-left: 0;
     border-left-width: 0;
     padding-left: 1rem;
@@ -990,8 +992,8 @@ article section:last-child {
     .m-right-l
     > figure.m-console-figure::before {
     /* Reverting thin figure border, keeping -1rem margin */
-    border-top-left-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
+    border-top-left-radius: var(--border-radius-boxes);
+    border-bottom-left-radius: var(--border-radius-boxes);
     border-left-width: 0.125rem;
   }
 }

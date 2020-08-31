@@ -45,7 +45,8 @@
   --heading-font-size: 16px;
 
   /* Shapes */
-  --border-radius: 0px;
+  --border-radius-boxes: 0px;
+  --border-radius-buttons: 0.5rem;
   --border-color: #ddd;
 
   /* Basics */

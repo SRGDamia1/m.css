@@ -80,6 +80,26 @@
                 {% endfor %}
               </ul>
             </li>
+            <li>
+              Detailed Descriptions
+              <ul>
+                {% if compound.has_enum_details %}
+                <li><a href="#enum-details">Enums</a></li>
+                {% endif %}
+                {% if compound.has_typedef_details %}
+                <li><a href="#typedef-details">Typedefs</a></li>
+                {% endif %}
+                {% if compound.has_func_details %}
+                <li><a href="#function-details">Functions</a></li>
+                {% endif %}
+                {% if compound.has_var_details %}
+                <li><a href="#variable-details">Variables</a></li>
+                {% endif %}
+                {% if compound.has_define_details %}
+                <li><a href="#define-details">Defines</a></li>
+                {% endif %}
+              </ul>
+            </li>
             {% endif %}
           </ul>
         </div>
@@ -89,7 +109,8 @@
 {% endif %}
         {% if compound.modules %}
         <section id="groups">
-          <h2><a href="#groups">Modules</a></h2>
+          {# <h2><a href="#groups">Modules</a></h2> #}
+          <h2>Modules</h2>
           <dl class="m-doc">
             {% for module in compound.modules %}
 {{ entry_module(module) }}
@@ -99,7 +120,8 @@
         {% endif %}
         {% if compound.dirs %}
         <section id="subdirs">
-          <h2><a href="#subdirs">Directories</a></h2>
+          {# <h2><a href="#subdirs">Directories</a></h2> #}
+          <h2>Directories</h2>
           <dl class="m-doc">
             {% for dir in compound.dirs %}
 {{ entry_dir(dir) }}
@@ -109,7 +131,8 @@
         {% endif %}
         {% if compound.files %}
         <section id="files">
-          <h2><a href="#files">Files</a></h2>
+          {# <h2><a href="#files">Files</a></h2> #}
+          <h2>Files</h2>
           <dl class="m-doc">
             {% for file in compound.files %}
 {{ entry_file(file) }}
@@ -119,7 +142,8 @@
         {% endif %}
         {% if compound.namespaces %}
         <section id="namespaces">
-          <h2><a href="#namespaces">Namespaces</a></h2>
+          {# <h2><a href="#namespaces">Namespaces</a></h2> #}
+          <h2>Namespaces</h2>
           <dl class="m-doc">
             {% for namespace in compound.namespaces %}
 {{ entry_namespace(namespace) }}
@@ -129,7 +153,8 @@
         {% endif %}
         {% if compound.classes %}
         <section id="nested-classes">
-          <h2><a href="#nested-classes">Classes</a></h2>
+          {# <h2><a href="#nested-classes">Classes</a></h2> #}
+          <h2>Classes</h2>
           <dl class="m-doc">
             {% for class in compound.classes %}
 {{ entry_class(class) }}
@@ -139,7 +164,8 @@
         {% endif %}
         {% if compound.enums %}
         <section id="enum-members">
-          <h2><a href="#enum-members">Enums</a></h2>
+          {# <h2><a href="#enum-members">Enums</a></h2> #}
+          <h2>Enums</h2>
           <dl class="m-doc">
             {% for enum in compound.enums %}
 {{ entry_enum(enum) }}
@@ -149,7 +175,8 @@
         {% endif %}
         {% if compound.typedefs %}
         <section id="typedef-members">
-          <h2><a href="#typedef-members">Typedefs</a></h2>
+          {# <h2><a href="#typedef-members">Typedefs</a></h2> #}
+          <h2>Typedefs</h2>
           <dl class="m-doc">
             {% for typedef in compound.typedefs %}
 {{ entry_typedef(typedef) }}
@@ -159,7 +186,8 @@
         {% endif %}
         {% if compound.funcs %}
         <section id="func-members">
-          <h2><a href="#func-members">Functions</a></h2>
+          {# <h2><a href="#func-members">Functions</a></h2> #}
+          <h2>Functions</h2>
           <dl class="m-doc">
             {% for func in compound.funcs %}
 {{ entry_func(func) }}
@@ -169,7 +197,8 @@
         {% endif %}
         {% if compound.vars %}
         <section id="var-members">
-          <h2><a href="#var-members">Variables</a></h2>
+          {# <h2><a href="#var-members">Variables</a></h2> #}
+          <h2>Variables</h2>
           <dl class="m-doc">
             {% for var in compound.vars %}
 {{ entry_var(var) }}
@@ -179,7 +208,8 @@
         {% endif %}
         {% if compound.defines %}
         <section id="define-members">
-          <h2><a href="#define-members">Defines</a></h2>
+          {# <h2><a href="#define-members">Defines</a></h2> #}
+          <h2>Defines</h2>
           <dl class="m-doc">
             {% for define in compound.defines %}
 {{ entry_define(define) }}
@@ -189,7 +219,8 @@
         {% endif %}
         {% for group in compound.groups %}
         <section id="{{ group.id }}">
-          <h2><a href="#{{ group.id }}">{{ group.name }}</a></h2>
+          {# <h2><a href="#{{ group.id }}">{{ group.name }}</a></h2> #}
+          <h2>{{ group.name }}</h2>
           {% if group.description %}
 {{ group.description }}
           {% endif %}
@@ -214,8 +245,9 @@
           </dl>
         </section>
         {% endfor %}
+
         {% if compound.has_enum_details %}
-        <section>
+        <section id="enum-details">
           <h2>Enum documentation</h2>
           {% for enum in compound.enums %}
           {% if enum.has_details %}
@@ -231,8 +263,9 @@
           {% endfor %}
         </section>
         {% endif %}
+
         {% if compound.has_typedef_details %}
-        <section>
+        <section id=typedef-details>
           <h2>Typedef documentation</h2>
           {% for typedef in compound.typedefs %}
           {% if typedef.has_details %}
@@ -248,8 +281,9 @@
           {% endfor %}
         </section>
         {% endif %}
+
         {% if compound.has_func_details %}
-        <section>
+        <section id="function-details">
           <h2>Function documentation</h2>
           {% for func in compound.funcs %}
           {% if func.has_details %}
@@ -265,8 +299,9 @@
           {% endfor %}
         </section>
         {% endif %}
+
         {% if compound.has_var_details %}
-        <section>
+        <section id="variable-details">
           <h2>Variable documentation</h2>
           {% for var in compound.vars %}
           {% if var.has_details %}
@@ -282,8 +317,9 @@
           {% endfor %}
         </section>
         {% endif %}
+
         {% if compound.has_define_details %}
-        <section>
+        <section id="define-details">
           <h2>Define documentation</h2>
           {% for define in compound.defines %}
           {% if define.has_details %}

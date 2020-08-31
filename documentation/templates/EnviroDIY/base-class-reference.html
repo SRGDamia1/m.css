@@ -173,6 +173,26 @@
                 {% endif %}
               </ul>
             </li>
+            <li>
+              Detailed Descriptions
+              <ul>
+                {% if compound.has_enum_details %}
+                <li><a href="#enum-details">Enums</a></li>
+                {% endif %}
+                {% if compound.has_typedef_details %}
+                <li><a href="#typedef-details">Typedefs</a></li>
+                {% endif %}
+                {% if compound.has_func_details %}
+                <li><a href="#function-details">Functions</a></li>
+                {% endif %}
+                {% if compound.has_var_details %}
+                <li><a href="#variable-details">Variables</a></li>
+                {% endif %}
+                {% if compound.has_define_details %}
+                <li><a href="#define-details">Defines</a></li>
+                {% endif %}
+              </ul>
+            </li>
           </ul>
         </div>
         {% endif %}
@@ -183,7 +203,8 @@
 
         {% if compound.base_classes %}
         <section id="base-classes">
-          <h2><a href="#base-classes">Base classes</a></h2>
+          {# <h2><a href="#base-classes">Base classes</a></h2> #}
+          <h2>Base classes</h2>
           <dl class="m-doc">
             {% for class in compound.base_classes %}
               {{ entry_class(class) }}
@@ -195,7 +216,8 @@
 
         {% if compound.derived_classes %}
         <section id="derived-classes">
-          <h2><a href="#derived-classes">Derived classes</a></h2>
+          {# <h2><a href="#derived-classes">Derived classes</a></h2> #}
+          <h2>Derived classes</h2>
           <dl class="m-doc">
             {% for class in compound.derived_classes %}
               {{ entry_class(class) }}
@@ -207,7 +229,8 @@
 
         {% if compound.public_types %}
         <section id="pub-types">
-          <h2><a href="#pub-types">Public types</a></h2>
+          {# <h2><a href="#pub-types">Public types</a></h2> #}
+          <h2>Public types</h2>
           <dl class="m-doc">
             {% for kind, type in compound.public_types %}
             {% if kind == 'class' %}
@@ -225,7 +248,8 @@
 
         {% if compound.public_static_vars %}
         <section id="pub-static-attribs">
-          <h2><a href="#pub-static-attribs">Public static variables</a></h2>
+          {# <h2><a href="#pub-static-attribs">Public static variables</a></h2> #}
+          <h2>Public static variables</h2>
           <dl class="m-doc">
             {% for var in compound.public_static_vars %}
               {{ entry_var(var) }}
@@ -237,7 +261,8 @@
 
         {% if compound.public_static_funcs %}
         <section id="pub-static-methods">
-          <h2><a href="#pub-static-methods">Public static functions</a></h2>
+          {# <h2><a href="#pub-static-methods">Public static functions</a></h2> #}
+          <h2>Public static functions</h2>
           <dl class="m-doc">
             {% for func in compound.public_static_funcs %}
               {{ entry_func(func) }}
@@ -249,7 +274,8 @@
 
         {% if compound.typeless_funcs %}
         <section id="typeless-methods">
-          <h2><a href="#typeless-methods">Constructors, destructors, conversion operators</a></h2>
+          {# <h2><a href="#typeless-methods">Constructors, destructors, conversion operators</a></h2> #}
+          <h2>Constructors, destructors, conversion operators</h2>
           <dl class="m-doc">
             {% for func in compound.typeless_funcs %}
               {{ entry_func(func) }}
@@ -261,7 +287,8 @@
 
         {% if compound.public_funcs %}
         <section id="pub-methods">
-          <h2><a href="#pub-methods">Public functions</a></h2>
+          {# <h2><a href="#pub-methods">Public functions</a></h2> #}
+          <h2>Public functions</h2>
           <dl class="m-doc">
             {% for func in compound.public_funcs %}
               {{ entry_func(func) }}
@@ -273,7 +300,8 @@
 
         {% if compound.signals %}
         <section id="signals">
-          <h2><a href="#signals">Signals</a></h2>
+          {# <h2><a href="#signals">Signals</a></h2> #}
+          <h2>Signals</h2>
           <dl class="m-doc">
             {% for func in compound.signals %}
               {{ entry_func(func) }}
@@ -285,7 +313,8 @@
 
         {% if compound.public_slots %}
         <section id="pub-slots">
-          <h2><a href="#pub-slots">Public slots</a></h2>
+          {# <h2><a href="#pub-slots">Public slots</a></h2> #}
+          <h2>Public slots</h2>
           <dl class="m-doc">
             {% for func in compound.public_slots %}
               {{ entry_func(func) }}
@@ -297,7 +326,8 @@
 
         {% if compound.public_vars %}
         <section id="pub-attribs">
-          <h2><a href="#pub-attribs">Public variables</a></h2>
+          {# <h2><a href="#pub-attribs">Public variables</a></h2> #}
+          <h2>Public variables</h2>
           <dl class="m-doc">
             {% for var in compound.public_vars %}
               {{ entry_var(var) }}
@@ -309,7 +339,8 @@
 
         {% if compound.protected_types %}
         <section id="pro-types">
-          <h2><a href="#pro-types">Protected types</a></h2>
+          {# <h2><a href="#pro-types">Protected types</a></h2> #}
+          <h2>Protected types</h2>
           <dl class="m-doc">
             {% for kind, type in compound.protected_types %}
             {% if kind == 'class' %}
@@ -327,7 +358,8 @@
 
         {% if compound.protected_static_funcs %}
         <section id="pro-static-methods">
-          <h2><a href="#pro-static-methods">Protected static functions</a></h2>
+          {# <h2><a href="#pro-static-methods">Protected static functions</a></h2> #}
+          <h2>Protected static functions</h2>
           <dl class="m-doc">
             {% for func in compound.protected_static_funcs %}
               {{ entry_func(func) }}
@@ -339,7 +371,8 @@
 
         {% if compound.protected_funcs %}
         <section id="pro-methods">
-          <h2><a href="#pro-methods">Protected functions</a></h2>
+          {# <h2><a href="#pro-methods">Protected functions</a></h2> #}
+          <h2>Protected functions</h2>
           <dl class="m-doc">
             {% for func in compound.protected_funcs %}
               {{ entry_func(func) }}
@@ -351,7 +384,8 @@
 
         {% if compound.protected_slots %}
         <section id="pro-slots">
-          <h2><a href="#pro-slots">Protected slots</a></h2>
+          {# <h2><a href="#pro-slots">Protected slots</a></h2> #}
+          <h2>Protected slots</h2>
           <dl class="m-doc">
             {% for func in compound.protected_slots %}
               {{ entry_func(func) }}
@@ -363,7 +397,8 @@
 
         {% if compound.protected_static_vars %}
         <section id="pro-static-attribs">
-          <h2><a href="#pro-static-attribs">Protected static variables</a></h2>
+          {# <h2><a href="#pro-static-attribs">Protected static variables</a></h2> #}
+          <h2>Protected static variables</h2>
           <dl class="m-doc">
             {% for var in compound.protected_static_vars %}
               {{ entry_var(var) }}
@@ -375,7 +410,8 @@
 
         {% if compound.protected_vars %}
         <section id="pro-attribs">
-          <h2><a href="#pro-attribs">Protected variables</a></h2>
+          {# <h2><a href="#pro-attribs">Protected variables</a></h2> #}
+          <h2>Protected variables</h2>
           <dl class="m-doc">
             {% for var in compound.protected_vars %}
               {{ entry_var(var) }}
@@ -387,7 +423,8 @@
 
         {% if compound.private_funcs %}
         <section id="pri-methods">
-          <h2><a href="#pri-methods">Private functions</a></h2>
+          {# <h2><a href="#pri-methods">Private functions</a></h2> #}
+          <h2>Private functions</h2>
           <dl class="m-doc">
             {% for func in compound.private_funcs %}
               {{ entry_func(func) }}
@@ -399,7 +436,8 @@
 
         {% if compound.private_slots %}
         <section id="pri-slots">
-          <h2><a href="#pri-slots">Private slots</a></h2>
+          {# <h2><a href="#pri-slots">Private slots</a></h2> #}
+          <h2>Private slots</h2>
           <dl class="m-doc">
             {% for func in compound.private_slots %}
               {{ entry_func(func) }}
@@ -411,7 +449,8 @@
 
         {% for group in compound.groups %}
         <section id="{{ group.id }}">
-          <h2><a href="#{{ group.id }}">{{ group.name }}</a></h2>
+          {# <h2><a href="#{{ group.id }}">{{ group.name }}</a></h2> #}
+          <h2>{{ group.name }}</h2>
           {% if group.description %}
             {{ group.description }}
           {% endif %}
@@ -434,7 +473,8 @@
 
         {% if compound.friend_funcs %}
         <section id="friends">
-          <h2><a href="#friends">Friends</a></h2>
+          {# <h2><a href="#friends">Friends</a></h2> #}
+          <h2>Friends</h2>
           <dl class="m-doc">
             {% for func in compound.friend_funcs %}
               {{ entry_func(func) }}
@@ -446,7 +486,8 @@
 
         {% if compound.related %}
         <section id="related">
-          <h2><a href="#related">Related</a></h2>
+          {# <h2><a href="#related">Related</a></h2> #}
+          <h2>Related</h2>
           <dl class="m-doc">
             {% for kind, member in compound.related %}
             {% if kind == 'typedef' %}
@@ -467,7 +508,7 @@
         {% endif %}
 
         {% if compound.has_enum_details %}
-        <section>
+        <section id="enum-details">
           <h2>Enum documentation</h2>
           {% for kind, member in compound.public_types %}
           {% if kind == 'enum' and member.has_details %}
@@ -496,7 +537,7 @@
         {% endif %}
 
         {% if compound.has_typedef_details %}
-        <section>
+        <section id="typedef-details">
           <h2>Typedef documentation</h2>
           {% for kind, member in compound.public_types %}
           {% if kind == 'typedef' and member.has_details %}
@@ -525,7 +566,7 @@
         {% endif %}
 
         {% if compound.has_func_details %}
-        <section>
+        <section id="function-details">
           <h2>Function documentation</h2>
           {% for func in compound.public_static_funcs %}
           {% if func.has_details %}
@@ -599,7 +640,7 @@
         {% endif %}
 
         {% if compound.has_var_details %}
-        <section>
+        <section id="variable-details">
           <h2>Variable documentation</h2>
           {% for var in compound.public_static_vars %}
           {% if var.has_details %}
@@ -638,7 +679,7 @@
         {% endif %}
 
         {% if compound.has_define_details %}
-        <section>
+        <section id="define-details">
           <h2>Define documentation</h2>
           {% for kind, member in compound.related %}
           {% if kind == 'define' and member.has_details %}

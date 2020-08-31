@@ -181,7 +181,7 @@ code.m-console {
 }
 pre {
   padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
   overflow-x: auto;
   margin-top: 0; /* stupid defaults */
 }
@@ -421,7 +421,7 @@ dl.m-footnote dd span.m-footnote a {
   background-color: var(--container-background-color);
 }
 .m-note {
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
   padding: 1rem;
   border-width: 2px;
   border-style: solid;
@@ -431,7 +431,7 @@ dl.m-footnote dd span.m-footnote a {
   background-color: var(--background-color);
   border-style: solid;
   border-width: 0.125rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
   border-color: var(--line-color);
   padding: 0.875rem;
 }
@@ -439,7 +439,7 @@ dl.m-footnote dd span.m-footnote a {
   border-style: solid;
   border-width: 0.0625rem;
   border-left-width: 0.25rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
   border-color: var(--line-color);
   padding: 0.9375rem 0.9375rem 0.9375rem 0.75rem;
 }
@@ -472,7 +472,7 @@ dl.m-footnote dd span.m-footnote a {
 .m-block.m-badge img {
   width: 4rem;
   height: 4rem;
-  border-radius: 2rem;
+  border-radius: var(--border-radius-buttons);
   float: left;
 }
 
@@ -482,7 +482,7 @@ div.m-button {
 }
 div.m-button a {
   display: inline-block;
-  border-radius: 2rem;
+  border-radius: var(--border-radius-buttons);
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   padding-left: 1.5rem;
@@ -505,7 +505,7 @@ div.m-button a .m-small:last-child {
 
 /* Label */
 .m-label {
-  border-radius: 2rem;
+  border-radius: var(--border-radius-buttons);
   font-size: 75%;
   font-weight: normal;
   padding: 0.125rem 0.25rem;
@@ -745,7 +745,7 @@ svg.m-image,
 div.m-image img,
 div.m-image svg {
   max-width: 100%;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
 }
 div.m-image.m-fullwidth img,
 div.m-image.m-fullwidth svg {
@@ -777,7 +777,7 @@ figure.m-figure:before {
   z-index: -1; /* so it doesn't make the contents inactive */
   border-style: solid;
   border-width: 0.125rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
   border-color: var(--line-color);
 }
 figure.m-figure.m-flat:before {
@@ -804,14 +804,14 @@ figure.m-figure svg {
   margin-left: 0;
   margin-right: 0;
   margin-bottom: 0;
-  border-top-left-radius: var(--border-radius);
-  border-top-right-radius: var(--border-radius);
+  border-top-left-radius: var(--border-radius-boxes);
+  border-top-right-radius: var(--border-radius-boxes);
   max-width: 100%;
 }
 figure.m-figure.m-flat img,
 figure.m-figure.m-flat svg {
-  border-bottom-left-radius: var(--border-radius);
-  border-bottom-right-radius: var(--border-radius);
+  border-bottom-left-radius: var(--border-radius-boxes);
+  border-bottom-right-radius: var(--border-radius-boxes);
 }
 figure.m-figure a img,
 figure.m-figure a svg {
@@ -861,7 +861,7 @@ figure.m-figure.m-fullwidth:after {
   z-index: -1; /* so it doesn't make the contents inactive */
   border-style: solid;
   border-width: 0.125rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
 }
 .m-code-figure:before {
   border-color: var(--code-background-color);
@@ -1218,7 +1218,8 @@ pre.m-code span.hll {
   vertical-align: -0.05rem;
   margin-left: 0.2rem;
   margin-right: 0.1rem;
-  border-radius: 0.1rem;
+  /* border-radius: 0.1rem; */
+  border-radius: var(--border-radius-boxes);
 }
 
 /* Math block, math figure, inline math, math inside buttons because I am

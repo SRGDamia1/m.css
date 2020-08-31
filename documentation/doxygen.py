@@ -627,7 +627,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 if state.parsing_toplevel_desc:
                     assert not out.section
                     out.section = (id, title, [])
-                    out.parsed += '<{0}><a href="#{1}">{2}</a></{0}>'.format(tag, id, title)
+                    # out.parsed += '<{0}><a href="#{1}">{2}</a></{0}>'.format(tag, id, title)
+                    out.parsed += '<{0}>{2}</{0}>'.format(tag, id, title)
 
                 # Otherwise add the ID directly to the heading
                 else:

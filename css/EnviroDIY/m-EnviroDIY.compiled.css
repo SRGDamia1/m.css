@@ -755,7 +755,7 @@ dl.m-footnote dd span.m-footnote a {
 .m-block.m-badge img {
   width: 4rem;
   height: 4rem;
-  border-radius: 2rem;
+  border-radius: 0.5rem;
   float: left;
 }
 div.m-button {
@@ -763,7 +763,7 @@ div.m-button {
 }
 div.m-button a {
   display: inline-block;
-  border-radius: 2rem;
+  border-radius: 0.5rem;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   padding-left: 1.5rem;
@@ -784,7 +784,7 @@ div.m-button a .m-small:last-child {
   font-size: 0.854rem;
 }
 .m-label {
-  border-radius: 2rem;
+  border-radius: 0.5rem;
   font-size: 75%;
   font-weight: normal;
   padding: 0.125rem 0.25rem;
@@ -1454,7 +1454,7 @@ pre.m-code span.hll {
   vertical-align: -0.05rem;
   margin-left: 0.2rem;
   margin-right: 0.1rem;
-  border-radius: 0.1rem;
+  border-radius: 0px;
 }
 div.m-math {
   overflow-x: auto;
@@ -3061,6 +3061,8 @@ article section hr {
   border-style: solid;
   border-color: #ddd;
   margin: auto;
+  padding-top: 5px;
+  padding-bottom: 10px;
 }
 article > header h1 {
   font-size: 2rem;
@@ -3810,3 +3812,220 @@ article section:last-child {
   border-color: #bdbdbd;
 }
 
+.m-code .c {
+  color: #95a5a6;
+}
+.m-code .err {
+  color: #a61717;
+}
+.m-code .k {
+  color: #728e00;
+}
+.m-code .n {
+  color: #434f54;
+}
+.m-code .o {
+  color: #728e00;
+}
+.m-code .ch {
+  color: #95a5a6;
+}
+.m-code .cm {
+  color: #95a5a6;
+}
+.m-code .cp {
+  color: #728e00;
+}
+.m-code .cpf {
+  color: #95a5a6;
+}
+.m-code .c1 {
+  color: #95a5a6;
+}
+.m-code .cs {
+  color: #95a5a6;
+}
+.m-code .kc {
+  color: #00979d;
+}
+.m-code .kd {
+  color: #728e00;
+}
+.m-code .kn {
+  color: #728e00;
+}
+.m-code .kp {
+  color: #00979d;
+}
+.m-code .kr {
+  color: #00979d;
+}
+.m-code .kt {
+  color: #00979d;
+}
+.m-code .m {
+  color: #8a7b52;
+}
+.m-code .s {
+  color: #7f8c8d;
+}
+.m-code .na {
+  color: #434f54;
+}
+.m-code .nb {
+  color: #728e00;
+}
+.m-code .nc {
+  color: #434f54;
+}
+.m-code .no {
+  color: #434f54;
+}
+.m-code .nd {
+  color: #434f54;
+}
+.m-code .ni {
+  color: #434f54;
+}
+.m-code .ne {
+  color: #434f54;
+}
+.m-code .nf {
+  color: #d35400;
+}
+.m-code .nl {
+  color: #434f54;
+}
+.m-code .nn {
+  color: #434f54;
+}
+.m-code .nx {
+  color: #728e00;
+}
+.m-code .py {
+  color: #434f54;
+}
+.m-code .nt {
+  color: #434f54;
+}
+.m-code .nv {
+  color: #434f54;
+}
+.m-code .ow {
+  color: #728e00;
+}
+.m-code .mb {
+  color: #8a7b52;
+}
+.m-code .mf {
+  color: #8a7b52;
+}
+.m-code .mh {
+  color: #8a7b52;
+}
+.m-code .mi {
+  color: #8a7b52;
+}
+.m-code .mo {
+  color: #8a7b52;
+}
+.m-code .sa {
+  color: #7f8c8d;
+}
+.m-code .sb {
+  color: #7f8c8d;
+}
+.m-code .sc {
+  color: #7f8c8d;
+}
+.m-code .dl {
+  color: #7f8c8d;
+}
+.m-code .sd {
+  color: #7f8c8d;
+}
+.m-code .s2 {
+  color: #7f8c8d;
+}
+.m-code .se {
+  color: #7f8c8d;
+}
+.m-code .sh {
+  color: #7f8c8d;
+}
+.m-code .si {
+  color: #7f8c8d;
+}
+.m-code .sx {
+  color: #7f8c8d;
+}
+.m-code .sr {
+  color: #7f8c8d;
+}
+.m-code .s1 {
+  color: #7f8c8d;
+}
+.m-code .ss {
+  color: #7f8c8d;
+}
+.m-code .bp {
+  color: #728e00;
+}
+.m-code .fm {
+  color: #d35400;
+}
+.m-code .vc {
+  color: #434f54;
+}
+.m-code .vg {
+  color: #434f54;
+}
+.m-code .vi {
+  color: #434f54;
+}
+.m-code .vm {
+  color: #434f54;
+}
+.m-code .il {
+  color: #8a7b52;
+}
+
+.m-console .hll { background-color: #ffffcc }
+.m-console .g-AnsiBackgroundBlack { background-color: #232627 }
+.m-console .g-AnsiBackgroundBlue { background-color: #1d99f3 }
+.m-console .g-AnsiBackgroundBrightBlack { background-color: #7f8c8d }
+.m-console .g-AnsiBackgroundBrightBlue { background-color: #3daee9 }
+.m-console .g-AnsiBackgroundBrightCyan { background-color: #16a085 }
+.m-console .g-AnsiBackgroundBrightGreen { background-color: #1cdc9a }
+.m-console .g-AnsiBackgroundBrightMagenta { background-color: #8e44ad }
+.m-console .g-AnsiBackgroundBrightRed { background-color: #c0392b }
+.m-console .g-AnsiBackgroundBrightWhite { background-color: #ffffff }
+.m-console .g-AnsiBackgroundBrightYellow { background-color: #fdbc4b }
+.m-console .g-AnsiBackgroundCyan { background-color: #1abc9c }
+.m-console .g-AnsiBackgroundDefault { background-color: #fcfcfc }
+.m-console .g-AnsiBackgroundGreen { background-color: #11d116 }
+.m-console .g-AnsiBackgroundMagenta { background-color: #9b59b6 }
+.m-console .g-AnsiBackgroundRed { background-color: #ed1515 }
+.m-console .g-AnsiBackgroundWhite { background-color: #fcfcfc }
+.m-console .g-AnsiBackgroundYellow { background-color: #f67400 }
+.m-console .g-AnsiBlack { color: #232627 }
+.m-console .g-AnsiBlue { color: #1d99f3 }
+.m-console .g-AnsiBrightBlack { color: #7f8c8d; font-weight: bold }
+.m-console .g-AnsiBrightBlue { color: #3daee9; font-weight: bold }
+.m-console .g-AnsiBrightCyan { color: #16a085; font-weight: bold }
+.m-console .g-AnsiBrightDefault { color: #ffffff; font-weight: bold }
+.m-console .g-AnsiBrightGreen { color: #1cdc9a; font-weight: bold }
+.m-console .g-AnsiBrightMagenta { color: #8e44ad; font-weight: bold }
+.m-console .g-AnsiBrightRed { color: #c0392b; font-weight: bold }
+.m-console .g-AnsiBrightWhite { color: #ffffff; font-weight: bold }
+.m-console .g-AnsiBrightYellow { color: #fdbc4b; font-weight: bold }
+.m-console .g-AnsiCyan { color: #1abc9c }
+.m-console .g-AnsiDefault { color: #fcfcfc }
+.m-console .g-AnsiGreen { color: #11d116 }
+.m-console .g-AnsiMagenta { color: #9b59b6 }
+.m-console .g-AnsiRed { color: #ed1515 }
+.m-console .g-AnsiWhite { color: #fcfcfc }
+.m-console .g-AnsiYellow { color: #f67400 }
+.m-console .go { color: #fcfcfc }
+.m-console .gp { color: #16a085; font-weight: bold }
+.m-console .w { color: #fcfcfc }

@@ -177,7 +177,7 @@ article section.m-doc-details > div::before {
   z-index: -1; /* so it doesn't make the contents inactive */
   border-style: solid;
   border-width: 0.125rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
   border-color: var(--code-background-color);
 }
 article section.m-doc-details > div > h3:first-child {
@@ -185,8 +185,8 @@ article section.m-doc-details > div > h3:first-child {
   margin: -1rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
   background-color: var(--code-background-color);
-  border-top-left-radius: var(--border-radius);
-  border-top-right-radius: var(--border-radius);
+  border-top-left-radius: var(--border-radius-boxes);
+  border-top-right-radius: var(--border-radius-boxes);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
@@ -260,7 +260,7 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
 }
 .m-doc-search-content {
   background-color: var(--search-background-color);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
   padding: 1rem;
 }
 .m-doc-search input {
@@ -270,7 +270,7 @@ a.m-doc-search-icon:focus svg, a.m-doc-search-icon:hover svg, a.m-doc-search-ico
   border-width: 0;
   color: var(--color);
   background-color: var(--default-filled-background-color);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-boxes);
   margin-bottom: 1rem;
   padding: 0 1rem; /* putting it on all sides cuts text off in FF */
 }
