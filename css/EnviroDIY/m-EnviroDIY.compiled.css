@@ -1900,7 +1900,7 @@ div.m-button.m-default a:active {
 div.m-button.m-default a,
 .m-label:not(.m-flat).m-default {
   background-color: #000000;
-  color: #000000;
+  color: #ffffff;
 }
 div.m-button.m-primary a,
 .m-label:not(.m-flat).m-primary {
@@ -1992,7 +1992,7 @@ table.m-table tr.m-default strong,
 table.m-table strong.m-default,
 table.m-table tr.m-default em,
 table.m-table em.m-default {
-  color: #000000;
+  color: #ffffff;
 }
 .m-note.m-default a:hover,
 table.m-table tr.m-default td a:hover,

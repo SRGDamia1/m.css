@@ -29,6 +29,7 @@
 
   <nav id="gp-mobile-nav">
     <div id="gp-mobile-nav-close-button"></div>
+    {% if LINKS_NAVBAR1 %}
     <ul class="menu">
       {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
         {% if not sub %}
@@ -57,6 +58,7 @@
         {% endif %}
       {% endfor %}
     </ul>
+    {% endif %}
   </nav> {#- gp-mobile-nav -#}
   <div id="gp-mobile-nav-bg"></div>
 
@@ -94,7 +96,7 @@
 
         <nav id="gp-main-nav" class="gp-nav">
           <nav id="gp-primary-main-nav">
-            {% if LINKS_NAVBAR1 %}
+            {% if LINKS_NAVBAR1 or not SEARCH_DISABLED %}
               <ul id="menu-main-menu-1" class="menu">
               {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
                 {% if not sub %}
@@ -127,13 +129,28 @@
           </nav>
 
           {% if not SEARCH_DISABLED %}
-          <li class="m-show-m">
-            <a href="#search" class="gp-search-button" title="Search" onclick="return showSearch()">
+          <div id="gp-search">
+            <div id="m-search-button" class="m-show-m" onclick="return showSearch()">
+            </div>
+					</div>
+
+          {# <div id="gp-search">
+            <div id="gp-search-button"></div>
+            <div id="gp-search-box">
+              <form method="get" class="searchform" action="https://www.envirodiy.org/">
+	              <input type="text" name="s" class="gp-search-bar" placeholder="search" />
+                <button type="submit" class="gp-search-submit"></button>
+              </form>
+            </div>
+					</div> #}
+
+          {# <li class="m-show-m">
+            <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()">
               <svg style="height: 0.9rem;" viewBox="0 0 16 16">
                 <use href="#m-doc-search-icon-path" />
               </svg>
             </a>
-          </li>
+          </li> #}
           {% endif %}
 
           <nav id="gp-secondary-main-nav"></nav>
@@ -148,20 +165,20 @@
 
         <nav id="gp-top-nav" class="gp-nav">
           <div id="gp-left-top-nav">
+          {% if PROJECT_BRIEF %}
+            <p style="color:#fff">{{ PROJECT_BRIEF }}</p>
+          {% else %}
             <ul id="menu-secondary-menu" class="menu">
               <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page">
-                {% if PROJECT_BRIEF %}
-                  {{ PROJECT_BRIEF }}
-                {% else %}
                   <a
                     title="Learn more"
                     href="https://www.envirodiy.org/about/"
                     class="menu-link main-menu-link"
                     >An Initiative of Stroud Water Research Center</a
                   >
-                {% endif %}
               </li>
             </ul>
+          {% endif %}
           </div>
 
           {% if PROJECT_REPOSITORY %}
@@ -172,7 +189,7 @@
               >
                 <a
                   title="See it on GitHub"
-                  href={{ PROJECT_REPOSITORY }}
+                  href="{{ PROJECT_REPOSITORY }}"
                   class="menu-link main-menu-link"
                   >See the source code on GitHub</a
                 >
@@ -186,38 +203,13 @@
     </header> {#- gp-small-header -#}
 
     <div id="gp-fixed-header-padding"></div>
-    {# <div id="gp-header-area"></div> #}
-    <div class="gp-clear"></div>
-
-    <div id="gp-content-wrapper" class="gp-container">
-      <div id="gp-inner-container">
-        {# <div id="gp-left-column"> #}
-          <div id="gp-content">
-
-            <main>
-              <article>
-                <div class="m-container m-container-inflatable">
-                  <div class="m-row">
-                    <div class="m-col-l-10 m-push-l-1">
-              {% block main %}
-              {% endblock %}
-                    </div>
-                  </div>
-                </div>
-              </article>
-            </main>
-
-          </div> {#- gp-content -#}
-        {# </div> - gp-left-column - #}
-      </div> {#- gp-inner-container -#}
-    </div> {#- gp-content-wrapper -#}
 
     {% if not SEARCH_DISABLED %}
     <div class="m-doc-search" id="search">
       <a href="#!" onclick="return hideSearch()"></a>
-      <div class="m-container">
-        <div class="m-row">
-          <div class="m-col-m-8 m-push-m-2">
+      <div id="gp-header-area">
+        <div class="gp-container">
+          <div style="background-color:#fff;padding:20px;">
             <div class="m-doc-search-header m-text m-small">
               <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
               <div id="search-symbolcount">&hellip;</div>
@@ -247,7 +239,31 @@
     {% endif %}
     {% endif %}
 
+    <div class="gp-clear"></div>
 
+    <div id="gp-content-wrapper" class="gp-container">
+      <div id="gp-inner-container">
+        {# <div id="gp-left-column"> #}
+          <div id="gp-content">
+
+            <main>
+              <article>
+                <div class="m-container m-container-inflatable">
+                  <div class="m-row">
+                    <div class="m-col-l-10 m-push-l-1">
+                    {% block main %}
+                    {% endblock %}
+
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </main>
+
+          </div> {#- gp-content -#}
+        {# </div> - gp-left-column - #}
+      </div> {#- gp-inner-container -#}
+    </div> {#- gp-content-wrapper -#}
 
     <footer id="gp-footer">
       <div id="gp-copyright">

@@ -108,8 +108,10 @@
   --cover-image-background-color: #666666;
 
   /* Search (used only by m-documentation.css) */
-  --search-overlay-color: var(--header-background-color-landing);
-  --search-background-color: var(--header-background-color);
+  /* --search-overlay-color: var(--header-background-color-landing); */
+  --search-overlay-color: var(--background-color);
+  /* --search-background-color: var(--header-background-color); */
+  --search-background-color: var(--container-background-color);
 
   /* Article */
   --article-header-color: #7a7a7a;
@@ -136,7 +138,7 @@
   /* Colored components */
   --default-color: #000000;
   --default-link-active-color: #26a9e0;
-  --default-filled-color: #000000;
+  --default-filled-color: #ffffff;
   --default-filled-background-color: transparent;
   --default-filled-link-color: #26a9e0;
   --default-filled-link-active-color: #26a9e0;
