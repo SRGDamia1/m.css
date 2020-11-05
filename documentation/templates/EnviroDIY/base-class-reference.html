@@ -45,35 +45,21 @@
             {% if compound.include %}
             <div class="m-doc-include m-code m-inverted m-right-m m-text-right"><span class="cp">#include</span> <a class="cpf" href="{{ compound.include[1] }}">{{ compound.include[0] }}</a></div>
             {% endif %}
-
             {% set j = joiner(', ') %}
-            <div class="m-doc-template">template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-type">{{ t.type }}</span> {% if t.name %} {{ t.name }}{% endif %}{% if t.default %} = {{ t.default }}{% endif%}{% endfor %}&gt;</div>
+            <div class="m-doc-template">template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-dim">{{ t.type }}</span> {% if t.name %} <span class="m-param">{{ t.name }}</span>{% endif %}{% if t.default %}<span class="m-dim"> = {{ t.default }}</span>{% endif%}{% endfor %}&gt;</div>
             {% endif %}
-
             {{ compound.breadcrumb[-1][0] }}
-
-            <span class="m-thin">
-              {{ compound.kind }}
-            </span>
-            {% if compound.is_final %}
-            <span class="m-label m-flat m-warning">final</span>
-            {% endif %}
-            {% if compound.since %}
-            {{ compound.since }}
-            {% endif %}
+            <span class="m-thin">{{ compound.kind }}</span>{% if compound.is_final %}<span class="m-label m-flat m-warning">final</span>{% endif %}{% if compound.since %}{{ compound.since }}            {% endif %}
             {# need an explicit space here otherwise the newline gets removed #}
 
             {% if compound.include and compound.templates == None %}
             <div class="m-doc-include m-code m-inverted m-text-right"><span class="cp">#include</span> <a class="cpf" href="{{ compound.include[1] }}">{{ compound.include[0] }}</a></div>
             {% endif %}
-
           </h1>
         </header>
-
         {% if compound.brief %}
         <p>{{ compound.brief }}</p>
         {% endif %}
-
         {% if compound.has_template_details %}
         <table class="m-table m-fullwidth m-flat">
           <thead>
@@ -89,6 +75,7 @@
           </tbody>
         </table>
         {% endif %}
+        {# table of contents #}
         {% if compound.sections or compound.public_types or compound.public_static_funcs or compound.typeless_funcs or compound.public_funcs or compound.signals or compound.public_slots or compound.public_static_vars or compound.public_vars or compound.protected_types or compound.protected_static_funcs or compound.protected_funcs or compound.protected_signals or compound.protected_static_vars or compound.protected_vars or compound.private_funcs or compound.private_slots or compound.groups or compound.friend_funcs or compound.related %}
         <div class="m-block m-default">
           {# <h3>Contents</h3> #}
@@ -98,7 +85,7 @@
             <li>
               <a href="#{{ id }}">{{ name }}</a>
               <ul>
-{{ loop(children)|rtrim|indent(4, true) }}
+              {{ loop(children)|rtrim|indent(4, true) }}
               </ul>
             </li>
             {% else %}
@@ -196,9 +183,9 @@
           </ul>
         </div>
         {% endif %}
-
+        {# end table of contents #}
         {% if compound.description %}
-        {{ compound.description }}
+          {{ compound.description }}
         {% endif %}
 
         {% if compound.base_classes %}

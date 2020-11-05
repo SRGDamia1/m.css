@@ -3,10 +3,10 @@
               {% if compound.templates != None %}
               <div class="m-doc-template">
                 {% set j = joiner(', ') %}
-                template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-type">{{ t.type }}</span>  {% if t.name %}{{ t.name }}{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
+                template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-dim">{{ t.type }}</span>  {% if t.name %}<span class="m-param">{{ t.name }}</span>{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
               </div>
               {% endif %}
-              enum {% if enum.is_strong %}class {% endif %}{{ prefix }}<a href="#{{ enum.id }}" class="m-doc-self">{{ enum.name }}</a>{% if enum.type %}: <span class="m-type">{{ enum.type }}</span>{% endif %}{% if enum.is_protected %} <span class="m-label m-warning">protected</span>{% endif %}{% if enum.since %} {{ enum.since }}{% endif %}
+              enum {% if enum.is_strong %}class {% endif %}{{ prefix }}<a href="#{{ enum.id }}" class="m-doc-self">{{ enum.name }}</a>{% if enum.type %}: <span class="m-dim">{{ enum.type }}</span>{% endif %}{% if enum.is_protected %} <span class="m-label m-warning">protected</span>{% endif %}{% if enum.since %} {{ enum.since }}{% endif %}
               {# not sure why there needs to be this space #}
 
               {% if enum.include %}

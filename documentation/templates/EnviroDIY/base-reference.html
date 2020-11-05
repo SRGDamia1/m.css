@@ -7,14 +7,14 @@
 {% macro entry_file(file) %}{% include 'entry-file.html' %}{% endmacro %}
 {% macro entry_namespace(namespace) %}{% include 'entry-namespace.html' %}{% endmacro %}
 {% macro entry_class(class) %}{% include 'entry-class.html' %}{% endmacro %}
-{% macro entry_enum(enum) %}{% include 'entry-enum.html' %}{% endmacro %}
 {% macro entry_typedef(typedef) %}{% include 'entry-typedef.html' %}{% endmacro %}
+{% macro entry_enum(enum) %}{% include 'entry-enum.html' %}{% endmacro %}
 {% macro entry_func(func) %}{% include 'entry-func.html' %}{% endmacro %}
 {% macro entry_var(var) %}{% include 'entry-var.html' %}{% endmacro %}
 {% macro entry_define(define) %}{% include 'entry-define.html' %}{% endmacro %}
 
-{% macro details_enum(enum) %}{% include 'details-enum.html' %}{% endmacro %}
 {% macro details_typedef(typedef) %}{% include 'details-typedef.html' %}{% endmacro %}
+{% macro details_enum(enum) %}{% include 'details-enum.html' %}{% endmacro %}
 {% macro details_func(func) %}{% include 'details-func.html' %}{% endmacro %}
 {% macro details_var(var) %}{% include 'details-var.html' %}{% endmacro %}
 {% macro details_define(define) %}{% include 'details-define.html' %}{% endmacro %}
@@ -25,6 +25,7 @@
         {% if compound.brief %}
         <p>{{ compound.brief }}</p>
         {% endif %}
+        {# table of contents #}
         {% if compound.sections or compound.modules or compound.dirs or compound.files or compound.namespaces or compound.classes or compound.typedefs or compound.funcs or compound.vars or compound.defines or compound.groups %}
         <div class="m-block m-default">
           {# <h3>Contents</h3> #}
@@ -104,9 +105,10 @@
           </ul>
         </div>
         {% endif %}
-{% if compound.description %}
-{{ compound.description }}
-{% endif %}
+        {# end table of contents #}
+        {% if compound.description %}
+          {{ compound.description }}
+        {% endif %}
         {% if compound.modules %}
         <section id="groups">
           {# <h2><a href="#groups">Modules</a></h2> #}
@@ -251,13 +253,13 @@
           <h2>Enum documentation</h2>
           {% for enum in compound.enums %}
           {% if enum.has_details %}
-{{ details_enum(enum) }}
+            {{ details_enum(enum) }}
           {% endif %}
           {% endfor %}
           {% for group in compound.groups %}
           {% for kind, member in group.members %}
           {% if kind == 'enum' and member.has_details %}
-{{ details_enum(member) }}
+            {{ details_enum(member) }}
           {% endif %}
           {% endfor %}
           {% endfor %}

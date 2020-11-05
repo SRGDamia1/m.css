@@ -7,15 +7,15 @@
               <div class="m-doc-template">
                 {% if compound.templates != None %}
                 {% set j = joiner(', ') %}
-                template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-type">{{ t.type }}</span>  {% if t.name %}{{ t.name }}{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
+                template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-dim">{{ t.type }}</span>  {% if t.name %}<span class="m-param">{{ t.name }}</span>{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
                 {% endif %}
                 {% if var.templates != None %}
                 {% set j = joiner(', ') %}
-                template&lt;{% for t in var.templates %}{{ j() }}<span class="m-type">{{ t.type }}</span> {% if t.name %} {{ t.name }}{% endif %}{% if t.default %} = {{ t.default }}{% endif %}{% endfor %}&gt;
+                template&lt;{% for t in var.templates %}{{ j() }}<span class="m-dim">{{ t.type }}</span> {% if t.name %} <span class="m-param">{{ t.name }}</span>{% endif %}{% if t.default %} = {{ t.default }}{% endif %}{% endfor %}&gt;
                 {% endif %}
               </div>
               {% endif %}
-              {%+ if var.is_static %}static {% endif %}<span class="m-type">{{ var.type }}</span> {{ prefix }}<a href="#{{ var.id }}" class="m-doc-self">{{ var.name }}</a>{% if var.is_protected %} <span class="m-label m-warning">protected</span>{% endif %}{% if var.is_constexpr %} <span class="m-label m-primary">constexpr</span>{% endif %}{% if var.since %} {{ var.since }}{% endif %}
+              {%+ if var.is_static %}static {% endif %}<span class="m-dim">{{ var.type }}</span> {{ prefix }}<a href="#{{ var.id }}" class="m-doc-self">{{ var.name }}</a>{% if var.is_protected %} <span class="m-label m-warning">protected</span>{% endif %}{% if var.is_constexpr %} <span class="m-label m-primary">constexpr</span>{% endif %}{% if var.since %} {{ var.since }}{% endif %}
               {# the empty line needs to be here to prevent the lines from merging #}
 
               {% if var.include and compound.templates == None and var.templates == None %}

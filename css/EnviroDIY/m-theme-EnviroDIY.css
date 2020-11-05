@@ -188,10 +188,10 @@
   --dim-filled-link-active-color: #949494;
   --dim-button-active-color: #c0c0c0;
 
-  --type-color: #9ad36a;
-  --type-link-active-color: #9ad36a;
-  --type-filled-color: #3c763d;
-  --type-filled-background-color: transparent;
-  --type-filled-link-color: #9ad36a;
-  --type-filled-link-active-color: #9ad36a;
+  --param-color: #9ad36a;
+  --param-link-active-color: #9ad36a;
+  --param-filled-color: #3c763d;
+  --param-filled-background-color: transparent;
+  --param-filled-link-color: #9ad36a;
+  --param-filled-link-active-color: #9ad36a;
 }

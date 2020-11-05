@@ -33,11 +33,11 @@
     <ul class="menu">
       {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
         {% if not sub %}
-          <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page">
+          <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-post_type menu-item-object-page">
           {% if html %}{{ html }}{% else %}<a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>{% endif %}
           </li>
         {% else %}
-        <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+        <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-custom menu-item-object-custom menu-item-has-children">
           {% if html %}
             {{ html }}
           {% else %}
@@ -45,7 +45,7 @@
           {% endif %}
           <ul class="sub-menu menu-odd menu-depth-1">
             {% for html, title, link, id in sub %}
-              <li class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-type-post_type menu-item-object-page">
+              <li class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-param-post_type menu-item-object-page">
               {% if html %}
                 {{ html }}
               {% else %}
@@ -100,11 +100,11 @@
               <ul id="menu-main-menu-1" class="menu">
               {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
                 {% if not sub %}
-                  <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page">
+                  <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-post_type menu-item-object-page">
                   {% if html %}{{ html }}{% else %}<a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>{% endif %}
                   </li>
                 {% else %}
-                <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-custom menu-item-object-custom menu-item-has-children">
                   {% if html %}
                     {{ html }}
                   {% else %}
@@ -112,7 +112,7 @@
                   {% endif %}
                   <ul class="sub-menu menu-odd menu-depth-1">
                     {% for html, title, link, id in sub %}
-                      <li class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-type-post_type menu-item-object-page">
+                      <li class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-param-post_type menu-item-object-page">
                       {% if html %}
                         {{ html }}
                       {% else %}
@@ -169,7 +169,7 @@
             <p style="color:#fff">{{ PROJECT_BRIEF }}</p>
           {% else %}
             <ul id="menu-secondary-menu" class="menu">
-              <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page">
+              <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-post_type menu-item-object-page">
                   <a
                     title="Learn more"
                     href="https://www.envirodiy.org/about/"
@@ -185,7 +185,7 @@
           <div id="gp-right-top-nav">
             <ul id="menu-icon-links" class="menu">
               <li
-                class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 fa fa-github menu-item menu-item-type-custom menu-item-object-custom"
+                class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 fa fa-github menu-item menu-item-param-custom menu-item-object-custom"
               >
                 <a
                   title="See it on GitHub"
