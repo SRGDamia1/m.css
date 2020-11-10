@@ -758,7 +758,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
             out.parsed += '<table {}>'.format(
-                'class="m-table ' + add_css_class  + '' if add_css_class else '')
+                'class="m-table ' + add_css_class  + '' if add_css_class else 'class="m-table m-fullwidth m-flat"')
             # out.parsed += '<table class="m-table{}">'.format(
             #     ' ' + add_css_class if add_css_class else '')
             thead_written = False
@@ -1304,7 +1304,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             if id[:2] == '_1':
                 id = id[2:]
             else:
-                assert id.startswith(state.current_definition_url_base)
+                assert id.startswith(state.current_definition_url_base), "ID `%s` does not start with `%s`" % (id, state.current_definition_url_base)
                 id = id[len(state.current_definition_url_base)+2:]
             out.parsed += '<a name="{}"></a>'.format(id)
 
@@ -2110,6 +2110,7 @@ def parse_define(state: State, element: ET.Element):
     define = Empty()
     state.current_definition_url_base, define.base_url, define.id, define.include, define.has_details = parse_id_and_include(state, element)
     define.name = element.find('name').text
+    define.initializer = element.find('initializer').text if element.find('initializer') is not None else None
     define.brief = parse_desc(state, element.find('briefdescription'))
     define.description, params, define.return_value, search_keywords, define.deprecated, define.since = parse_define_desc(state, element)
     define.has_param_details = False
@@ -2266,6 +2267,8 @@ def extract_metadata(state: State, xml):
             compound.children += [i.attrib['refid']]
         for i in compounddef.findall('innernamespace'):
             compound.children += [i.attrib['refid']]
+        for i in compounddef.findall('derivedcompoundref'):
+            compound.children += [i.attrib['refid']]
     elif compounddef.attrib['kind'] in ['dir', 'file']:
         for i in compounddef.findall('innerdir'):
             compound.children += [i.attrib['refid']]
@@ -2296,8 +2299,11 @@ def postprocess_state(state: State):
         # Strip parent namespace/class from symbol name
         if compound.kind in ['namespace', 'struct', 'class', 'union']:
             prefix = state.compounds[compound.parent].name + '::'
-            assert compound.name.startswith(prefix)
-            compound.leaf_name = compound.name[len(prefix):]
+            # assert compound.name.startswith(prefix), "Compound name `%s` does not start with `%s`" % (compound.name, prefix)
+            if compound.name.startswith(prefix):
+                compound.leaf_name = compound.name[len(prefix):]
+            else:
+                compound.leaf_name = compound.name
 
         # Strip parent dir from dir name
         elif compound.kind == 'dir':
@@ -3283,6 +3289,7 @@ def parse_index_xml(state: State, xml):
             entry.is_inline = compound.is_inline
         if compound.kind in ['class', 'struct', 'union']:
             entry.is_final = compound.is_final
+        # print("name:",compound.name, "\tkind:", compound.kind, "\tparents:", compound.parent)
 
         # If a top-level thing, put it directly into the list
         if not compound.parent:
@@ -3304,7 +3311,7 @@ def parse_index_xml(state: State, xml):
 
         # Otherwise put it into orphan map
         else:
-            if compound.kind in ['namespace', 'group', 'dir']:
+            if compound.kind in ['namespace', 'group', 'dir', 'class']:
                 if not compound.parent in orphans_nestable:
                     orphans_nestable[compound.parent] = []
                 orphans_nestable[compound.parent] += [entry]
@@ -3313,7 +3320,7 @@ def parse_index_xml(state: State, xml):
                     orphan_pages[compound.parent] = {}
                 orphan_pages[compound.parent][entry.id] = entry
             else:
-                assert compound.kind in ['class', 'struct', 'union', 'file']
+                assert compound.kind in ['struct', 'union', 'file']
                 if not compound.parent in orphans:
                     orphans[compound.parent] = []
                 orphans[compound.parent] += [entry]
@@ -3692,6 +3699,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     postprocess_state(state)
 
     for file in xml_files:
+        print(file)
         if os.path.basename(file) == 'index.xml':
             parsed = parse_index_xml(state, file)
 
