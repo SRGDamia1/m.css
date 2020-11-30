@@ -29,7 +29,8 @@
   /* prettier-ignore */
   --code-font: 'Monaco', monospace;
   --font-size: 14px;
-  --code-font-size: 1em; /* *not* rem, so it follows surrounding font size */
+  --code-font-size: 0.95em; /* *not* rem, so it follows surrounding font size */
+  --table-font-size: 0.9em; /* *not* rem, so it follows surrounding font size */
   --line-height: normal;
   --paragraph-indent: 1.5rem;
   --paragraph-align: justify;
@@ -138,8 +139,8 @@
   /* Colored components */
   --default-color: #000000;
   --default-link-active-color: #26a9e0;
-  --default-filled-color: #ffffff;
-  --default-filled-background-color: transparent;
+  --default-filled-color: #353535;
+  --default-filled-background-color:  transparent;
   --default-filled-link-color: #26a9e0;
   --default-filled-link-active-color: #26a9e0;
 
@@ -179,13 +180,13 @@
   --info-filled-link-color: #67cce0;
   --info-filled-link-active-color: #67cce0;
 
-  --dim-color: #bdbdbd;
-  --dim-link-color: #c0c0c0;
+  --dim-color: #666;
+  --dim-link-color: #949494;
   --dim-link-active-color: #949494;
   --dim-filled-color: #7c7c7c;
   --dim-filled-background-color: transparent;
   --dim-filled-link-color: #c0c0c0;
-  --dim-filled-link-active-color: #949494;
+  --dim-filled-link-active-color: #c0c0c0;
   --dim-button-active-color: #c0c0c0;
 
   --param-color: #9ad36a;

@@ -3725,8 +3725,13 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         else:
             parsed = parse_xml(state, file)
             if not parsed: continue
-
-            template = env.get_template('{}.html'.format(parsed.compound.kind))
+            # print(parsed.compound.kind, parsed.compound.name,parsed.compound.id)
+            if parsed.compound.kind == 'group' and parsed.compound.id.startswith('group__sensor__'):
+                template = env.get_template('sensor.html')
+            elif parsed.compound.kind == 'group' and parsed.compound.id.startswith('group__modem__'):
+                template = env.get_template('modem.html')
+            else:
+                template = env.get_template('{}.html'.format(parsed.compound.kind))
             rendered = template.render(compound=parsed.compound,
                 DOXYGEN_VERSION=parsed.version,
                 FILENAME=parsed.compound.url,

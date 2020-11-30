@@ -88,19 +88,6 @@ dl.m-doc dd {
   margin-left: 0;
   padding-left: 2.5rem;
 }
-dl.m-doc dt:target,
-dl.m-doc dt:target + dd {
-  margin-left: -1rem;
-  border-left-style: solid;
-  border-left-width: 0.25rem;
-  border-color: #000000;
-}
-dl.m-doc dt:target {
-  padding-left: 0.75rem;
-}
-dl.m-doc dt:target + dd {
-  padding-left: 3.25rem;
-}
 ul.m-doc {
   list-style: none;
   margin-left: 1.0375rem;
@@ -154,16 +141,16 @@ h3 .m-doc-include {
 .m-doc-template,
 dl.m-doc dd,
 ul.m-doc li > span.m-doc {
-  color: #bdbdbd;
+  color: #666;
 }
 dl.m-doc dd svg.m-math,
 ul.m-doc li > span.m-doc svg.m-math {
-  fill: #bdbdbd;
+  fill: #666;
 }
 .m-doc-template a,
 dl.m-doc dd a,
 ul.m-doc li > span.m-doc a {
-  color: #c0c0c0;
+  color: #949494;
 }
 .m-doc-template a:hover,
 .m-doc-template a:focus,
@@ -209,11 +196,14 @@ article section.m-doc-details > div > h3:first-child {
   position: relative;
   margin: -1rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
-  background-color: #f7f7f7;
+  background-color: #ffffff;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  border-style: solid;
+  border-width: 2px;
+  border-color: rgba(91, 91, 91, 0.33);
 }
 article section.m-doc-details:target {
   border-color: transparent;
@@ -228,23 +218,6 @@ article section.m-doc-details:target > div {
   > div {
   margin-left: -1rem;
   margin-right: -1rem;
-}
-.m-container-inflatable section.m-doc-details:target > div > h3:first-child,
-.m-container-inflatable
-  section.m-doc-details:target
-  section
-  > div
-  > h3:first-child {
-  margin-left: -1rem;
-  border-left-style: solid;
-  border-left-color: #000000;
-  border-left-width: 0.25rem;
-  padding-left: 0.75rem;
-}
-.m-container-inflatable section.m-doc-details:target > div::before,
-.m-container-inflatable section-dox-details:target section > div.m::before {
-  border-left-width: 0.25rem;
-  border-left-color: #000000;
 }
 #m-search-button {
   color:#fff;

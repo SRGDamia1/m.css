@@ -13,7 +13,7 @@
 {% macro details_var(var, prefix) %}{% include 'details-var.html' %}{% endmacro %}
 {% macro details_define(define) %}{% include 'details-define.html' %}{% endmacro %}
 
-{% block title %}{% set j = joiner('::') %}{% for name, _ in compound.breadcrumb %}{{ j() }}{{ name }}{% endfor %} {{ compound.kind }} | {{ super() }}{% endblock %}
+{% block title %}{% set j = joiner(' &raquo; ') %}{% for name, _ in compound.breadcrumb %}{{ j() }}{{ name }}{% endfor %} {{ compound.kind }} | {{ super() }}{% endblock %}
 
 {% block main %}
         <span class="m-breadcrumb">

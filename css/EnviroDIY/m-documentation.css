@@ -89,7 +89,7 @@ dl.m-doc dd {
   margin-left: 0;
   padding-left: 2.5rem;
 }
-dl.m-doc dt:target,
+/* dl.m-doc dt:target,
 dl.m-doc dt:target + dd {
   margin-left: -1rem;
   border-left-style: solid;
@@ -101,7 +101,7 @@ dl.m-doc dt:target {
 }
 dl.m-doc dt:target + dd {
   padding-left: 3.25rem;
-}
+} */
 
 ul.m-doc {
   list-style: none;
@@ -216,11 +216,15 @@ article section.m-doc-details > div > h3:first-child {
   position: relative; /* so it's above the border */
   margin: -1rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
-  background-color: var(--code-background-color);
+  /* background-color: var(--code-background-color); */
+  background-color: var(--container-background-color);
   border-top-left-radius: var(--border-radius-boxes);
   border-top-right-radius: var(--border-radius-boxes);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  border-style: solid;
+  border-width: 2px;
+  border-color: var(--code-inverted-color);
 }
 article section.m-doc-details:target {
   border-color: transparent; /* to preserve rounded corners */
@@ -238,7 +242,7 @@ article section.m-doc-details:target > div {
   margin-right: -1rem;
 }
 
-.m-container-inflatable section.m-doc-details:target > div > h3:first-child,
+/* .m-container-inflatable section.m-doc-details:target > div > h3:first-child
 .m-container-inflatable
   section.m-doc-details:target
   section
@@ -254,7 +258,7 @@ article section.m-doc-details:target > div {
 .m-container-inflatable section-dox-details:target section > div.m::before {
   border-left-width: 0.25rem;
   border-left-color: var(--article-heading-color);
-}
+} */
 
 #m-search-button {
   color:#fff;
