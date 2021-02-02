@@ -4,3 +4,4 @@ coverage/
 .coverage
 *.kdev4
 .history
+.vscode
