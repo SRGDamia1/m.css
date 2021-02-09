@@ -160,7 +160,17 @@ class StateCompound:
         self.deprecated: str
         self.is_final: bool = None
         self.children: List[str]
+        self.childrenClasses: List[str]
+        self.childrenNamespaces: List[str]
+        self.childrenCompoundRefs: List[str]
         self.parent: str = None
+        self.parentGroup: str = None
+
+    def __str__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)
+
+    def __repr__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)
 
 class State:
     def __init__(self, config):
@@ -186,6 +196,12 @@ class State:
         self.current_compound_url = None
         self.current_definition_url_base = None
         self.parsing_toplevel_desc = False
+
+    def __str__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)
+
+    def __repr__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)
 
 def slugify(text: str) -> str:
     # Maybe some Unicode normalization would be nice here?
@@ -2222,6 +2238,9 @@ def extract_metadata(state: State, xml):
     # having something unless they're stupid. See the function for details.
     compound.has_details = compound.kind == 'group' or compound.brief or compounddef.find('detaileddescription') or (compound.kind == 'page' and not is_a_stupid_empty_markdown_page(compounddef))
     compound.children = []
+    compound.childrenClasses = []
+    compound.childrenNamespaces = []
+    compound.childrenCompoundRefs = []
 
     # Version badges, deprecation status. If @since is followed by
     # @deprecated, treat it as version in which given feature was deprecated
@@ -2280,6 +2299,12 @@ def extract_metadata(state: State, xml):
     elif compounddef.attrib['kind'] == 'group':
         for i in compounddef.findall('innergroup'):
             compound.children += [i.attrib['refid']]
+        for i in compounddef.findall('innerclass'):
+            compound.childrenClasses += [i.attrib['refid']]
+        for i in compounddef.findall('innernamespace'):
+            compound.childrenNamespaces += [i.attrib['refid']]
+        for i in compounddef.findall('derivedcompoundref'):
+            compound.childrenCompoundRefs += [i.attrib['refid']]
 
     state.compounds[compound.id] = compound
 
@@ -2289,6 +2314,15 @@ def postprocess_state(state: State):
         for child in compound.children:
             if child in state.compounds:
                 state.compounds[child].parent = compound.id
+        for child in compound.childrenClasses:
+            if child in state.compounds:
+                state.compounds[child].parentGroup = compound.id
+        for child in compound.childrenNamespaces:
+            if child in state.compounds:
+                state.compounds[child].parentGroup = compound.id
+        for child in compound.childrenCompoundRefs:
+            if child in state.compounds:
+                state.compounds[child].parentGroup = compound.id
 
     # Strip name of parent symbols from names to get leaf names
     for _, compound in state.compounds.items():
@@ -2560,6 +2594,16 @@ def parse_xml(state: State, xml: str):
         compound.breadcrumb = []
         for i in reversed(path_reverse):
             compound.breadcrumb += [(state.compounds[i].leaf_name, state.compounds[i].url)]
+
+        # Gather parent groups
+        path_reverse = [compound.id]
+        while path_reverse[-1] in state.compounds and state.compounds[path_reverse[-1]].parentGroup:
+            path_reverse += [state.compounds[path_reverse[-1]].parentGroup]
+
+        # Fill breadcrumb with leaf names and URLs
+        compound.breadcrumbGroup = []
+        for i in reversed(path_reverse):
+            compound.breadcrumbGroup += [(state.compounds[i].leaf_name, state.compounds[i].url)]
 
         # Save current prefix for search
         state.current_prefix = [name for name, _ in compound.breadcrumb]
@@ -3697,6 +3741,10 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         extract_metadata(state, file)
 
     postprocess_state(state)
+
+    # output = os.path.join(html_output, "postProcessedState.dump")
+    # with open(output, 'w', encoding="utf8") as f:
+    #     print(state, file=f)
 
     for file in xml_files:
         print(file)
