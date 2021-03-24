@@ -1981,40 +1981,40 @@ def parse_func(state: State, element: ET.Element):
     # Extract additional C++11 stuff from the signature. Order matters, going
     # from the keywords that can be rightmost to the leftmost.
     signature: str = element.find('argsstring').text
-    if signature.endswith('=default'):
+    if signature is not None and signature.endswith('=default'):
         signature = signature[:-8]
         func.is_defaulted = True
     else:
         func.is_defaulted = False
-    if signature.endswith('=delete'):
+    if signature is not None and signature.endswith('=delete'):
         signature = signature[:-7]
         func.is_deleted = True
     else:
         func.is_deleted = False
-    if signature.endswith('=0'):
+    if signature is not None and signature.endswith('=0'):
         signature = signature[:-2]
         func.is_pure_virtual = True
     else:
         func.is_pure_virtual = False
     # Final tested twice because it can be both `override final`
     func.is_final = False
-    if signature.endswith('final') and not is_identifier(signature[-6]):
+    if signature is not None and signature.endswith('final') and not is_identifier(signature[-6]):
         signature = signature[:-5].rstrip()
         func.is_final = True
-    if signature.endswith('override') and not is_identifier(signature[-9]):
+    if signature is not None and signature.endswith('override') and not is_identifier(signature[-9]):
         signature = signature[:-8].rstrip()
         func.is_override = True
     else:
         func.is_override = False
     # ... and `final override`
-    if signature.endswith('final') and not is_identifier(signature[-6]):
+    if signature is not None and signature.endswith('final') and not is_identifier(signature[-6]):
         signature = signature[:-5].rstrip()
         func.is_final = True
-    if signature.endswith('noexcept') and not is_identifier(signature[-9]):
+    if signature is not None and signature.endswith('noexcept') and not is_identifier(signature[-9]):
         signature = signature[:-8].rstrip()
         func.is_noexcept = True
         func.is_conditional_noexcept = False
-    elif 'noexcept(' in signature and not is_identifier(signature[signature.index('noexcept(') - 1]):
+    elif signature is not None and 'noexcept(' in signature and not is_identifier(signature[signature.index('noexcept(') - 1]):
         signature = signature[:signature.index('noexcept(')].rstrip()
         func.is_noexcept = True
         func.is_conditional_noexcept = True
@@ -2022,7 +2022,10 @@ def parse_func(state: State, element: ET.Element):
         func.is_noexcept = False
         func.is_conditional_noexcept = False
     # Put the rest (const, volatile, ...) into a suffix
-    func.suffix = html.escape(signature[signature.rindex(')') + 1:].strip())
+    if signature is not None:
+        func.suffix = html.escape(signature[signature.rindex(')') + 1:].strip())
+    else:
+        func.suffix = ''
     if func.suffix: func.suffix = ' ' + func.suffix
     # Protected / private makes no sense for friend functions
     if element.attrib['kind'] != 'friend':
