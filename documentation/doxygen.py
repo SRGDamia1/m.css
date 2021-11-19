@@ -2215,6 +2215,10 @@ def extract_metadata(state: State, xml):
 
     compounddef: ET.Element = root.find('compounddef')
 
+    if compounddef is None:
+        logging.debug("No useful info in {}, skipping".format(os.path.basename(xml)))
+        return
+
     if compounddef.attrib['kind'] not in ['namespace', 'group', 'class', 'struct', 'union', 'dir', 'file', 'page']:
         logging.debug("No useful info in {}, skipping".format(os.path.basename(xml)))
         return
@@ -3755,7 +3759,10 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
 
     for file in xml_files:
         print(file)
-        if os.path.basename(file) == 'index.xml':
+        if os.path.basename(file) == 'Doxyfile.xml':
+            logging.debug("Skipping xml of doxyfile")
+
+        elif os.path.basename(file) == 'index.xml':
             parsed = parse_index_xml(state, file)
 
             for i in index_pages:
