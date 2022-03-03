@@ -1,7 +1,8 @@
 ..
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020 Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022
+              Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -419,7 +420,7 @@ the fold", *not* the cover image.
         </div>
       </div>
       <div class="m-container">
-        <!-- content "below the fold" folows -->
+        <!-- content "below the fold" follows -->
       </div>
     </article></main>
 
