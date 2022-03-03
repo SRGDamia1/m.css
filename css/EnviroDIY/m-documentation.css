@@ -1,7 +1,8 @@
 /*
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020 Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022
+              Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -50,8 +51,8 @@ ul.m-doc li.m-doc-collapsible > a:first-child:active {
   color: var(--color);
 }
 a.m-doc-self,
-ul.m-doc li.m-doc-expansible > a:first-child:before,
-ul.m-doc li.m-doc-collapsible > a:first-child:before {
+ul.m-doc li.m-doc-expansible > a:first-child::before,
+ul.m-doc li.m-doc-collapsible > a:first-child::before {
   color: var(--article-link-color);
 }
 a.m-doc-self:hover,
@@ -126,18 +127,18 @@ ul.m-doc li.m-doc-expansible > ul.m-doc,
 ul.m-doc li.m-doc-collapsible > ul.m-doc {
   margin-left: 0.5rem;
 }
-ul.m-doc li.m-doc-expansible > a:first-child:before,
-ul.m-doc li.m-doc-collapsible > a:first-child:before {
+ul.m-doc li.m-doc-expansible > a:first-child::before,
+ul.m-doc li.m-doc-collapsible > a:first-child::before {
   background-color: var(--background-color);
   display: inline-block;
   width: 0.4rem;
   font-weight: bold;
 }
-ul.m-doc li.m-doc-expansible > a:first-child:before {
-  content: "+";
+ul.m-doc li.m-doc-expansible > a:first-child::before {
+  content: '+';
 }
-ul.m-doc li.m-doc-collapsible > a:first-child:before {
-  content: "-";
+ul.m-doc li.m-doc-collapsible > a:first-child::before {
+  content: '-';
 }
 
 h1 .m-doc-template,
@@ -201,7 +202,7 @@ article section.m-doc-details > div {
 }
 article section.m-doc-details > div::before {
   position: absolute;
-  content: " ";
+  content: ' ';
   top: 0;
   bottom: 0;
   left: 0;
@@ -233,11 +234,7 @@ article section.m-doc-details:target > div {
   z-index: 1; /* so the selection border isn't above figure border */
 }
 
-.m-container-inflatable
-  > .m-row
-  > [class*="m-col-"]
-  section.m-doc-details
-  > div {
+.m-container-inflatable > .m-row > [class*='m-col-'] section.m-doc-details > div {
   margin-left: -1rem;
   margin-right: -1rem;
 }
@@ -261,16 +258,16 @@ article section.m-doc-details:target > div {
 } */
 
 #m-search-button {
-  color:#fff;
+  color: #fff;
   margin-left: 30px;
   cursor: pointer;
   font-size: 18px;
   line-height: 1;
-  padding:30.5px 0;
+  padding: 30.5px 0;
 }
 #m-search-button:before {
-  font-family: "FontAwesome";
-  content: "\f002";
+  font-family: 'FontAwesome';
+  content: '\f002';
 }
 
 a.m-doc-search-icon {
@@ -395,12 +392,12 @@ a.m-doc-search-icon:active svg {
 }
 
 /* WELL THANK YOU WEBKIT! FOR SURE I WANTED ALL THAT SHIT HERE! */
-.m-doc-search input[type="search"] {
+.m-doc-search input[type='search'] {
   -webkit-appearance: textfield;
 }
-.m-doc-search input[type="search"]::-webkit-search-decoration,
-.m-doc-search input[type="search"]::-webkit-search-cancel-button,
-.m-doc-search input[type="search"]::-webkit-search-results-button,
-.m-doc-search input[type="search"]::-webkit-search-results-decoration {
+.m-doc-search input[type='search']::-webkit-search-decoration,
+.m-doc-search input[type='search']::-webkit-search-cancel-button,
+.m-doc-search input[type='search']::-webkit-search-results-button,
+.m-doc-search input[type='search']::-webkit-search-results-decoration {
   display: none;
 }
