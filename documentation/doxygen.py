@@ -3858,7 +3858,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     #     print(state, file=f)
 
     for file in xml_files:
-        print(file)
+        # print(file)
         if os.path.basename(file) == 'Doxyfile.xml':
             logging.debug("Skipping xml of doxyfile")
 
