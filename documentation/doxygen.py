@@ -1415,6 +1415,14 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             else:
                 out.parsed += '<span>{}</span>'.format(content)
 
+        # I'm hijacking the inner page to create page heirarchy without adding text to the pages
+        # When the @subpage command is used on a page, it inserts a link on the original page
+        # The @ingroup command doesn't work properly for pages parsed by m.css.
+        # So I'm adding an xml-only tag to the page for the m.css metadata reader to grap
+        # to get hierarchy without text
+        elif i.tag=='innerpage':
+            pass
+
         else:
             # Most of these are the same as HTML entities, but not all
             mapping = {'nonbreakablespace': 'nbsp',
@@ -2390,7 +2398,7 @@ def extract_metadata(state: State, xml):
         for i in compounddef.findall('innerfile'):
             compound.children += [i.attrib['refid']]
     elif compounddef.attrib['kind'] == 'page':
-        for i in compounddef.findall('innerpage'):
+        for i in compounddef.findall('.//innerpage'):
             compound.children += [i.attrib['refid']]
     elif compounddef.attrib['kind'] == 'group':
         for i in compounddef.findall('innergroup'):
