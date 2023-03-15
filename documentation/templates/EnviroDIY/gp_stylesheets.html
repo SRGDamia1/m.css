@@ -1,14 +1,14 @@
 <link
   rel="stylesheet"
   id="gp-parent-style-css"
-  href="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-content/themes/socialize/style.css?ver=5.6"
+  href="https://www.envirodiy.org/wp-content/themes/socialize/style.css?ver=6.1.1"
   type="text/css"
   media="all"
 />
 <link
   rel="stylesheet"
   id="ghostpool-style-css"
-  href="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-content/themes/socialize-child/style.css?ver=5.6"
+  href="https://www.envirodiy.org/wp-content/themes/socialize-child/style.css?ver=6.1.1"
   type="text/css"
   media="all"
 />
@@ -58,11 +58,7 @@
   .gp-header-standard #gp-secondary-main-nav .menu > li > a {
     padding: 31.5px 0;
   }
-  .gp-desktop-scrolling.gp-header-standard
-    #gp-secondary-main-nav
-    .menu
-    > li
-    > a {
+  .gp-desktop-scrolling.gp-header-standard #gp-secondary-main-nav .menu > li > a {
     padding: 31.5px 0;
   }
   .gp-header-centered #gp-secondary-main-nav .menu > li > a {
@@ -72,10 +68,10 @@
     color: #000;
   }
   .gp-theme .widget.buddypress div.item-options a.selected:hover {
-    color: #26a9e0 !important;
+    color: #0579bd !important;
   }
   .gp-theme #buddypress .activity-list .activity-content blockquote a {
-    color: #26a9e0;
+    color: #0579bd;
   }
   .gp-theme #buddypress .activity-list .activity-content blockquote a:hover {
     color: #000;
@@ -84,11 +80,7 @@
     .gp-header-standard #gp-primary-main-nav .menu > li > a {
       padding: 30.5px 0;
     }
-    .gp-desktop-scrolling.gp-header-standard
-      #gp-primary-main-nav
-      .menu
-      > li
-      > a {
+    .gp-desktop-scrolling.gp-header-standard #gp-primary-main-nav .menu > li > a {
       padding: 30.5px 0;
     }
     .gp-header-standard #gp-cart-button,
@@ -104,11 +96,7 @@
     .gp-header-standard #gp-secondary-main-nav .menu > li > a {
       padding: 31.5px 0;
     }
-    .gp-desktop-scrolling.gp-header-standard
-      #gp-secondary-main-nav
-      .menu
-      > li
-      > a {
+    .gp-desktop-scrolling.gp-header-standard #gp-secondary-main-nav .menu > li > a {
       padding: 31.5px 0;
     }
   }
@@ -130,47 +118,159 @@
 <link
   rel="stylesheet"
   id="fontawesome-css"
-  href="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-content/themes/socialize/lib/fonts/font-awesome/css/font-awesome.min.css?ver=5.6"
+  href="https://www.envirodiy.org/wp-content/themes/socialize/lib/fonts/font-awesome/css/font-awesome.min.css?ver=6.1.1"
   type="text/css"
   media="all"
 />
 <link
   rel="stylesheet"
-  id="fontawesome-css"
-  href="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-content/themes/socialize/lib/fonts/font-awesome/css/font-awesome.min.css?ver=5.5"
+  id="prettyphoto-css"
+  href="https://www.envirodiy.org/wp-content/plugins/js_composer/assets/lib/prettyphoto/css/prettyPhoto.min.css?ver=6.10.0"
   type="text/css"
   media="all"
 />
 <link
   rel="stylesheet"
   id="gp-bp-css"
-  href="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-content/themes/socialize/lib/css/bp.css?ver=5.6"
+  href="https://www.envirodiy.org/wp-content/themes/socialize/lib/css/bp.css?ver=6.1.1"
   type="text/css"
   media="all"
 />
 <link
   rel="stylesheet"
   id="gp-bbp-css"
-  href="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-content/themes/socialize/lib/css/bbpress.css?ver=5.6"
-  type="text/css"
-  media="all"
-/>
-<link
-  rel="stylesheet"
-  id="redux-google-fonts-socialize-css"
-  href="https://fonts.googleapis.com/css?family=Roboto%3A300%2C400%2C500%7CRoboto+Slab%3A300&#038;subset=latin&#038;ver=5.6"
+  href="https://www.envirodiy.org/wp-content/themes/socialize/lib/css/bbpress.css?ver=6.1.1"
   type="text/css"
   media="all"
 />
 <style type="text/css" id="wp-custom-css">
-  #gp-content a {
+  /* Print Styles */
+  @media print {
+    @page {
+      margin: 10mm 0;
+    }
+    body {
+      background: white;
+      color: black;
+      background-image: none;
+      margin: 0 !important;
+      padding: 0;
+    }
+    body:not(.gp-full-page-page-header) .gp-page-header.gp-has-text:before,
+    body:not(.gp-full-page-page-header)
+      .gp-page-header.gp-has-teaser-video.gp-has-text
+      .gp-video-header:before {
+      background-image: none !important;
+    }
+    #gp-main-header,
+    #gp-small-header,
+    #gp-header-area,
+    #gp-footer,
+    #gp-sidebar-right,
+    #swrc-post-navigation,
+    .hkb-subheader,
+    .hkb-feedback,
+    .hkb-mainpage__sidebar,
+    .print-page {
+      display: none;
+    }
+    .hkb-mainpage-wrapper {
+      padding: 0 !important;
+      background-image: none !important;
+    }
+    a#gp-to-top,
+    span#toTopHover {
+      display: none;
+    }
+    a[href]:after {
+      content: ' (' attr(href) ')';
+    }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-size: 1.25em;
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    .hkb-article__content h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-size: 1.25em;
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    table {
+      page-break-before: avoid;
+      page-break-inside: avoid;
+      page-break-after: avoid;
+    }
+    img {
+      page-break-inside: avoid;
+      visibility: visible;
+    }
+    blockquote,
+    table,
+    pre {
+      page-break-inside: avoid;
+    }
+    ul,
+    ol,
+    dl {
+      page-break-before: avoid;
+    }
+  }
+  /* End print styles */
+  /*Gutenberg styles*/
+  /*Buttons*/
+  a.wp-block-button__link {
+    background-color: #538122;
+    border-radius: 5px;
+    text-decoration: none !important;
+  }
+  .wp-block-button__link:hover {
+    background: #365516 !important;
+    color: #ffffff !important;
+  }
+  figcaption {
+    font-style: italic;
+  }
+  /*End Gutenberg styles*/
+  #gp-content a,
+  .gp-sidebar a {
     font-weight: 400;
     text-decoration: underline;
   }
+  /*BuddyPress styles*/
   /*Make activity feed content darker*/
   #buddypress .activity-list .activity-content .activity-inner p {
     color: #000000;
   }
+  /*Hide activity filter on activity page*/
+  #activity-filter-select.last {
+    display: none !important;
+  }
+  /*Hide disabled BuddyPress status updates on profile page, activity page*/
+  #latest-update {
+    display: none;
+  }
+  .item-title .update {
+    display: none;
+  }
+  /*Prevent display of comment/favorite links in activity stream. Because the comments do not get applied to posts or forum topics, they just confuse users*/
+  .gp-theme #buddypress .activity-list div.activity-meta a.button,
+  .gp-theme #buddypress .activity .acomment-options a,
+  .gp-theme #buddypress .activity-list li.load-newest a,
+  .widget.buddypress div.item-options a.selected {
+    color: #26a9e0;
+    display: none;
+  }
+  /*End BuddyPress styles*/
   /* Style print link */
   .pdfprnt-buttons > a > span {
     margin: 15px 0;
@@ -192,20 +292,26 @@
   td {
     border: 1px solid #333;
   }
-  /*Correct nested ordered list style*/
-  #gp-content ol ol li {
-    list-style-type: lower-latin;
+  /*Nested list styles*/
+  #gp-content,
+  .hkb-article ol ol li {
+    list-style-type: lower-alpha;
   }
-  /*Hide activity filter on activity page*/
-  #activity-filter-select.last {
-    display: none !important;
+  #gp-content,
+  .hkb-article ol ol ol li {
+    list-style-type: lower-roman;
+  }
+  #gp-content,
+  .hkb-article ul ul li {
+    list-style-type: circle !important;
   }
   /* Add border */
   tr:last-child td {
     border-width: 1px;
   }
+  /*bbPress*/
   /* Make forum title and description larger, remove link underlining */
-  div.bsp-forum-content {
+  div.bbp-forum-content {
     font-size: 22px;
     line-height: 28px;
   }
@@ -221,6 +327,39 @@
   }
   .bbp-author-name {
     font-size: 14px;
+  }
+  /*End bbpress styles*/
+  #gp-copyright-text,
+  #gp-copyright-text a:link,
+  #gp-copyright-text a:visited {
+    color: #fff;
+    font-weight: 400;
+  }
+  /*WooCommerce styles*/
+  bdi {
+    color: #538122;
+    font-weight: 500;
+  }
+  a.button.product_type_simple {
+    display: none;
+  }
+  p.stock.out-of-stock {
+    color: red;
+    font-weight: 500;
+  }
+  .products li * {
+    text-decoration: none !important;
+  }
+  div.gp-entry-cats {
+    color: #333333;
+  }
+  span.woocommerce-Price-amount.amount {
+    text-decoration: none !important;
+  }
+  /*End WooCommerce styles*/
+  /*The Events Calendar*/
+  #tribe-events-content a {
+    color: #0579bd;
   }
   #gp-sidebar-right
     > div
@@ -256,20 +395,63 @@
     > a {
     color: #26a9e0;
   }
-  /*Hide disabled BuddyPress status updates on profile page, activity page*/
-  #latest-update {
+  /*Hero Knowledge Base styles*/
+  #hkb .hkb-fullwcontainer {
+    max-width: var(--hkb-main-container-width);
+    margin: 0 auto;
+    padding: 20px 20px;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  h1.hkb-article__title {
+    font-weight: 300 !important;
+    margin: 0 0 0.5em !important;
+  }
+  .hkb-categoryheader__title {
+    font-weight: 300 !important;
+    font-size: 40px !important;
+  }
+  .hkb-articlepreview__title a {
+    font-weight: 300 !important;
+    font-size: 28px !important;
+    text-decoration: underline !important;
+    color: #0579bd !important;
+    font-size: 28px !important;
+  }
+  #hkb a {
+    text-decoration: underline;
+    font-weight: 400;
+  }
+  a.hkb_widget_exit__btn {
+    background-color: #538122 !important;
+    border-radius: 5px;
+    text-decoration: none !important;
+  }
+  a.hkb_widget_exit__btn:hover {
+    background: #365516 !important;
+    color: #ffffff !important;
+  }
+  /* End Heroic KB styles */
+  #swrc-post-navigation a {
+    font-size: small;
+  }
+  p.last-updated {
+    font-size: 12px;
+    font-style: italic;
+  }
+  aside#gp-sidebar-right.gp-sidebar p.last-updated {
     display: none;
   }
-  .item-title .update {
+  #gp-content p.last-updated {
     display: none;
   }
 </style>
-<style type="text/css" title="dynamic-css" class="options-output">
+<style id="socialize-dynamic-css" title="dynamic-css" class="redux-options-output">
   #footer-image img {
     margin-top: 10px;
-    margin-right: 0;
+    margin-right: 0px;
     margin-bottom: 10px;
-    margin-left: 0;
+    margin-left: 0px;
   }
   body {
     background-color: #f1f1f1;
@@ -289,15 +471,16 @@
     background-color: #ffffff;
   }
   body {
-    font-family: Roboto, "Arial Black", Gadget, sans-serif;
+    font-family: Roboto, 'Arial Black', Gadget, sans-serif;
     line-height: 28px;
     font-weight: 300;
     font-style: normal;
     color: #000;
     font-size: 16px;
+    font-display: swap;
   }
   a {
-    color: #26a9e0;
+    color: #0579bd;
   }
   a:hover {
     color: #000;
@@ -305,16 +488,18 @@
   h1 {
     font-family: Roboto, Arial, Helvetica, sans-serif;
     line-height: 40px;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     font-size: 36px;
+    font-display: swap;
   }
   h2 {
     font-family: Roboto, Arial, Helvetica, sans-serif;
     line-height: 32px;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     font-size: 28px;
+    font-display: swap;
   }
   h3,
   #tab-description h2,
@@ -325,30 +510,34 @@
   .woocommerce-checkout .woocommerce h3 {
     font-family: Roboto, Arial, Helvetica, sans-serif;
     line-height: 28px;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     font-size: 24px;
+    font-display: swap;
   }
   h4 {
     font-family: Roboto, Arial, Helvetica, sans-serif;
     line-height: 30px;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     font-size: 20px;
+    font-display: swap;
   }
   h5 {
     font-family: Roboto, Arial, Helvetica, sans-serif;
     line-height: 26px;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     font-size: 18px;
+    font-display: swap;
   }
   h6 {
     font-family: Roboto, Arial, Helvetica, sans-serif;
     line-height: 24px;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     font-size: 16px;
+    font-display: swap;
   }
   .gp-entry-meta .gp-post-meta-row-1,
   .gp-homepage #gp-content .gp-vc-element-3,
@@ -378,10 +567,11 @@
     font-family: Roboto;
     text-transform: none;
     line-height: 16px;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     color: #ababab;
     font-size: 16px;
+    font-display: swap;
   }
   #gp-primary-main-nav .menu > li:hover > a,
   #gp-primary-main-nav .menu > li > a {
@@ -404,6 +594,7 @@
     font-style: normal;
     color: #fff;
     font-size: 14px;
+    font-display: swap;
   }
   #gp-secondary-main-nav .menu > li:hover > a,
   #gp-secondary-main-nav .menu > li > a {
@@ -440,10 +631,11 @@
   .gp-nav li.gp-megamenu .sub-menu li,
   .gp-nav .gp-megamenu .sub-menu li a {
     font-family: Roboto;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     color: #000;
     font-size: 14px;
+    font-display: swap;
   }
   .gp-nav .menu > .gp-standard-menu > .sub-menu > li a {
     color: #000;
@@ -508,7 +700,7 @@
     background-color: #fff;
   }
   #gp-mobile-nav-close-button {
-    background-color: #26a9e0;
+    background-color: #0579bd;
   }
   #gp-mobile-nav li {
     color: #000000;
@@ -535,9 +727,9 @@
   #gp-full-page-bg {
     background-color: #353535;
     background-repeat: no-repeat;
-    background-size: cover;
     background-attachment: scroll;
     background-position: center center;
+    background-size: cover;
   }
   .gp-page-header h1,
   .gp-page-header h2 {
@@ -547,6 +739,7 @@
     font-style: normal;
     color: #fff;
     font-size: 80px;
+    font-display: swap;
   }
   .gp-page-header .gp-container {
     height: 250px;
@@ -560,14 +753,16 @@
     font-style: normal;
     color: #000;
     font-size: 40px;
+    font-display: swap;
   }
   .gp-subtitle {
     font-family: Roboto;
     line-height: 32px;
     font-weight: 300;
     font-style: normal;
-    color: #888;
+    color: #0579bd;
     font-size: 20px;
+    font-display: swap;
   }
   #gp-post-links a,
   .gp-pagination-arrows a.prev,
@@ -610,6 +805,7 @@
     line-height: 24px;
     color: #fff;
     font-size: 14px;
+    font-display: swap;
   }
   .gp-author-info a {
     color: #b1b1b1;
@@ -627,30 +823,30 @@
     color: #777777;
   }
   blockquote {
-    /* background-color: #191919; */
-    background-color: #e8e8e8;
-    /* background-color: #ffffff; */
+    background-color: #0579bd;
   }
   blockquote,
   blockquote a,
   blockquote a:hover {
-    font-family: "Roboto Slab";
-    /* line-height: 38px;
-    font-weight: 300;
-    font-style: normal; */
-    /* color: #fff; */
-    color: #3c763d;
-    /* font-size: 24px; */
+    font-family: 'Roboto Slab';
+    line-height: 38px;
+    font-weight: 400;
+    font-style: normal;
+    color: #fff;
+    font-size: 24px;
+    font-display: swap;
   }
   .gp-loop-title {
     line-height: 22px;
     font-weight: 400;
     font-size: 19px;
+    font-display: swap;
   }
   .gp-blog-large .gp-loop-title {
     line-height: 46px;
     font-weight: 200;
     font-size: 40px;
+    font-display: swap;
   }
   .gp-loop-title a,
   .bboss_search_item .entry-title a {
@@ -658,7 +854,7 @@
   }
   .gp-loop-title a:hover,
   .bboss_search_item .entry-title a:hover {
-    color: #26a9e0;
+    color: #0579bd;
   }
   .gp-loop-text,
   .gp-login-wrapper p {
@@ -686,14 +882,14 @@
   .gp-loop-tags,
   .gp-loop-tags a,
   .gp-loop-tags a:hover {
-    color: #26a9e0;
+    color: #0579bd;
   }
   .gp-blog-masonry section,
   section.sticky {
     background-color: #f8f8f8;
   }
   ul.page-numbers .page-numbers {
-    background-color: #92d050;
+    background-color: #538122;
   }
   ul.page-numbers .page-numbers:hover,
   ul.page-numbers .page-numbers.current,
@@ -703,23 +899,32 @@
   ul.page-numbers .page-numbers {
     color: #ffffff;
   }
-  .widgettitle {
+  .widgettitle,
+  .widget-title,
+  .wp-block-search__label {
     font-family: Roboto;
     line-height: 18px;
     font-weight: 500;
     font-style: normal;
     color: #000;
     font-size: 14px;
+    font-display: swap;
   }
-  .widgettitle a {
-    color: #26a9e0;
+  .widgettitle a,
+  .widget-title a,
+  .wp-block-search__label {
+    color: #0579bd;
   }
-  .widgettitle a:hover {
+  .widgettitle a:hover,
+  .widget-title a:hover,
+  .wp-block-search__label:hover {
     color: #000;
   }
   .gp-sidebar .widgettitle,
-  .widgettitle.gp-standard-title {
-    border-bottom: 3px solid #92d050;
+  .widgettitle.gp-standard-title,
+  .gp-sidebar .widget-title,
+  .gp-sidebar .wp-block-search__label {
+    border-bottom: 3px solid #538122;
   }
   .widget,
   .gp-vc-element,
@@ -734,24 +939,25 @@
   input,
   textarea,
   .gp-search-bar,
-  .gp-theme #buddypress .dir-search input[type="search"],
-  .gp-theme #buddypress .dir-search input[type="text"],
-  .gp-theme #buddypress .groups-members-search input[type="search"],
-  .gp-theme #buddypress .standard-form input[type="color"],
-  .gp-theme #buddypress .standard-form input[type="date"],
-  .gp-theme #buddypress .standard-form input[type="datetime-local"],
-  .gp-theme #buddypress .standard-form input[type="datetime"],
-  .gp-theme #buddypress .standard-form input[type="email"],
-  .gp-theme #buddypress .standard-form input[type="month"],
-  .gp-theme #buddypress .standard-form input[type="number"],
-  .gp-theme #buddypress .standard-form input[type="password"],
-  .gp-theme #buddypress .standard-form input[type="range"],
-  .gp-theme #buddypress .standard-form input[type="search"],
-  .gp-theme #buddypress .standard-form input[type="tel"],
-  .gp-theme #buddypress .standard-form input[type="text"],
-  .gp-theme #buddypress .standard-form input[type="time"],
-  .gp-theme #buddypress .standard-form input[type="url"],
-  .gp-theme #buddypress .standard-form input[type="week"],
+  .wp-block-search__input,
+  .gp-theme #buddypress .dir-search input[type='search'],
+  .gp-theme #buddypress .dir-search input[type='text'],
+  .gp-theme #buddypress .groups-members-search input[type='search'],
+  .gp-theme #buddypress .standard-form input[type='color'],
+  .gp-theme #buddypress .standard-form input[type='date'],
+  .gp-theme #buddypress .standard-form input[type='datetime-local'],
+  .gp-theme #buddypress .standard-form input[type='datetime'],
+  .gp-theme #buddypress .standard-form input[type='email'],
+  .gp-theme #buddypress .standard-form input[type='month'],
+  .gp-theme #buddypress .standard-form input[type='number'],
+  .gp-theme #buddypress .standard-form input[type='password'],
+  .gp-theme #buddypress .standard-form input[type='range'],
+  .gp-theme #buddypress .standard-form input[type='search'],
+  .gp-theme #buddypress .standard-form input[type='tel'],
+  .gp-theme #buddypress .standard-form input[type='text'],
+  .gp-theme #buddypress .standard-form input[type='time'],
+  .gp-theme #buddypress .standard-form input[type='url'],
+  .gp-theme #buddypress .standard-form input[type='week'],
   .gp-theme #buddypress .standard-form textarea,
   .gp-theme #buddypress div.activity-comments form .ac-textarea,
   .gp-theme #buddypress form#whats-new-form textarea {
@@ -760,27 +966,28 @@
   input,
   textarea,
   .gp-search-bar,
+  .wp-block-search__input,
   .gp-login-wrapper .gp-login-icon,
   .gp-login-wrapper .gp-password-icon,
   .gp-login-wrapper .gp-email-icon,
-  .gp-theme #buddypress .dir-search input[type="search"],
-  .gp-theme #buddypress .dir-search input[type="text"],
-  .gp-theme #buddypress .groups-members-search input[type="search"],
-  .gp-theme #buddypress .standard-form input[type="color"],
-  .gp-theme #buddypress .standard-form input[type="date"],
-  .gp-theme #buddypress .standard-form input[type="datetime-local"],
-  .gp-theme #buddypress .standard-form input[type="datetime"],
-  .gp-theme #buddypress .standard-form input[type="email"],
-  .gp-theme #buddypress .standard-form input[type="month"],
-  .gp-theme #buddypress .standard-form input[type="number"],
-  .gp-theme #buddypress .standard-form input[type="password"],
-  .gp-theme #buddypress .standard-form input[type="range"],
-  .gp-theme #buddypress .standard-form input[type="search"],
-  .gp-theme #buddypress .standard-form input[type="tel"],
-  .gp-theme #buddypress .standard-form input[type="text"],
-  .gp-theme #buddypress .standard-form input[type="time"],
-  .gp-theme #buddypress .standard-form input[type="url"],
-  .gp-theme #buddypress .standard-form input[type="week"],
+  .gp-theme #buddypress .dir-search input[type='search'],
+  .gp-theme #buddypress .dir-search input[type='text'],
+  .gp-theme #buddypress .groups-members-search input[type='search'],
+  .gp-theme #buddypress .standard-form input[type='color'],
+  .gp-theme #buddypress .standard-form input[type='date'],
+  .gp-theme #buddypress .standard-form input[type='datetime-local'],
+  .gp-theme #buddypress .standard-form input[type='datetime'],
+  .gp-theme #buddypress .standard-form input[type='email'],
+  .gp-theme #buddypress .standard-form input[type='month'],
+  .gp-theme #buddypress .standard-form input[type='number'],
+  .gp-theme #buddypress .standard-form input[type='password'],
+  .gp-theme #buddypress .standard-form input[type='range'],
+  .gp-theme #buddypress .standard-form input[type='search'],
+  .gp-theme #buddypress .standard-form input[type='tel'],
+  .gp-theme #buddypress .standard-form input[type='text'],
+  .gp-theme #buddypress .standard-form input[type='time'],
+  .gp-theme #buddypress .standard-form input[type='url'],
+  .gp-theme #buddypress .standard-form input[type='week'],
   .gp-theme #buddypress .standard-form textarea,
   .gp-theme #buddypress div.activity-comments form .ac-textarea,
   .bb-global-search-ac.ui-autocomplete {
@@ -792,25 +999,26 @@
   input,
   textarea,
   .gp-search-bar,
-  .gp-theme #buddypress .dir-search input[type="search"],
-  .gp-theme #buddypress .dir-search input[type="text"],
-  .gp-theme #buddypress .groups-members-search input[type="search"],
-  .gp-theme #buddypress .groups-members-search input[type="text"],
-  .gp-theme #buddypress .standard-form input[type="color"],
-  .gp-theme #buddypress .standard-form input[type="date"],
-  .gp-theme #buddypress .standard-form input[type="datetime-local"],
-  .gp-theme #buddypress .standard-form input[type="datetime"],
-  .gp-theme #buddypress .standard-form input[type="email"],
-  .gp-theme #buddypress .standard-form input[type="month"],
-  .gp-theme #buddypress .standard-form input[type="number"],
-  .gp-theme #buddypress .standard-form input[type="password"],
-  .gp-theme #buddypress .standard-form input[type="range"],
-  .gp-theme #buddypress .standard-form input[type="search"],
-  .gp-theme #buddypress .standard-form input[type="tel"],
-  .gp-theme #buddypress .standard-form input[type="text"],
-  .gp-theme #buddypress .standard-form input[type="time"],
-  .gp-theme #buddypress .standard-form input[type="url"],
-  .gp-theme #buddypress .standard-form input[type="week"],
+  .wp-block-search__input,
+  .gp-theme #buddypress .dir-search input[type='search'],
+  .gp-theme #buddypress .dir-search input[type='text'],
+  .gp-theme #buddypress .groups-members-search input[type='search'],
+  .gp-theme #buddypress .groups-members-search input[type='text'],
+  .gp-theme #buddypress .standard-form input[type='color'],
+  .gp-theme #buddypress .standard-form input[type='date'],
+  .gp-theme #buddypress .standard-form input[type='datetime-local'],
+  .gp-theme #buddypress .standard-form input[type='datetime'],
+  .gp-theme #buddypress .standard-form input[type='email'],
+  .gp-theme #buddypress .standard-form input[type='month'],
+  .gp-theme #buddypress .standard-form input[type='number'],
+  .gp-theme #buddypress .standard-form input[type='password'],
+  .gp-theme #buddypress .standard-form input[type='range'],
+  .gp-theme #buddypress .standard-form input[type='search'],
+  .gp-theme #buddypress .standard-form input[type='tel'],
+  .gp-theme #buddypress .standard-form input[type='text'],
+  .gp-theme #buddypress .standard-form input[type='time'],
+  .gp-theme #buddypress .standard-form input[type='url'],
+  .gp-theme #buddypress .standard-form input[type='week'],
   .gp-theme #buddypress .standard-form textarea,
   .gp-theme #buddypress div.activity-comments form .ac-textarea,
   .gp-theme #buddypress form#whats-new-form textarea {
@@ -827,20 +1035,21 @@
   .gp-theme #buddypress form#whats-new-form #whats-new-options select {
     color: #ffffff;
   }
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
   button,
   .button,
+  .wp-block-search__button,
   .gp-theme #buddypress .comment-reply-link,
   .gp-notification-counter,
   #gp-cart-counter,
   .gp-theme #buddypress a.button,
   .gp-theme #buddypress button,
   .gp-theme #buddypress div.generic-button a,
-  .gp-theme #buddypress input[type="button"],
-  .gp-theme #buddypress input[type="reset"],
-  .gp-theme #buddypress input[type="submit"],
+  .gp-theme #buddypress input[type='button'],
+  .gp-theme #buddypress input[type='reset'],
+  .gp-theme #buddypress input[type='submit'],
   .gp-theme #buddypress ul.button-nav li a,
   a.bp-title-button,
   .gp-theme #buddypress .activity-list #reply-title small a span,
@@ -848,38 +1057,34 @@
   .tribe-events-calendar thead th,
   #tribe-events .tribe-events-button,
   #tribe-events .tribe-events-button:hover,
-  #tribe_events_filters_wrapper input[type="submit"],
+  #tribe_events_filters_wrapper input[type='submit'],
   .tribe-events-button,
   .tribe-events-button.tribe-active:hover,
   .tribe-events-button.tribe-inactive,
   .tribe-events-button:hover,
-  .tribe-events-calendar
-    td.tribe-events-present
-    div[id*="tribe-events-daynum-"],
-  .tribe-events-calendar
-    td.tribe-events-present
-    div[id*="tribe-events-daynum-"]
-    > a,
-  #tribe-bar-form .tribe-bar-submit input[type="submit"],
+  .tribe-events-calendar td.tribe-events-present div[id*='tribe-events-daynum-'],
+  .tribe-events-calendar td.tribe-events-present div[id*='tribe-events-daynum-'] > a,
+  #tribe-bar-form .tribe-bar-submit input[type='submit'],
   .woocommerce #respond input#submit.alt,
   .woocommerce a.button.alt,
   .woocommerce button.button.alt,
   .woocommerce input.button.alt,
   #gp-dropdowncart .woocommerce a.button {
-    background-color: #26a9e0;
+    background-color: #0579bd;
   }
-  input[type="button"]:hover,
-  input[type="submit"]:hover,
-  input[type="reset"]:hover,
+  input[type='button']:hover,
+  input[type='submit']:hover,
+  input[type='reset']:hover,
   button:hover,
   .button:hover,
+  .wp-block-search__button:hover,
   .gp-theme #buddypress .comment-reply-link:hover,
   .gp-theme #buddypress a.button:hover,
   .gp-theme #buddypress button:hover,
   .gp-theme #buddypress div.generic-button a:hover,
-  .gp-theme #buddypress input[type="button"]:hover,
-  .gp-theme #buddypress input[type="reset"]:hover,
-  .gp-theme #buddypress input[type="submit"]:hover,
+  .gp-theme #buddypress input[type='button']:hover,
+  .gp-theme #buddypress input[type='reset']:hover,
+  .gp-theme #buddypress input[type='submit']:hover,
   .gp-theme #buddypress ul.button-nav li a:hover,
   a.bp-title-button:hover,
   .gp-theme #buddypress .activity-list #reply-title small a:hover span,
@@ -891,11 +1096,12 @@
   #gp-dropdowncart .woocommerce a.button:hover {
     background-color: #353535;
   }
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
   button,
   .button,
+  .wp-block-search__button,
   a.gp-notification-counter,
   a.gp-notification-counter:hover,
   #gp-cart-counter:hover,
@@ -903,9 +1109,9 @@
   .gp-theme #buddypress a.button,
   .gp-theme #buddypress button,
   .gp-theme #buddypress div.generic-button a,
-  .gp-theme #buddypress input[type="button"],
-  .gp-theme #buddypress input[type="reset"],
-  .gp-theme #buddypress input[type="submit"],
+  .gp-theme #buddypress input[type='button'],
+  .gp-theme #buddypress input[type='reset'],
+  .gp-theme #buddypress input[type='submit'],
   .gp-theme #buddypress ul.button-nav li a,
   a.bp-title-button,
   .gp-theme #buddypress .activity-list #reply-title small a span,
@@ -913,18 +1119,19 @@
   #gp-dropdowncart .woocommerce a.button {
     color: #ffffff;
   }
-  input[type="button"]:hover,
-  input[type="submit"]:hover,
-  input[type="reset"]:hover,
+  input[type='button']:hover,
+  input[type='submit']:hover,
+  input[type='reset']:hover,
   button,
   .button:hover,
+  .wp-block-search__button:hover,
   .gp-theme #buddypress .comment-reply-link:hover,
   .gp-theme #buddypress a.button:hover,
   .gp-theme #buddypress button:hover,
   .gp-theme #buddypress div.generic-button a:hover,
-  .gp-theme #buddypress input[type="button"]:hover,
-  .gp-theme #buddypress input[type="reset"]:hover,
-  .gp-theme #buddypress input[type="submit"]:hover,
+  .gp-theme #buddypress input[type='button']:hover,
+  .gp-theme #buddypress input[type='reset']:hover,
+  .gp-theme #buddypress input[type='submit']:hover,
   .gp-theme #buddypress ul.button-nav li a:hover,
   a.bp-title-button:hover,
   .gp-theme #buddypress .activity-list #reply-title small a span,
@@ -935,13 +1142,16 @@
   #gp-footer {
     background-color: #353535;
   }
-  .gp-footer-widget .widgettitle {
+  .gp-footer-widget .widgettitle,
+  .gp-footer-widget .widget-title,
+  .gp-footer-widget .wp-block-search__label {
     font-family: Roboto;
     line-height: 20px;
     font-weight: 300;
     font-style: normal;
     color: #fff;
     font-size: 16px;
+    font-display: swap;
   }
   .gp-footer-widget {
     font-family: Roboto;
@@ -950,6 +1160,7 @@
     font-style: normal;
     color: #ffffff;
     font-size: 14px;
+    font-display: swap;
   }
   .gp-footer-widget a {
     color: #f9bd16;
@@ -973,19 +1184,224 @@
     color: #e0e0e0;
   }
   #gp-to-top {
-    background-color: #26a9e0;
+    background-color: #0579bd;
   }
   #gp-to-top {
     color: #ffffff;
   }
+  .woocommerce ul.products li.product .price,
+  .woocommerce div.product p.price,
+  .woocommerce div.product span.price {
+    color: #00bee9;
+  }
+  .woocommerce span.onsale {
+    background-color: #e93100;
+  }
+  #buddypress .activity-list .activity-content .activity-header,
+  #buddypress .activity-list .activity-content .comment-header,
+  #buddypress .activity-list .activity-header a,
+  #buddypress .activity-list div.activity-comments div.acomment-meta,
+  #buddypress .activity-list .acomment-meta a,
+  .widget.buddypress .item-title a,
+  .widget.buddypress div.item-options.gp-small-item-options:before,
+  .widget.buddypress div.item-options a,
+  #buddypress ul.item-list li div.item-title a,
+  #buddypress ul.item-list li h4 > a,
+  #buddypress ul.item-list li h5 > a,
+  #buddypress div#item-header div#item-meta {
+    color: #000000;
+  }
+  #buddypress .activity-list .activity-content .activity-inner {
+    color: #aaaaaa;
+  }
+  #buddypress .activity-list a.activity-time-since,
+  .widget_display_replies ul li a + div,
+  .widget_display_topics ul li a + div,
+  #buddypress .activity-list .acomment-meta a.activity-time-since,
+  #buddypress .activity-list div.activity-comments div.acomment-content,
+  .widget.buddypress div.item-meta,
+  #buddypress span.activity,
+  #buddypress ul.item-list li div.meta {
+    color: #545454;
+  }
+  .gp-theme #buddypress .activity-list div.activity-meta a.button,
+  .gp-theme #buddypress .activity .acomment-options a,
+  .gp-theme #buddypress .activity-list li.load-more a,
+  .gp-theme #buddypress .activity-list li.load-newest a,
+  .widget.buddypress div.item-options a.selected {
+    color: #26a9e0;
+  }
+  .gp-theme #buddypress .activity-list div.activity-meta a.button:hover,
+  .gp-theme #buddypress .activity .acomment-options a:hover,
+  .gp-theme #buddypress .activity-list li.load-more a:hover,
+  .gp-theme #buddypress .activity-list li.load-newest a:hover,
+  .widget.buddypress div.item-options a.selected:hover {
+    color: #000;
+  }
+  .gp-theme #buddypress ul.item-list li,
+  .gp-theme #buddypress div.activity-comments ul li:first-child,
+  .widget.buddypress #friends-list li,
+  .widget.buddypress #groups-list li,
+  .widget.buddypress #members-list li {
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .gp-theme #buddypress div.item-list-tabs {
+    background-color: #353535;
+  }
+  .gp-theme #buddypress div.item-list-tabs ul li a span,
+  .gp-theme #buddypress div.item-list-tabs ul li a:hover span,
+  .gp-theme #buddypress div.item-list-tabs ul li.current a span,
+  .gp-theme #buddypress div.item-list-tabs ul li.selected a span {
+    color: #353535;
+  }
+  .gp-theme #buddypress div.item-list-tabs ul li a span {
+    background-color: #ffffff;
+  }
+  .gp-theme #buddypress div.item-list-tabs ul li a,
+  .gp-theme #buddypress #gp-bp-tabs-button,
+  .gp-theme #buddypress div.item-list-tabs ul li span {
+    color: #ffffff;
+  }
+  .gp-theme #buddypress div.item-list-tabs ul li.current a,
+  .gp-theme #buddypress div.item-list-tabs ul li.selected a,
+  .gp-theme #buddypress div.item-list-tabs ul li a:hover {
+    color: #b1b1b1;
+  }
+  .gp-theme #buddypress div.item-list-tabs ul li a:hover span,
+  .gp-theme #buddypress div.item-list-tabs ul li.current a span,
+  .gp-theme #buddypress div.item-list-tabs ul li.selected a span {
+    background: #b1b1b1;
+  }
+  .gp-theme #buddypress div.item-list-tabs#subnav ul,
+  .widget.buddypress div.item-options.gp-small-item-options > a {
+    background-color: #f8f8f8;
+  }
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li a span,
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li a:hover span,
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li.current a span,
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li.selected a span {
+    color: #f8f8f8;
+  }
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li a span {
+    background-color: #000000;
+  }
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li a {
+    color: #000000;
+  }
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li.current a,
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li.selected a,
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li a:hover {
+    color: #26a9e0;
+  }
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li a:hover span,
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li.current a span,
+  .gp-theme #buddypress div.item-list-tabs#subnav ul li.selected a span {
+    background: #26a9e0;
+  }
+  #bbpress-forums
+    .gp-forum-home.bbp-forums
+    .bbp-has-subforums
+    .bbp-forum-info
+    > .bbp-forum-title,
+  #bbpress-forums .bbp-topics .bbp-header,
+  #bbpress-forums .bbp-replies .bbp-header,
+  #bbpress-forums .bbp-search-results .bbp-header {
+    background-color: #353535;
+  }
+  #bbpress-forums
+    .gp-forum-home.bbp-forums
+    .bbp-has-subforums
+    .bbp-forum-info
+    > .bbp-forum-title,
+  #bbpress-forums .bbp-topics .bbp-header,
+  #bbpress-forums .bbp-replies .bbp-header,
+  #bbpress-forums .bbp-search-results .bbp-header {
+    color: #ffffff;
+  }
+  #bbpress-forums .bbp-header div.bbp-reply-content a {
+    color: #ddd;
+  }
+  #bbpress-forums .bbp-header div.bbp-reply-content a:hover {
+    color: #fff;
+  }
+  #bbpress-forums .bbp-forums-list li.odd-forum-row,
+  #bbpress-forums div.odd,
+  #bbpress-forums ul.odd {
+    background-color: #f8f8f8;
+  }
+  #bbpress-forums .bbp-forums-list li.even-forum-row,
+  #bbpress-forums div.even,
+  #bbpress-forums ul.even {
+    background-color: #fff;
+  }
+  #bbpress-forums .gp-forum-home.bbp-forums .bbp-forum-info > .bbp-forum-title,
+  #bbpress-forums div.bbp-forum-header,
+  #bbpress-forums div.bbp-topic-header,
+  #bbpress-forums div.bbp-reply-header,
+  #bbpress-forums .bbp-forums-list,
+  #bbpress-forums li.bbp-body {
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+  }
+  #bbpress-forums .bbp-forums-list .bbp-forum .bbp-forum-link,
+  body.forum #bbpress-forums .bbp-forums .bbp-forum-info > .bbp-forum-title,
+  #bbpress-forums .bbp-topics .bbp-topic-permalink,
+  #bbpress-forums .gp-forum-home.bbp-forums .bbp-forum-info > .bbp-forum-title,
+  .gp-theme
+    #bbpress-forums
+    .gp-forum-shortcode
+    ul.forum:not(.status-category)
+    .bbp-forum-info
+    a {
+    color: #000000;
+  }
+  #bbpress-forums div.bbp-forum-author .bbp-author-role,
+  #bbpress-forums div.bbp-topic-author .bbp-author-role,
+  #bbpress-forums div.bbp-reply-author .bbp-author-role {
+    background-color: #92d050;
+  }
+  #bbpress-forums div.bbp-forum-author .bbp-author-role,
+  #bbpress-forums div.bbp-topic-author .bbp-author-role,
+  #bbpress-forums div.bbp-reply-author .bbp-author-role {
+    color: #ffffff;
+  }
 </style>
+    <style id="kadence-blocks-global-variables-inline-css" type="text/css">
+      :root {
+        --global-kb-font-size-sm: clamp(0.8rem, 0.73rem + 0.217vw, 0.9rem);
+        --global-kb-font-size-md: clamp(1.1rem, 0.995rem + 0.326vw, 1.25rem);
+        --global-kb-font-size-lg: clamp(1.75rem, 1.576rem + 0.543vw, 2rem);
+        --global-kb-font-size-xl: clamp(2.25rem, 1.728rem + 1.63vw, 3rem);
+        --global-kb-font-size-xxl: clamp(2.5rem, 1.456rem + 3.26vw, 4rem);
+        --global-kb-font-size-xxxl: clamp(2.75rem, 0.489rem + 7.065vw, 6rem);
+      }
+    </style>
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500%7CRoboto%20Slab:400&#038;subset=latin&#038;display=swap&#038;ver=6.1.1"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500%7CRoboto%20Slab:400&#038;subset=latin&#038;display=swap&#038;ver=6.1.1"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500%7CRoboto%20Slab:400&#038;subset=latin&#038;display=swap&#038;ver=6.1.1"
+    /></noscript>
 <script
   type="text/javascript"
-  src="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-includes/js/jquery/jquery.min.js?ver=3.5.1"
+  src="https://www.envirodiy.org/wp-includes/js/jquery/jquery.min.js?ver=3.6.1"
   id="jquery-core-js"
 ></script>
 <script
   type="text/javascript"
-  src="https://3qzcxr28gq9vutx8scdn91zq-wpengine.netdna-ssl.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.3.2"
+  src="https://www.envirodiy.org/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.3.2"
   id="jquery-migrate-js"
 ></script>
