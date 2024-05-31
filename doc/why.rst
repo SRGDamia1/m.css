@@ -1,7 +1,7 @@
 ..
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020, 2021, 2022
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023
               Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
@@ -108,7 +108,7 @@ thought out, amazingly flexible and easily extensible to support
 .. note-warning::
 
     By all means, use Jekyll or Hugo, if you want --- but I can't promise that
-    all the :abbr:`reST <reStructuredText>` extensions I did are transferrable
+    all the :abbr:`reST <reStructuredText>` extensions I did are transferable
     elsewhere.
 
 Why the name?

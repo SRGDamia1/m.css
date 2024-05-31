@@ -1,7 +1,7 @@
 ..
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020, 2021, 2022
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023
               Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
@@ -85,7 +85,7 @@ into the ``documentation/`` directory:
 
 .. code:: sh
 
-    git clone git://github.com/mosra/m.css
+    git clone https://github.com/mosra/m.css
     cd m.css/documentation
 
 The script requires Python 3.6, depends on `Jinja2 <http://jinja.pocoo.org/>`_
@@ -2171,6 +2171,7 @@ Property                            Description
 :py:`func.is_conditional_noexcept`  If the function is conditionally
                                     :cpp:`noexcept`.
 :py:`func.is_constexpr`             If the function is :cpp:`constexpr`
+:py:`func.is_consteval`             If the function is :cpp:`consteval`
 :py:`func.is_defaulted`             If the function is :cpp:`default`\ ed
 :py:`func.is_deleted`               If the function is :cpp:`delete`\ d
 :py:`func.is_signal`                If the function is a Qt signal. Set only
