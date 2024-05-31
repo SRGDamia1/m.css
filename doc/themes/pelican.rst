@@ -1,7 +1,7 @@
 ..
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020, 2021, 2022
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023
               Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
@@ -136,7 +136,7 @@ example as a submodule:
 
 .. code:: sh
 
-    git submodule add git://github.com/mosra/m.css
+    git submodule add https://github.com/mosra/m.css
 
 The most minimal configuration to use the theme is the following. Basically you
 need to tell Pelican where the theme resides (it's in the ``pelican-theme/``

@@ -1,7 +1,7 @@
 ..
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020, 2021, 2022
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023
               Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
@@ -80,7 +80,7 @@ into the ``documentation/`` directory:
 
 .. code:: sh
 
-    git clone git://github.com/mosra/m.css
+    git clone https://github.com/mosra/m.css
     cd m.css/documentation
 
 The script requires Python 3.6 and depends on `Jinja2 <http://jinja.pocoo.org/>`_
