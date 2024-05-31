@@ -141,7 +141,7 @@
   --default-color: #000000;
   --default-link-active-color: #26a9e0;
   --default-filled-color: #353535;
-  --default-filled-background-color:  transparent;
+  --default-filled-background-color: transparent;
   --default-filled-link-color: #26a9e0;
   --default-filled-link-active-color: #26a9e0;
 
@@ -169,7 +169,7 @@
   --danger-color: #f60000;
   --danger-link-active-color: #f60000;
   --danger-filled-color: #920000;
-  --danger-filled-background-color:transparent;
+  --danger-filled-background-color: transparent;
   --danger-filled-link-color: #f60000;
   --danger-filled-link-active-color: #f60000;
 
