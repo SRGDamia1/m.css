@@ -176,7 +176,7 @@
   /* --info-color: #2e7dc5; */
   --info-color: #31708f;
   --info-link-active-color: #67cce0;
-  --info-filled-color: #81bcda;
+  --info-filled-color: #5dc1ed;
   --info-filled-background-color: transparent;
   --info-filled-link-color: #67cce0;
   --info-filled-link-active-color: #67cce0;
@@ -184,7 +184,7 @@
   --dim-color: #666;
   --dim-link-color: #949494;
   --dim-link-active-color: #949494;
-  --dim-filled-color: #7c7c7c;
+  --dim-filled-color: #9e9d9d;
   --dim-filled-background-color: transparent;
   --dim-filled-link-color: #c0c0c0;
   --dim-filled-link-active-color: #c0c0c0;

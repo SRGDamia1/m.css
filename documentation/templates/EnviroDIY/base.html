@@ -146,24 +146,15 @@
             <div id="m-search-button" class="m-show-m" onclick="return showSearch()">
             </div>
 					</div>
-
-          {# <div id="gp-search">
-            <div id="gp-search-button"></div>
+        {# <div id="gp-search-button"></div>
             <div id="gp-search-box">
-              <form method="get" class="searchform" action="https://www.envirodiy.org/">
-	              <input type="text" name="s" class="gp-search-bar" placeholder="search" />
+              <form class="searchform" {% if SEARCH_BASE_URL %} action="{{ SEARCH_BASE_URL }}#search"{% endif %}>
+                <input type="search" name="q" id="search-input"  class="gp-search-bar" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
+                <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.{% if SEARCH_EXTERNAL_URL %} Enable it or <a href="{{ SEARCH_EXTERNAL_URL|replace('{query}', '') }}">use an external search engine</a>.{% endif %}</noscript>
                 <button type="submit" class="gp-search-submit"></button>
               </form>
             </div>
 					</div> #}
-
-          {# <li class="m-show-m">
-            <a href="#search" class="m-doc-search-icon" title="Search" onclick="return showSearch()">
-              <svg style="height: 0.9rem;" viewBox="0 0 16 16">
-                <use href="#m-doc-search-icon-path" />
-              </svg>
-            </a>
-          </li> #}
           {% endif %}
 
           <nav id="gp-secondary-main-nav"></nav>
@@ -227,7 +218,7 @@
         <div class="gp-container">
           <div style="background-color:#fff;padding:20px;">
             <div class="m-doc-search-header m-text m-small">
-              <div><span class="m-label m-default">Tab</span> / <span class="m-label m-default">T</span> to search, <span class="m-label m-default">Esc</span> to close</div>
+              <div><span class="m-label m-info">Tab</span> / <span class="m-label m-info">T</span> to search, <span class="m-label m-info">Esc</span> to close</div>
               <div id="search-symbolcount">&hellip;</div>
             </div>
             <div class="m-doc-search-content">
