@@ -5,3 +5,4 @@ coverage/
 *.kdev4
 .history
 .vscode
+documentation/templates/EnviroDIY/gp_full*.html

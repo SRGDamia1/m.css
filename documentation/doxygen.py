@@ -3694,6 +3694,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         # Order roughly the same as in python.py default_config to keep those
         # two consistent
         ('PROJECT_NAME', None, str),
+        ('PROJECT_NUMBER', None, str),
         ('PROJECT_BRIEF', None, str),
         ('PROJECT_LOGO', None, str),
         ('PROJECT_REPOSITORY', None, str),
