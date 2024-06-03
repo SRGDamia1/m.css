@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>{% block title %}{{ PROJECT_NAME }}{% endblock %}</title>
+  <title>{% block title %}{{ PROJECT_NAME }}{{ PROJECT_NUMBER }}{% endblock %}</title>
   {% for css in STYLESHEETS %}
   <link rel="stylesheet" href="{{ css|basename_or_url|e }}" />
   {% endfor %}
@@ -65,32 +65,46 @@
   <div id="gp-page-wrapper">
 
     <header id="gp-main-header">
+      {% if PROJECT_LOGO %}
       <div class="gp-container">
         <div id="gp-logo">
-          <a href="index.html" title="{{ PROJECT_NAME }}">
+          {% if MAIN_PROJECT_URL %}
+          <a href="{{ MAIN_PROJECT_URL }}" title="{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}">
+          {% else %}
+          <a href="index.html" title="{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}">
+          {% endif %}
             <img
               src="{{ PROJECT_LOGO|basename_or_url|e }}"
-              alt="{{ PROJECT_NAME }}"
-                  width="200"
-                  height="42"
+              alt="{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}"
+              width="200"
+              height="42"
               class="gp-desktop-logo"
             />
             <img
               src="{{ PROJECT_LOGO|basename_or_url|e }}"
-              alt="{{ PROJECT_NAME }}"
+              alt="{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}"
               width="264"
               height="55"
               class="gp-scrolling-logo"
             />
             <img
               src="{{ PROJECT_LOGO|basename_or_url|e }}"
-              alt="{{ PROJECT_NAME }}"
+              alt="{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}"
               width="132"
               height="28"
               class="gp-mobile-logo"
             />
           </a>
         </div>
+        {% else %}
+        <div id="gp-logo">
+          {% if MAIN_PROJECT_URL %}
+          <a href="{{ MAIN_PROJECT_URL }}">{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}</a>
+          {% else %}
+          <a href="index.html">{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}</a>
+          {% endif %}
+        </div>
+        {% endif %}
 
         <a id="gp-mobile-nav-button"></a>
 
