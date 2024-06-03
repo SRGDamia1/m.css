@@ -59,15 +59,14 @@
     {% endfor %}
     </ul>
     {% endif %}
-  </nav>
-  {#- gp-mobile-nav -#}
+  </nav> <!-- gp-mobile-nav -->
   <div id="gp-mobile-nav-bg"></div>
 
   <div id="gp-page-wrapper">
 
     <header id="gp-main-header">
-      {% if PROJECT_LOGO %}
       <div class="gp-container">
+      {% if PROJECT_LOGO %}
         <div id="gp-logo">
           {% if MAIN_PROJECT_URL %}
           <a href="{{ MAIN_PROJECT_URL }}" title="{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}">
@@ -96,15 +95,97 @@
               class="gp-mobile-logo"
             />
           </a>
-        </div>
+        </div> <!-- gp-logo -->
         {% else %}
         <div id="gp-logo">
           {% if MAIN_PROJECT_URL %}
-          <a href="{{ MAIN_PROJECT_URL }}">{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}</a>
+          <a href="{{ MAIN_PROJECT_URL }}" title="{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}">
           {% else %}
-          <a href="index.html">{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}</a>
+          <a href="index.html" title="{{ PROJECT_NAME }} {{ PROJECT_NUMBER }}">
           {% endif %}
-        </div>
+
+            <svg class="gp-desktop-logo" width="200px" height="42px" onload="init(evt)">
+              <script type="text/ecmascript">
+                <![CDATA[
+
+                function init(evt)
+                {
+                    if ( window.svgDocument == null )
+                    {
+                        svgDocument = evt.target.ownerDocument;
+                    }
+                    maximum_width = 200;
+                    project_name = svgDocument.getElementById('project_name');
+                    for (var font_size=55; font_size>0; font_size--)
+                    {
+                        if(project_name.getComputedTextLength() < maximum_width){break;}
+                        project_name.setAttributeNS(null, "font-size", font_size);
+                        project_number.setAttributeNS(null, "font-size", font_size);
+                    }
+                }
+
+                ]]>
+              </script>
+
+              <text id="project_name" x="50%" y="50%" fill="#8ec551" font-size="55" text-anchor="middle">{{ PROJECT_NAME }}</text>
+              <text id="project_number" x="50%" y="100%" fill="#da9230" font-size="55" text-anchor="middle">{{ PROJECT_NUMBER }}</text>
+            </svg>
+
+            <svg class="gp-scrolling-logo" width="264px" height="55px" onload="init(evt)">
+              <script type="text/ecmascript">
+                <![CDATA[
+
+                function init(evt)
+                {
+                    if ( window.svgDocument == null )
+                    {
+                        svgDocument = evt.target.ownerDocument;
+                    }
+                    maximum_width = 264;
+                    project_name = svgDocument.getElementById('project_name');
+                    for (var font_size=55; font_size>0; font_size--)
+                    {
+                        if(project_name.getComputedTextLength() < maximum_width){break;}
+                        project_name.setAttributeNS(null, "font-size", font_size);
+                        project_number.setAttributeNS(null, "font-size", font_size);
+                    }
+                }
+
+                ]]>
+              </script>
+
+              <text id="project_name" x="50%" y="50%" fill="#8ec551" font-size="55" text-anchor="middle">{{ PROJECT_NAME }}</text>
+              <text id="project_number" x="50%" y="50%" fill="#da9230" font-size="55" text-anchor="middle">{{ PROJECT_NUMBER }}</text>
+            </svg>
+
+            <svg class="gp-mobile-logo" width="132px" height="28px" onload="init(evt)">
+              <script type="text/ecmascript">
+                <![CDATA[
+
+                function init(evt)
+                {
+                    if ( window.svgDocument == null )
+                    {
+                        svgDocument = evt.target.ownerDocument;
+                    }
+                    maximum_width = 200;
+                    project_name = svgDocument.getElementById('project_name');
+                    for (var font_size=55; font_size>0; font_size--)
+                    {
+                        if(project_name.getComputedTextLength() < maximum_width){break;}
+                        project_name.setAttributeNS(null, "font-size", font_size);
+                        project_number.setAttributeNS(null, "font-size", font_size);
+                    }
+                }
+
+                ]]>
+              </script>
+
+              <text id="project_name" x="50%" y="50%" fill="#8ec551" font-size="55" text-anchor="middle">{{ PROJECT_NAME }}</text>
+              <text id="project_number" x="50%" y="100%" fill="#da9230" font-size="55" text-anchor="middle">{{ PROJECT_NUMBER }}</text>
+            </svg>
+          </a>
+        </div> <!-- gp-logo -->
         {% endif %}
 
         <a id="gp-mobile-nav-button"></a>
@@ -139,30 +220,19 @@
               {% endfor %}
             </ul>
             {% endif %}
-          </nav>
+          </nav> <!-- gp-primary-main-nav -->
 
           {% if not SEARCH_DISABLED %}
           <div id="gp-search">
             <div id="m-search-button" class="m-show-m" onclick="return showSearch()">
-            </div>
-					</div>
-        {# <div id="gp-search-button"></div>
-            <div id="gp-search-box">
-              <form class="searchform" {% if SEARCH_BASE_URL %} action="{{ SEARCH_BASE_URL }}#search"{% endif %}>
-                <input type="search" name="q" id="search-input"  class="gp-search-bar" placeholder="Loading &hellip;" disabled="disabled" autofocus="autofocus" autocomplete="off" spellcheck="false" />
-                <noscript class="m-text m-danger m-text-center">Unlike everything else in the docs, the search functionality <em>requires</em> JavaScript.{% if SEARCH_EXTERNAL_URL %} Enable it or <a href="{{ SEARCH_EXTERNAL_URL|replace('{query}', '') }}">use an external search engine</a>.{% endif %}</noscript>
-                <button type="submit" class="gp-search-submit"></button>
-              </form>
-            </div>
-					</div> #}
+            </div> <!-- gp-search-box -->
+          </div> <!-- gp-search -->
           {% endif %}
 
           <nav id="gp-secondary-main-nav"></nav>
-        </nav>
-        {#- gp-main-nav -#}
-      </div>
-    </header>
-    {#- gp-main-header -#}
+        </nav> <!-- gp-main-nav -->
+      </div> <!-- gp-container -->
+    </header> <!-- gp-main-header -->
 
     <header id="gp-small-header">
       <div class="gp-container">
@@ -206,8 +276,7 @@
 
         </nav>
       </div>
-    </header>
-    {#- gp-small-header -#}
+    </header> <!-- gp-small-header -->
 
     <div id="gp-fixed-header-padding"></div>
 
@@ -267,13 +336,10 @@
               </article>
             </main>
 
-          </div>
-          {#- gp-content -#}
+          </div> <!-- gp-content -->
         {# </div> - gp-left-column - #}
-      </div>
-      {#- gp-inner-container -#}
-    </div>
-    {#- gp-content-wrapper -#}
+      </div> <!-- gp-inner-container -->
+    </div> <!-- gp-content-wrapper -->
 
     <div id="footer-image">
       <div class="gp-container">
@@ -342,10 +408,8 @@
 
     <div class="gp-clear"></div>
 
-    </div>
-    {#- gp-site-wrapper -#}
-  </div>
-  {#- gp-site-wrapper -#}
+    </div> <!-- gp-site-wrapper -->
+  </div> <!-- gp-site-wrapper -->
 
 
   {% include 'gp_scripts.html' %}
