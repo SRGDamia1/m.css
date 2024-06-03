@@ -24,7 +24,9 @@
   {% endif %}
 </head>
 
-<body class="home-page bp-legacy home page-template page-template-homepage-template page-template-homepage-template-php page page-id-977 logged-in admin-bar no-customize-support theme-socialize woocommerce-no-js tribe-no-js page-template-socialize-child gp-theme gp-responsive gp-wide-layout gp-retina gp-normal-scrolling gp-no-back-to-top gp-relative-header gp-header-standard gp-cart-disabled gp-search-all gp-profile-disabled gp-small-header-all gp-standard-page-header gp-no-sidebar gp-homepage wpb-js-composer js-comp-ver-6.10.0 vc_responsive no-js">
+<body
+    class="home-page bp-legacy home page-template page-template-homepage-template page-template-homepage-template-php page page-id-977 theme-socialize woocommerce-no-js tribe-no-js page-template-socialize-child gp-theme gp-responsive gp-wide-layout gp-retina gp-normal-scrolling gp-no-back-to-top gp-relative-header gp-header-standard gp-cart-disabled gp-search-all gp-profile-disabled gp-small-header-all gp-standard-page-header gp-no-sidebar gp-homepage wpb-js-composer js-comp-ver-7.6 vc_responsive no-js"
+>
 	<div id="gp-site-wrapper">
 
   <nav id="gp-mobile-nav">
@@ -33,33 +35,32 @@
     <ul class="menu">
       {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
         {% if not sub %}
-          <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-post_type menu-item-object-page">
-          {% if html %}{{ html }}{% else %}<a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>{% endif %}
-          </li>
+      <li
+        class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page"
+      >
+          {% if html %}{{ html }}{% else %}<a href="{{ link }}" class="menu-link main-menu-link">{{ title }}</a>{% endif %}
+      </li>
         {% else %}
-        <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-custom menu-item-object-custom menu-item-has-children">
-          {% if html %}
-            {{ html }}
-          {% else %}
-            <a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>
-          {% endif %}
-          <ul class="sub-menu menu-odd menu-depth-1">
-            {% for html, title, link, id in sub %}
-              <li class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-param-post_type menu-item-object-page">
-              {% if html %}
-                {{ html }}
-              {% else %}
-                <a class="menu-link sub-menu-link" href="{{ link }}">{{ title }}</a>
-              {% endif %}
-              </li>
-            {% endfor %}
-          </ul>
-        </li>
-        {% endif %}
-      {% endfor %}
+      <li
+        class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"
+      >
+          {% if html %}{{ html }}{% else %}<a href="{{ link }}" class="menu-link main-menu-link">{{ title }}</a>{% endif %}
+        <ul class="sub-menu menu-odd menu-depth-1">
+          {% for html, title, link, id in sub %}
+          <li
+            class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-type-post_type menu-item-object-page"
+          >
+            {% if html %}{{ html }}{% else %}<a class="menu-link sub-menu-link" href="{{ link }}">{{ title }}</a>{% endif %}
+          </li>
+        {% endfor %}
+        </ul>
+      </li>
+      {% endif %}
+    {% endfor %}
     </ul>
     {% endif %}
-  </nav> {#- gp-mobile-nav -#}
+  </nav>
+  {#- gp-mobile-nav -#}
   <div id="gp-mobile-nav-bg"></div>
 
   <div id="gp-page-wrapper">
@@ -111,34 +112,32 @@
         <nav id="gp-main-nav" class="gp-nav">
           <nav id="gp-primary-main-nav">
             {% if LINKS_NAVBAR1 or not SEARCH_DISABLED %}
-              <ul id="menu-main-menu-1" class="menu">
-              {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
-                {% if not sub %}
-                  <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-post_type menu-item-object-page">
-                  {% if html %}{{ html }}{% else %}<a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>{% endif %}
+            <ul id="menu-main-menu-1" class="menu">
+            {% for html, title, link, id, sub in LINKS_NAVBAR1 %}
+              {% if not sub %}
+              <li
+                class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page"
+              >
+              {% if html %}{{ html }}{% else %}<a href="{{ link }}"class="menu-link main-menu-link">{{ title }}</a>{% endif %}
+              </li>
+              {% else %}
+              <li
+                class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"
+              >
+              {% if html %}{{ html }}{% else %}<a href="{{ link }}" class="menu-link main-menu-link" >{{ title }}</a>{% endif %}
+                <ul class="sub-menu menu-odd menu-depth-1">
+                {% for html, title, link, id in sub %}
+                  <li
+                    class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-type-post_type menu-item-object-page"
+                  >
+                  {% if html %}{{ html }}{% else %}<a class="menu-link sub-menu-link" href="{{ link }}">{{ title }}</a>{% endif %}
                   </li>
-                {% else %}
-                <li class="gp-standard-menu gp-columns-1 gp-show-all main-menu-item menu-item-even menu-item-depth-0 menu-item menu-item-param-custom menu-item-object-custom menu-item-has-children">
-                  {% if html %}
-                    {{ html }}
-                  {% else %}
-                    <a class="menu-link main-menu-link" href="{{ link }}">{{ title }}</a>
-                  {% endif %}
-                  <ul class="sub-menu menu-odd menu-depth-1">
-                    {% for html, title, link, id in sub %}
-                      <li class="gp-standard-menu gp-menu-link gp-show-all sub-menu-item menu-item-odd menu-item-depth-1 menu-item menu-item-param-post_type menu-item-object-page">
-                      {% if html %}
-                        {{ html }}
-                      {% else %}
-                        <a class="menu-link sub-menu-link" href="{{ link }}">{{ title }}</a>
-                      {% endif %}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                </li>
+                {% endfor %}
+                </ul>
+              </li>
                 {% endif %}
               {% endfor %}
-              </ul>
+            </ul>
             {% endif %}
           </nav>
 
@@ -168,9 +167,11 @@
           {% endif %}
 
           <nav id="gp-secondary-main-nav"></nav>
-        </nav> {#- gp-main-nav -#}
+        </nav>
+        {#- gp-main-nav -#}
       </div>
-    </header> {#- gp-main-header -#}
+    </header>
+    {#- gp-main-header -#}
 
     <header id="gp-small-header">
       <div class="gp-container">
@@ -214,7 +215,8 @@
 
         </nav>
       </div>
-    </header> {#- gp-small-header -#}
+    </header>
+    {#- gp-small-header -#}
 
     <div id="gp-fixed-header-padding"></div>
 
@@ -274,55 +276,70 @@
               </article>
             </main>
 
-          </div> {#- gp-content -#}
-        {# </div> - gp-left-column - #}
-      </div> {#- gp-inner-container -#}
-    </div> {#- gp-content-wrapper -#}
-
-        <div id="footer-image">
-          <div class="gp-container">
-            <img
-              src="https://www.envirodiy.org/wp-content/uploads/2016/05/EnviroDIY_LogoMaster_Square_V5_TwoTree_Trans_notext-e1462820115833.png"
-              width="99"
-              height="22"
-              alt=""
-            />
           </div>
-        </div>
+          {#- gp-content -#}
+        {# </div> - gp-left-column - #}
+      </div>
+      {#- gp-inner-container -#}
+    </div>
+    {#- gp-content-wrapper -#}
+
+    <div id="footer-image">
+      <div class="gp-container">
+        <img
+          src="https://www.envirodiy.org/wp-content/uploads/2016/05/EnviroDIY_LogoMaster_Square_V5_TwoTree_Trans_notext-e1462820115833.png"
+          width="99"
+          height="22"
+          alt=""
+        />
+      </div>
+    </div>
 
     <footer id="gp-footer">
       <div id="gp-copyright">
         <div class="gp-container">
           <div id="gp-copyright-text">
             <p>
-              <a href="http://www.stroudcenter.org/" target="_blank"
-                ><img
-                  style="float: left; margin-right: 20px;"
-                  src="https://www.envirodiy.org/wp-content/uploads/2017/01/stroud-white-white-165px.png"
-                  alt=""
-                  width="165"
-                  height="70" /></a
-              >EnviroDIY™ is a community for do-it-yourself ideas for
-              environmental science and monitoring. EnviroDIY is an
-              initiative of
-              <a href="http://www.stroudcenter.org/" target="_blank"
-                >Stroud™ Water Research Center</a
-              >, which seeks to advance knowledge and stewardship of
-              freshwater systems through global research, education, and
-              watershed restoration.
+              <a href="https://stroudcenter.org/" target="_blank"
+                >EnviroDIY™ is a community for do-it-yourself ideas for environmental
+                science and monitoring. EnviroDIY is an initiative of
+                <a
+                  style="text-decoration: underline"
+                  href="https://stroudcenter.org/"
+                  target="_blank"
+                  >Stroud Water Research Center</a
+                >, which advances knowledge and stewardship of freshwater systems through
+                global research, education, and watershed restoration.
+              </a>
             </p>
             <p>
               All content on EnviroDIY is licensed as Creative Commons
-              Attribution-ShareAlike 4.0 International (CC-BY-SA). Hardware
-              designs on this website are released under the CERN Open
-              Hardware License 1.2.
-              <a href="https://envirodiy.org/licenses/"
-                >Alternative licenses are available.</a
+              Attribution-ShareAlike 4.0 International (CC-BY-SA). Hardware designs on this
+              website are released under the CERN Open Hardware License 1.2.
+              <a style="text-decoration: underline" href="https://envirodiy.org/licenses/"
+                >See all licenses.</a
               >
-              <a href="https://envirodiy.org/terms/">Terms of Use</a> |
-              <a href="https://envirodiy.org/privacy/">Privacy Policy</a> |
-              <a href="https://envirodiy.org/cookies/">Cookie Policy</a> |
-              <a href="https://envirodiy.org/contact/">Contact</a>
+              <a style="text-decoration: underline" href="https://envirodiy.org/terms/"
+                >Terms of Use</a
+              >
+              |
+              <a style="text-decoration: underline" href="https://envirodiy.org/privacy/"
+                >Privacy Policy</a
+              >
+              |
+              <a style="text-decoration: underline" href="https://envirodiy.org/cookies/"
+                >Cookie Policy</a
+              >
+              |
+              <a
+                style="text-decoration: underline"
+                href="https://envirodiy.org/shop-policies/"
+                >Shop Policies</a
+              >
+              |
+              <a style="text-decoration: underline" href="https://envirodiy.org/contact/"
+                >Contact</a
+              >
             </p>
             <p>
               Created with {% if DOXYGEN_VERSION %}<a href="https://doxygen.org/">Doxygen</a> {{ DOXYGEN_VERSION }} and {% endif %}<a href="https://mcss.mosra.cz/">m.css</a>.
@@ -334,8 +351,10 @@
 
     <div class="gp-clear"></div>
 
-    </div> {#- gp-site-wrapper -#}
-  </div> {#- gp-site-wrapper -#}
+    </div>
+    {#- gp-site-wrapper -#}
+  </div>
+  {#- gp-site-wrapper -#}
 
 
   {% include 'gp_scripts.html' %}
