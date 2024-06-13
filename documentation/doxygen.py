@@ -2468,7 +2468,7 @@ def extract_metadata(state: State, xml):
         for i in compounddef.findall('innerfile'):
             compound.children += [i.attrib['refid']]
     elif compounddef.attrib['kind'] == 'page':
-        for i in compounddef.findall('.//innerpage'):
+        for i in compounddef.findall('innerpage'):
             compound.children += [i.attrib['refid']]
     elif compounddef.attrib['kind'] == 'group':
         for i in compounddef.findall('innergroup'):
