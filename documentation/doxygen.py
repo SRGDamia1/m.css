@@ -614,7 +614,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 out.write_paragraph_close_tag = True
 
         # Block elements
-        if i.tag in ['sect1', 'sect2', 'sect3', 'sect4']:
+        if i.tag in ['sect1', 'sect2', 'sect3', 'sect4', 'sect5', 'sect6']:
             assert element.tag != 'para' # should be top-level block element
             has_block_elements = True
 
@@ -653,6 +653,11 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     tag = 'h4'
                 elif element.tag == 'sect4':
                     tag = 'h5'
+                elif element.tag == 'sect5':
+                    tag = 'h6'
+                elif element.tag == 'sect6':
+                    tag = 'h6'
+                    logging.warning("{}: more than five levels of sections in top level descriptions are not supported, stopping at <h6>".format(state.current))
                 elif not element.tag == 'simplesect': # pragma: no cover
                     assert False
 
@@ -666,7 +671,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     tag = 'h5'
                 elif element.tag == 'sect3':
                     tag = 'h6'
-                elif element.tag == 'sect4':
+                elif element.tag in ['sect4','sect5','sect6']:
                     tag = 'h6'
                     logging.warning("{}: more than three levels of sections in member descriptions are not supported, stopping at <h6>".format(state.current))
                 elif not element.tag == 'simplesect': # pragma: no cover
@@ -1425,7 +1430,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         # I'm hijacking the inner page to create page heirarchy without adding text to the pages
         # When the @subpage command is used on a page, it inserts a link on the original page
         # The @ingroup command doesn't work properly for pages parsed by m.css.
-        # So I'm adding an xml-only tag to the page for the m.css metadata reader to grap
+        # So I'm adding an xml-only tag to the page for the m.css metadata reader to grab
         # to get hierarchy without text
         elif i.tag=='innerpage':
             pass
@@ -1877,6 +1882,9 @@ def parse_inline_desc(state: State, element: ET.Element) -> str:
     return parsed.parsed
 
 def parse_enum(state: State, element: ET.Element):
+    if element.tag !='memberdef':
+        logging.warning(f"Ignoring enum {element.find('name').text} in {state.current} because it is not a memberdef")
+        return
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'enum'
 
     enum = Empty()
@@ -1988,6 +1996,9 @@ def parse_template_params(state: State, element: ET.Element, description):
     return has_template_details, templates
 
 def parse_typedef(state: State, element: ET.Element):
+    if element.tag !='memberdef':
+        logging.warning(f"Ignoring typedef {element.find('name').text} in {state.current} because it is not a memberdef")
+        return
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'typedef'
 
     typedef = Empty()
@@ -2259,6 +2270,9 @@ def parse_var(state: State, element: ET.Element):
     return None
 
 def parse_define(state: State, element: ET.Element):
+    if element.tag !='memberdef':
+        logging.warning(f"Ignoring define {element.find('name').text} in {state.current} because it is not a memberdef")
+        return
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'define'
 
     define = Empty()
@@ -3209,7 +3223,7 @@ def parse_xml(state: State, xml: str):
                             compound.friend_funcs += [func]
                             if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'user-defined':
+            # user defined groupings (\ingroup, \defgroup, \addtogroup, \weakgroup)
                 list = []
 
                 memberdef: ET.Element
@@ -3755,7 +3769,14 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         else: # pragma: no cover
             assert False
 
-        if alias:
+        # if we have a list and different information in the Doxyfile and the python config, combine the lists
+        if alias and state.config[alias] != default_config[alias] and value != default_config[alias] and type_ is list:
+            state.config[alias].extend(value)
+        # if it's not a list, and the information is different, use the python info and issue a warning
+        elif alias and state.config[alias] != default_config[alias] and value != default_config[alias]:
+            logging.warning(f"Ignoring {key} from doxyfile because {alias} has been set in the python config")
+        # If there's nothing in the python file, just use the Doxyfile
+        elif alias:
             state.config[alias] = value
         else:
             state.doxyfile[key] = value
@@ -4087,6 +4108,7 @@ if __name__ == '__main__': # pragma: no cover
         name, _ = os.path.splitext(os.path.basename(args.config))
         module = SourceFileLoader(name, args.config).load_module()
         if module is not None:
+            logging.debug(f"Reading python config from {args.config}")
             config.update((k, v) for k, v in inspect.getmembers(module) if k.isupper())
         doxyfile = os.path.join(os.path.dirname(os.path.abspath(args.config)), config['DOXYFILE'])
     else:
