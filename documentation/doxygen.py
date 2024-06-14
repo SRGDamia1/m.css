@@ -3769,12 +3769,20 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         else: # pragma: no cover
             assert False
 
-        # if we have a list and different information in the Doxyfile and the python config, combine the lists
-        if alias and state.config[alias] != default_config[alias] and value != default_config[alias] and type_ is list:
+        # if we have different information in this Doxyfile and what we've previously read and both are different from the default
+        if (alias and alias in state.config.keys() and state.config[alias] != default_config[alias] and value != default_config[alias]) or (
+                key in state.config.keys() and state.config[key] != default_config[key] and value != default_config[key]):
+            # if we have lists combine them
+            if type_ is list:
+                logging.warning(f"Extending {alias} with {key} from {doxyfile}")
             state.config[alias].extend(value)
-        # if it's not a list, and the information is different, use the python info and issue a warning
-        elif alias and state.config[alias] != default_config[alias] and value != default_config[alias]:
-            logging.warning(f"Ignoring {key} from doxyfile because {alias} has been set in the python config")
+            else:
+                # if it's not a list ignore it and issue a warning
+                logging.warning(f"Ignoring {value} for {key} from {doxyfile} because {alias} has already been set to {state.config[alias]}")
+        # if we have no information in this Doxyfile and a value was already set in the config, ignore the re-read default
+        elif (alias and alias in state.config.keys() and value == default_config[alias]) or (
+                key in state.config.keys() and value == default_config[key]):
+            logging.debug(f"Ignoring default value for {key} ({alias}) from {doxyfile}.")
         # If there's nothing in the python file, just use the Doxyfile
         elif alias:
             state.config[alias] = value
