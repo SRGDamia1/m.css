@@ -492,7 +492,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         # some silly reason, and then the Markdown is processed as a HTML,
         # resulting in <blockquote><para><zwj/>. Drop the <zwj/> from there, as
         # it's useless and messes up with our <para> patching logic.
-        if index == 0 and i.tag == 'zwj' and element.tag == 'para' and immediate_parent and immediate_parent.tag == 'blockquote':
+        if (
+            index == 0
+            and i.tag == "zwj"
+            and element.tag == "para"
+            and immediate_parent is not None
+            and immediate_parent.tag == "blockquote"
+        ):
             if i.tail:
                 tail: str = html.escape(i.tail)
                 if trim:
@@ -525,7 +531,11 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # In a blockquote we need to not count the initial <zwj/> added by
             # Doxygen 1.9. Otherwise all code blocks alone in a blockquote
             # would be treated as inline.
-            if element.tag == 'para' and immediate_parent and immediate_parent.tag == 'blockquote':
+            if (
+                element.tag == "para"
+                and immediate_parent is not None
+                and immediate_parent.tag == "blockquote"
+            ):
                 element_children_count = 0
                 for listing_index, listing in enumerate(element):
                     if listing_index == 0 and listing.tag == 'zwj': continue
@@ -633,7 +643,11 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 out.parsed = out.parsed.rstrip()
                 if not out.parsed:
                     out.write_paragraph_start_tag = False
-                elif immediate_parent and immediate_parent.tag == 'listitem' and i.tag in ['itemizedlist', 'orderedlist']:
+                elif (
+                    immediate_parent is not None
+                    and immediate_parent.tag == "listitem"
+                    and i.tag in ["itemizedlist", "orderedlist"]
+                ):
                     out.write_paragraph_start_tag = False
                 elif out.write_paragraph_close_tag:
                     out.parsed += '</p>'
@@ -1256,7 +1270,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 out.search_enum_values_as_keywords = True
 
             # Nothing else at the moment
-            else: assert False # pragma: no cover
+            else:
+                assert False  # pragma: no cover
 
         # Either block or inline
         elif i.tag == 'programlisting':
@@ -1350,9 +1365,14 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 # `.ext`
                 lexer = find_lexer_class_for_filename("code" + filename)
                 if not lexer:
-                    logging.warning("{}: unrecognized language of {} in <programlisting>, highlighting disabled".format(state.current, filename))
+                    logging.warning(
+                        "{}: unrecognized language of {} in <programlisting>, highlighting disabled".format(
+                            state.current, filename
+                        )
+                    )
                     lexer = TextLexer()
-                else: lexer = lexer()
+                else:
+                    lexer = lexer()
 
             # Style console sessions differently
             if (isinstance(lexer, BashSessionLexer) or
@@ -2483,7 +2503,14 @@ def extract_metadata(state: State, xml):
     # Groups are explicitly created so they *have details*, other
     # things need to have at least some documentation. Pages are treated as
     # having something unless they're stupid. See the function for details.
-    compound.has_details = compound.kind == 'group' or compound.brief or compounddef.find('detaileddescription') or (compound.kind == 'page' and not is_a_stupid_empty_markdown_page(compounddef))
+    compound.has_details = (
+        compound.kind == "group"
+        or compound.brief is not None
+        or compounddef.find("detaileddescription")
+        or (
+            compound.kind == "page" and not is_a_stupid_empty_markdown_page(compounddef)
+        )
+    )
     compound.children = []
     compound.childrenClasses = []
     compound.childrenNamespaces = []
@@ -2541,7 +2568,7 @@ def extract_metadata(state: State, xml):
         for i in compounddef.findall('innerfile'):
             compound.children += [i.attrib['refid']]
     elif compounddef.attrib['kind'] == 'page':
-        for i in compounddef.findall('innerpage'):
+        for i in compounddef.findall(".//innerpage"):
             compound.children += [i.attrib['refid']]
     elif compounddef.attrib['kind'] == 'group':
         for i in compounddef.findall('innergroup'):
@@ -3542,7 +3569,15 @@ def parse_xml(state: State, xml: str):
 
     # Add the compound to search data, if it's documented
     # TODO: add example sources there? how?
-    if not state.config['SEARCH_DISABLED'] and not compound.kind == 'example' and (compound.kind == 'group' or compound.brief or compounddef.find('detaileddescription')):
+    if (
+        not state.config["SEARCH_DISABLED"]
+        and not compound.kind == "example"
+        and (
+            compound.kind == "group"
+            or compound.brief is not None
+            or compounddef.find("detaileddescription")
+        )
+    ):
         if compound.kind == 'namespace':
             kind = EntryType.NAMESPACE
         elif compound.kind == 'struct':
@@ -3559,7 +3594,8 @@ def parse_xml(state: State, xml: str):
             kind = EntryType.PAGE
         elif compound.kind == 'group':
             kind = EntryType.GROUP
-        else: assert False # pragma: no cover
+        else:
+            assert False  # pragma: no cover
 
         result = Empty()
         result.flags = ResultFlag.from_type(ResultFlag.DEPRECATED if compound.deprecated else ResultFlag(0), kind)
@@ -4175,6 +4211,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         if urllib.parse.urlparse(i).netloc:
             logging.debug(f"Ignoring URL file: {i}")
             continue
+        logging.debug("Preparing to copy {} to output".format(i))
 
         # The search.js is special, we encode the version information into its
         # filename
