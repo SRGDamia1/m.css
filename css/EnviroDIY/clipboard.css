@@ -1,0 +1,43 @@
+/* The standard CSS for doxygen 1.11.0*/
+
+.clipboard {
+  width: 24px;
+  height: 24px;
+  right: 5px;
+  top: 5px;
+  opacity: 50;
+  position: absolute;
+  display: inline;
+  overflow: auto;
+  fill: var(--code-color);
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.clipboard.success {
+  border: 1px solid var(--code-color);
+  border-radius: 4px;
+}
+
+.fragment:hover .clipboard,
+.clipboard.success {
+  opacity: 0.28;
+}
+
+.clipboard:hover,
+.clipboard.success {
+  opacity: 1 !important;
+}
+
+.clipboard:active:not([class~='success']) svg {
+  transform: scale(0.91);
+}
+
+.clipboard.success svg {
+  fill: var(--success-color);
+}
+
+.clipboard.success {
+  border-color: var(--success-color);
+}

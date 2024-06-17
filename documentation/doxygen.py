@@ -48,7 +48,7 @@ from importlib.machinery import SourceFileLoader
 from jinja2 import Environment, FileSystemLoader
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
-from pygments.lexers import TextLexer, BashSessionLexer, get_lexer_by_name, find_lexer_class_for_filename
+from pygments.lexers import TextLexer, BashSessionLexer, ArduinoLexer, CppLexer, get_lexer_by_name, find_lexer_class_for_filename
 
 from _search import CssClass, ResultFlag, ResultMap, Trie, Serializer, serialize_search_data, base85encode_search_data, search_filename, searchdata_filename, searchdata_filename_b85, searchdata_format_version
 
@@ -57,6 +57,35 @@ import dot2svg
 import latex2svg
 import latex2svgextra
 import ansilexer
+
+
+class WrappedLineFormatter(HtmlFormatter):
+    def wrap(self, source):
+        return self._wrap_code(source)
+
+    # generator: returns 0, html if it's not a source line; 1, line if it is
+    def _wrap_code(self, source):
+        _prefix = ''
+        # _prefix = '<div class="fragment">'  # put code in a fragment block
+        # yield 0, _prefix + "<pre><code>"
+        yield 0, _prefix
+
+        for count, _t in enumerate(source):
+            i, t = _t
+            if i == 1:
+                # it's a highlighted line - add a div around it
+                _row = '<div class="line">{}</div>'.format(
+                    t
+                )
+                t = _row
+            yield i, t
+
+        # close open things
+        _postfix = ''
+        # _postfix = '</div>'
+        # yield 0, "</code></pre>" + _postfix
+        yield 0, _postfix
+
 
 class EntryType(enum.Enum):
     # Order must match the search_type_map below; first value is reserved for
@@ -75,6 +104,7 @@ class EntryType(enum.Enum):
     ENUM = 12
     ENUM_VALUE = 13
     VAR = 14
+
 
 # Order must match the EntryType above
 search_type_map = [
@@ -154,6 +184,7 @@ xref_id_rx = re.compile(r"""(.*)_1(_[a-z-0-9]+|@)$""")
 slugify_nonalnum_rx = re.compile(r"""[^\w\s-]""")
 slugify_hyphens_rx = re.compile(r"""[-\s]+""")
 
+
 class StateCompound:
     def __init__(self):
         self.id: str
@@ -176,6 +207,7 @@ class StateCompound:
 
     def __repr__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
+
 
 class State:
     def __init__(self, config):
@@ -207,6 +239,7 @@ class State:
 
     def __repr__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
+
 
 def slugify(text: str) -> str:
     # Maybe some Unicode normalization would be nice here?
@@ -364,6 +397,9 @@ def parse_type(state: State, type: ET.Element) -> str:
     return fix_type_spacing(out)
 
 def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.Element = None, trim = True, add_css_class = None):
+    logging.debug(
+        f"    Parsing internal description of {element.tag} in file {state.current}"
+    )
     out = Empty()
     out.section = None
     out.templates = {}
@@ -448,6 +484,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
     # of it need to take into account the <zwj/> skipping in Doxygen 1.9
     # blockquotes below.
     for index, i in enumerate(element):
+        logging.debug(
+            f"      Parsing internal description of {i.tag} in file {state.current}"
+        )
         # As of 1.9.3 and https://github.com/doxygen/doxygen/pull/7422, a
         # stupid &zwj; is added at the front of every Markdown blockquote for
         # some silly reason, and then the Markdown is processed as a HTML,
@@ -1319,13 +1358,24 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             if (isinstance(lexer, BashSessionLexer) or
                 isinstance(lexer, ansilexer.AnsiLexer)):
                 class_ = 'm-console'
+            elif (isinstance(lexer, CppLexer) or
+                isinstance(lexer, ArduinoLexer)):
+                class_ = 'm-code-arduino'
             else:
-                class_ = 'm-code'
+                class_ = 'm-code-pygments-default'
+
+            logging.debug(f"Formatting code for {filename} which {'is' if code_block else 'is not'} a code block with pygments lexer {lexer} using style class {class_}")
 
             if isinstance(lexer, ansilexer.AnsiLexer):
                 formatter = ansilexer.HtmlAnsiFormatter()
             else:
-                formatter = HtmlFormatter(nowrap=True)
+                formatter = WrappedLineFormatter(
+                    nowrap=False,
+                    wrapcode=True,
+                    linenos="inline",
+                    lineanchors="l",
+                    anchorlinenos=False,
+                )
 
             # Apply a global pre filter, if any
             filter = state.config['M_CODE_FILTERS_PRE'].get(lexer.name)
@@ -1341,7 +1391,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             if filter: highlighted = filter(highlighted)
 
             out.parsed += '<{0} class="{1}{2}">{3}</{0}>'.format(
-                'pre' if code_block else 'code',
+                # 'pre' if code_block else 'code',
+                'div' if code_block else 'code',
                 class_,
                 ' ' + add_css_class if code_block and add_css_class else '',
                 highlighted)
@@ -1801,6 +1852,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
     return out
 
+
 def parse_desc(state: State, element: ET.Element) -> str:
     if element is None: return ''
 
@@ -1881,7 +1933,9 @@ def parse_inline_desc(state: State, element: ET.Element) -> str:
     assert not parsed.section
     return parsed.parsed
 
+
 def parse_enum(state: State, element: ET.Element):
+    logging.debug(f"Parsing enum {element.find('name').text} in file {state.current}")
     if element.tag !='memberdef':
         logging.warning(f"Ignoring enum {element.find('name').text} in {state.current} because it is not a memberdef")
         return
@@ -1948,6 +2002,7 @@ def parse_enum(state: State, element: ET.Element):
         return enum
     return None
 
+
 def parse_template_params(state: State, element: ET.Element, description):
     if element is None: return False, None
     assert element.tag == 'templateparamlist'
@@ -1995,7 +2050,11 @@ def parse_template_params(state: State, element: ET.Element, description):
 
     return has_template_details, templates
 
+
 def parse_typedef(state: State, element: ET.Element):
+    logging.debug(
+        f"Parsing typedef {element.find('name').text} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}"
+    )
     if element.tag !='memberdef':
         logging.warning(f"Ignoring typedef {element.find('name').text} in {state.current} because it is not a memberdef")
         return
@@ -2027,7 +2086,11 @@ def parse_typedef(state: State, element: ET.Element):
         return typedef
     return None
 
+
 def parse_func(state: State, element: ET.Element):
+    logging.debug(
+        f"Parsing function {fix_type_spacing(html.escape(element.find('name').text))} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}"
+    )
     assert element.tag == 'memberdef' and element.attrib['kind'] in ['function', 'friend', 'signal', 'slot']
 
     func = Empty()
@@ -2235,7 +2298,11 @@ def parse_func(state: State, element: ET.Element):
     # /** @overload */ from file docs.
     return func if func.brief or can_have_details else None
 
+
 def parse_var(state: State, element: ET.Element):
+    logging.debug(
+        f"Parsing variable {fix_type_spacing(html.escape(element.find('name').text))} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}"
+    )
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'variable'
 
     var = Empty()
@@ -2269,7 +2336,11 @@ def parse_var(state: State, element: ET.Element):
         return var
     return None
 
+
 def parse_define(state: State, element: ET.Element):
+    logging.debug(
+        f"Parsing define {element.find('name').text} with tag {element.tag} in file {state.current}"
+    )
     if element.tag !='memberdef':
         logging.warning(f"Ignoring define {element.find('name').text} in {state.current} because it is not a memberdef")
         return
@@ -2314,6 +2385,7 @@ def parse_define(state: State, element: ET.Element):
         return define
     return None
 
+
 # Used for the M_SHOW_UNDOCUMENTED option
 def _document_all_stuff(compounddef: ET.Element):
     for i in compounddef.findall('.//briefdescription/..'):
@@ -2327,6 +2399,7 @@ def _document_all_stuff(compounddef: ET.Element):
             para = ET.Element('para')
             para.append(dim)
             brief.append(para)
+
 
 def is_a_stupid_empty_markdown_page(compounddef: ET.Element):
     assert compounddef.attrib['kind'] == 'page'
@@ -2482,6 +2555,7 @@ def extract_metadata(state: State, xml):
 
     state.compounds[compound.id] = compound
 
+
 def postprocess_state(state: State):
     # Save parent for each child
     for _, compound in state.compounds.items():
@@ -2564,6 +2638,7 @@ def postprocess_state(state: State):
                 sublinks += [resolve_link(*i)]
             links += [(html, title, url, id, sublinks)]
         state.config[var] = links
+
 
 def build_search_data(state: State, merge_subtrees=True, add_lookahead_barriers=True, merge_prefixes=True) -> bytearray:
     trie = Trie()
@@ -2762,6 +2837,8 @@ def parse_xml(state: State, xml: str):
     compound.has_var_details = False
     compound.has_define_details = False
 
+    logging.debug(f"  Parsing {compound.kind} in {state.current}")
+
     # Build breadcrumb. Breadcrumb for example pages is built after everything
     # is parsed.
     if compound.kind in ['namespace', 'group', 'struct', 'class', 'union', 'file', 'dir', 'page']:
@@ -2876,6 +2953,21 @@ def parse_xml(state: State, xml: str):
 
     compounddef_child: ET.Element
     for compounddef_child in compounddef:
+        # logging.debug(f"  Parsing {compounddef_child.tag} ({compounddef_child.attrib['kind'] if 'kind' in compounddef_child.attrib.keys() else ""}) within {compound.name} ({compound.kind})")
+        logging.debug(
+            "    Parsing {} ({}) within {} ({}) in {}".format(
+                compounddef_child.tag,
+                (
+                    compounddef_child.attrib['kind']
+                    if 'kind' in compounddef_child.attrib.keys()
+                    else ""
+                ),
+                compound.name,
+                compound.kind,
+                state.current,
+            )
+        )
+
         # Directory / file
         if compounddef_child.tag in ['innerdir', 'innerfile']:
             id = compounddef_child.attrib['refid']
@@ -3018,44 +3110,44 @@ def parse_xml(state: State, xml: str):
 
         # Other, grouped in sections
         elif compounddef_child.tag == 'sectiondef':
-            if compounddef_child.attrib['kind'] == 'enum':
+            if compounddef_child.attrib['kind'] == 'enum':  # enum section
                 for memberdef in compounddef_child:
                     enum = parse_enum(state, memberdef)
                     if enum:
                         compound.enums += [enum]
                         if enum.has_details: compound.has_enum_details = True
 
-            elif compounddef_child.attrib['kind'] == 'typedef':
+            elif compounddef_child.attrib['kind'] == 'typedef':  # typedef section
                 for memberdef in compounddef_child:
                     typedef = parse_typedef(state, memberdef)
                     if typedef:
                         compound.typedefs += [typedef]
                         if typedef.has_details: compound.has_typedef_details = True
 
-            elif compounddef_child.attrib['kind'] == 'func':
+            elif compounddef_child.attrib['kind'] == 'func':  # func section
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
                         compound.funcs += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'var':
+            elif compounddef_child.attrib['kind'] == 'var':  # var section
                 for memberdef in compounddef_child:
                     var = parse_var(state, memberdef)
                     if var:
                         compound.vars += [var]
                         if var.has_details: compound.has_var_details = True
 
-            elif compounddef_child.attrib['kind'] == 'define':
+            elif compounddef_child.attrib['kind'] == 'define':  # define section
                 for memberdef in compounddef_child:
                     define = parse_define(state, memberdef)
                     if define:
                         compound.defines += [define]
                         if define.has_details: compound.has_define_details = True
 
-            elif compounddef_child.attrib['kind'] == 'public-type':
+            elif compounddef_child.attrib['kind'] == 'public-type':  # public-type section
                 for memberdef in compounddef_child:
-                    if memberdef.attrib['kind'] == 'enum':
+                    if memberdef.attrib['kind'] == 'enum':  # enum within public-type section
                         member = parse_enum(state, memberdef)
                         if member and member.has_details: compound.has_enum_details = True
                     else:
@@ -3065,14 +3157,14 @@ def parse_xml(state: State, xml: str):
 
                     if member: compound.public_types += [(memberdef.attrib['kind'], member)]
 
-            elif compounddef_child.attrib['kind'] == 'public-static-func':
+            elif compounddef_child.attrib['kind'] == 'public-static-func':  # public-static-func section
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
                         compound.public_static_funcs += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'public-func':
+            elif compounddef_child.attrib['kind'] == 'public-func':  # public-func section
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
@@ -3082,37 +3174,37 @@ def parse_xml(state: State, xml: str):
                             compound.typeless_funcs += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'signal':
+            elif compounddef_child.attrib['kind'] == 'signal':  # signal section
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
                         compound.signals += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'public-slot':
+            elif compounddef_child.attrib['kind'] == 'public-slot':  # public-slot section
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
                         compound.public_slots += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'public-static-attrib':
+            elif compounddef_child.attrib['kind'] == 'public-static-attrib':  # public-static-attrib section
                 for memberdef in compounddef_child:
                     var = parse_var(state, memberdef)
                     if var:
                         compound.public_static_vars += [var]
                         if var.has_details: compound.has_var_details = True
 
-            elif compounddef_child.attrib['kind'] == 'public-attrib':
+            elif compounddef_child.attrib['kind'] == 'public-attrib':  # public-attrib section
                 for memberdef in compounddef_child:
                     var = parse_var(state, memberdef)
                     if var:
                         compound.public_vars += [var]
                         if var.has_details: compound.has_var_details = True
 
-            elif compounddef_child.attrib['kind'] == 'protected-type':
+            elif compounddef_child.attrib['kind'] == 'protected-type':  # protected-type section
                 for memberdef in compounddef_child:
-                    if memberdef.attrib['kind'] == 'enum':
+                    if memberdef.attrib['kind'] == 'enum':  # enum within protected-type section
                         member = parse_enum(state, memberdef)
                         if member and member.has_details: compound.has_enum_details = True
                     else:
@@ -3122,14 +3214,14 @@ def parse_xml(state: State, xml: str):
 
                     if member: compound.protected_types += [(memberdef.attrib['kind'], member)]
 
-            elif compounddef_child.attrib['kind'] == 'protected-static-func':
+            elif compounddef_child.attrib['kind'] == 'protected-static-func':  # protected-static-func section
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
                         compound.protected_static_funcs += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'protected-func':
+            elif compounddef_child.attrib['kind'] == 'protected-func':  # protected-func section
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
@@ -3139,21 +3231,21 @@ def parse_xml(state: State, xml: str):
                             compound.typeless_funcs += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'protected-slot':
+            elif compounddef_child.attrib['kind'] == 'protected-slot':  # protected-slot section
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
                         compound.protected_slots += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'protected-static-attrib':
+            elif compounddef_child.attrib['kind'] == 'protected-static-attrib':  # protected-static-attrib section
                 for memberdef in compounddef_child:
                     var = parse_var(state, memberdef)
                     if var:
                         compound.protected_static_vars += [var]
                         if var.has_details: compound.has_var_details = True
 
-            elif compounddef_child.attrib['kind'] == 'protected-attrib':
+            elif compounddef_child.attrib['kind'] == 'protected-attrib':  # protected-attrib section
                 for memberdef in compounddef_child:
                     var = parse_var(state, memberdef)
                     if var:
@@ -3176,29 +3268,29 @@ def parse_xml(state: State, xml: str):
                             compound.private_funcs += [func]
                         if func.has_details: compound.has_func_details = True
 
-            elif compounddef_child.attrib['kind'] == 'related':
+            elif compounddef_child.attrib['kind'] == 'related':  # related section
                 for memberdef in compounddef_child:
-                    if memberdef.attrib['kind'] == 'enum':
+                    if memberdef.attrib['kind'] == 'enum':  # enum within related section
                         enum = parse_enum(state, memberdef)
                         if enum:
                             compound.related += [('enum', enum)]
                             if enum.has_details: compound.has_enum_details = True
-                    elif memberdef.attrib['kind'] == 'typedef':
+                    elif memberdef.attrib['kind'] == 'typedef':  # typedef within related section
                         typedef = parse_typedef(state, memberdef)
                         if typedef:
                             compound.related += [('typedef', typedef)]
                             if typedef.has_details: compound.has_typedef_details = True
-                    elif memberdef.attrib['kind'] == 'function':
+                    elif memberdef.attrib['kind'] == 'function':  # function within related section
                         func = parse_func(state, memberdef)
                         if func:
                             compound.related += [('func', func)]
                             if func.has_details: compound.has_func_details = True
-                    elif memberdef.attrib['kind'] == 'variable':
+                    elif memberdef.attrib['kind'] == 'variable':  # variable within related section
                         var = parse_var(state, memberdef)
                         if var:
                             compound.related += [('var', var)]
                             if var.has_details: compound.has_var_details = True
-                    elif memberdef.attrib['kind'] == 'define':
+                    elif memberdef.attrib['kind'] == 'define':  # define within related section
                         define = parse_define(state, memberdef)
                         if define:
                             compound.related += [('define', define)]
@@ -3206,7 +3298,7 @@ def parse_xml(state: State, xml: str):
                     else: # pragma: no cover
                         logging.warning("{}: unknown related <memberdef> kind {}".format(state.current, memberdef.attrib['kind']))
 
-            elif compounddef_child.attrib['kind'] == 'friend':
+            elif compounddef_child.attrib['kind'] == 'friend':  # friend section
                 for memberdef in compounddef_child:
                     # Ignore friend classes. This does not ignore friend
                     # classes written as `friend Foo;`, those are parsed as
@@ -3224,21 +3316,25 @@ def parse_xml(state: State, xml: str):
                             if func.has_details: compound.has_func_details = True
 
             # user defined groupings (\ingroup, \defgroup, \addtogroup, \weakgroup)
+            elif compounddef_child.attrib['kind'] == 'user-defined':  # user-defined section (group)
                 list = []
 
                 memberdef: ET.Element
                 for memberdef in compounddef_child.findall('memberdef'):
-                    if memberdef.attrib['kind'] == 'enum':
+                    logging.debug(
+                        f"Parsing user-defined compound of kind: {memberdef.attrib['kind']}"
+                    )
+                    if memberdef.attrib['kind'] == 'enum':  # enum within user-defined section/group
                         enum = parse_enum(state, memberdef)
                         if enum:
                             list += [('enum', enum)]
                             if enum.has_details: compound.has_enum_details = True
-                    elif memberdef.attrib['kind'] == 'typedef':
+                    elif memberdef.attrib['kind'] == 'typedef':  # typedef within user-defined section/group
                         typedef = parse_typedef(state, memberdef)
                         if typedef:
                             list += [('typedef', typedef)]
                             if typedef.has_details: compound.has_typedef_details = True
-                    elif memberdef.attrib['kind'] in ['function', 'signal', 'slot']:
+                    elif memberdef.attrib['kind'] in ['function', 'signal', 'slot']:  # functions within user-defined section/group
                         # Gather only private functions that are virtual and
                         # documented
                         if memberdef.attrib['prot'] == 'private' and (memberdef.attrib['virt'] == 'non-virtual' or (not memberdef.find('briefdescription').text and not memberdef.find('detaileddescription').text)):
@@ -3249,17 +3345,17 @@ def parse_xml(state: State, xml: str):
                         if func:
                             list += [('func', func)]
                             if func.has_details: compound.has_func_details = True
-                    elif memberdef.attrib['kind'] == 'variable':
+                    elif memberdef.attrib['kind'] == 'variable':  # variable within user-defined section/group
                         var = parse_var(state, memberdef)
                         if var:
                             list += [('var', var)]
                             if var.has_details: compound.has_var_details = True
-                    elif memberdef.attrib['kind'] == 'define':
+                    elif memberdef.attrib['kind'] == 'define':  # define within user-defined section/group
                         define = parse_define(state, memberdef)
                         if define:
                             list += [('define', define)]
                             if define.has_details: compound.has_define_details = True
-                    elif memberdef.attrib['kind'] == 'friend':
+                    elif memberdef.attrib['kind'] == 'friend':  # friend within user-defined section/group
                         # Ignore friend classes. This does not ignore friend
                         # classes written as `friend Foo;`, those are parsed as
                         # variables (ugh). Since Doxygen 1.9 the `friend `
@@ -3286,6 +3382,17 @@ def parse_xml(state: State, xml: str):
                         group.description = parse_desc(state, compounddef_child.find('description'))
                         group.members = list
                         compound.groups += [group]
+                else:
+                    logging.debug(
+                        "{}: no memberdefs found within user-defined group {}".format(
+                            state.current,
+                            (
+                                compounddef_child.find('header').text
+                                if compounddef_child.find('header') is not None
+                                else "un-named"
+                            ),
+                        )
+                    )
 
             elif compounddef_child.attrib['kind'] not in ['private-type',
                                                           'private-static-func',
@@ -3467,6 +3574,7 @@ def parse_xml(state: State, xml: str):
     parsed.compound = compound
     return parsed
 
+
 def parse_index_xml(state: State, xml):
     logging.debug("Parsing {}".format(os.path.basename(xml)))
 
@@ -3588,6 +3696,7 @@ def parse_index_xml(state: State, xml):
         parsed.index.pages = [entries['indexpage']] + parsed.index.pages
 
     return parsed
+
 
 def parse_doxyfile(state: State, doxyfile, values = None):
     # Use top-level Doxyfile path as base, don't let it get overridden by
@@ -3775,7 +3884,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
             # if we have lists combine them
             if type_ is list:
                 logging.warning(f"Extending {alias} with {key} from {doxyfile}")
-            state.config[alias].extend(value)
+                state.config[alias].extend(value)
             else:
                 # if it's not a list ignore it and issue a warning
                 logging.warning(f"Ignoring {value} for {key} from {doxyfile} because {alias} has already been set to {state.config[alias]}")
@@ -3801,6 +3910,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         'files': ("Files", 'files.html'),
         'index': ("Main Page", 'index.html')
     }
+
     def extract_link(link):
         # If this is a HTML code, return it as a one-item tuple
         if link.startswith('<a'):
@@ -4062,7 +4172,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     # Copy all referenced files
     for i in state.images + state.config['STYLESHEETS'] + state.config['EXTRA_FILES'] + ([state.doxyfile['PROJECT_LOGO']] if state.doxyfile['PROJECT_LOGO'] else []) + ([state.config['FAVICON'][0]] if state.config['FAVICON'] else []) + ([] if state.config['SEARCH_DISABLED'] else ['search.js']):
         # Skip absolute URLs
-        if urllib.parse.urlparse(i).netloc: continue
+        if urllib.parse.urlparse(i).netloc:
+            logging.debug(f"Ignoring URL file: {i}")
+            continue
 
         # The search.js is special, we encode the version information into its
         # filename

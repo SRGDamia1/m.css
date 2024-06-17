@@ -28,9 +28,7 @@
   /* prettier-ignore */
   --font: 'Roboto', sans-serif;
   /* prettier-ignore */
-  --code-font: 'Monaco', monospace;
   --font-size: 14px;
-  --code-font-size: 0.95em; /* *not* rem, so it follows surrounding font size */
   --table-font-size: 0.9em; /* *not* rem, so it follows surrounding font size */
   --line-height: normal;
   --paragraph-indent: 1.5rem;
@@ -62,14 +60,29 @@
   --link-active-color: #26a9e0;
   --mark-color: #4c93d3;
   --mark-background-color: #e6e69c;
+
+  /* Code block colors */
+  --code-font: 'Monaco', monospace;
+  --code-font-size: 0.95em; /* *not* rem, so it follows surrounding font size */
+  --code-line-height: normal;
   --code-color: #000000;
+  --code-background-color: #f7f7f7;
+  /* This is simply color-picked --code-note-background-color on top of
+     --background-color */
+  --code-note-background-color: rgba(251, 240, 236, 0.5);
+  --code-border-color: #30363D;
+
+  --code-lineno-border-color: #a19191;
+  --code-lineno-color: #aaeaff;
+  --code-lineno-background-color: transparent;
+  --code-lineno-link-color: #26a9e0;
+  --code-lineno-link-bg-color: transparent;
+  --code-lineno-link-hover-color: #26a9e0;
+  --code-lineno-link-hover-bg-color: transparent;
+
   --code-inverted-color: rgba(91, 91, 91, 0.33);
   --console-color: var(--code-color);
   --console-inverted-color: var(--code-inverted-color);
-  /* This is simply color-picked --code-note-background-color on top of
-     --background-color */
-  --code-background-color: #f7f7f7;
-  --code-note-background-color: rgba(251, 240, 236, 0.5);
   --console-background-color: #f7f7f7;
   --button-background-color: #ffffff;
 

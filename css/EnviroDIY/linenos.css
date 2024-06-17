@@ -1,0 +1,85 @@
+/* The standard CSS for doxygen 1.11.0*/
+
+.highlight {
+  text-align: left;
+  direction: ltr;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  min-height: 12px;
+  margin: 10px 0px;
+  padding: 10px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--code-background-color);
+  color: var(--code-color);
+  line-height: var(--code-line-height);
+}
+
+pre.highlight {
+  word-wrap: break-word;
+  font-family: var(--code-font);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  padding: 0px;
+}
+
+.m-code-pygments-default { background: var(--code-background-color) }
+.m-code-pygments-arduino { background: var(--code-background-color) }
+
+div.line {
+  font-family: var(--code-font);
+  /* font-size: 13px;
+  min-height: 13px;
+  line-height: 1.2; */
+  text-wrap: unrestricted;
+  text-indent: -53px;
+  padding-left: 53px;
+  padding-bottom: 0px;
+  margin: 0px;
+  transition-property: background-color, box-shadow;
+  transition-duration: 0.5s;
+}
+
+div.line:after {
+  content: '\000A';
+  white-space: pre;
+}
+
+/* div.line.glow {
+  background-color: var(--glow-color);
+  box-shadow: 0 0 10px var(--glow-color);
+} */
+
+/* span.fold {
+  margin-left: 5px;
+  margin-right: 1px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 0px;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-repeat: no-repeat;
+  background-position: center;
+} */
+
+span.linenos {
+  padding-right: 4px;
+  margin-right: 9px;
+  text-align: right;
+  border-right: 0.5px solid var(--code-lineno-border-color);
+  color: var(--code-lineno-color);
+  background-color: var(--code-lineno-background-color);
+  white-space: pre;
+}
+span.linenos a,
+span.linenos a:visited {
+  color: var(--code-lineno-link-color);
+  background-color: var(--code-lineno-link-bg-color);
+}
+
+span.linenos a:hover {
+  color: var(--code-lineno-link-hover-color);
+  background-color: var(--code-lineno-link-hover-bg-color);
+}

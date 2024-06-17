@@ -33,4 +33,10 @@
 /* prettier-ignore */
 @import url('pygments-arduino.css');
 /* prettier-ignore */
+@import url('pygments-default.css');
+/* prettier-ignore */
 @import url('pygments-console.css');
+/* prettier-ignore */
+@import url('clipboard.css');
+/* prettier-ignore */
+@import url('linenos.css');
