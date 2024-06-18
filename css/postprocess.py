@@ -136,6 +136,7 @@ def postprocess(files, process_imports, out_file):
                 out.write(line)
 
     with open(out_file, mode='w', encoding='utf8') as out:
+        print(f"Writing compiled css to {out_file}")
         # Put a helper comment and a license blob on top
         out.write("""/* Generated using `./postprocess.py {}`. Do not edit. */
 
@@ -166,6 +167,7 @@ def postprocess(files, process_imports, out_file):
 """.format(' '.join(sys.argv[1:])))
 
         # Parse the top-level file
+        print(f"-Parsing top-level file {files[0]}")
         with open(files[0], encoding='utf8') as f: parse(f)
 
         # Now open the imported files and parse them as well. Not doing any
@@ -173,6 +175,7 @@ def postprocess(files, process_imports, out_file):
         for i, file in enumerate(imported_files + files[1:]):
             if i: out.write('\n')
 
+            print(f"--Parsing included file {file}")
             with open(file, encoding='utf8') as f: parse(f)
 
     return 0
