@@ -4235,10 +4235,12 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         # If file is found relative to the Doxyfile, use that
         if os.path.exists(os.path.join(state.basedir, i)):
             i = os.path.join(state.basedir, i)
+            logging.debug("File found relative to doxyfile at {}".format(i))
 
         # Otherwise use path relative to script directory
         else:
             i = os.path.join(os.path.dirname(os.path.realpath(__file__)), i)
+            logging.debug("File found relative to m.css script at {}".format(i))
 
         logging.debug("copying {} to output".format(i))
         shutil.copy(i, os.path.join(html_output, os.path.basename(file_out)))
