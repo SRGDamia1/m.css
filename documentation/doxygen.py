@@ -2431,7 +2431,14 @@ def is_a_stupid_empty_markdown_page(compounddef: ET.Element):
     # everything that starts with md_ and ends with the same thing as the title
     # (which means there's no explicit title). We *do* want to preserve empty
     # pages with custom titles.
-    return compounddef.find('compoundname').text.startswith('md_') and compounddef.find('compoundname').text.endswith(compounddef.find('title').text) and not compounddef.find('briefdescription') and not compounddef.find('detaileddescription')
+    return (
+        compounddef.find("compoundname").text.startswith("md_")
+        and compounddef.find("compoundname").text.endswith(
+            compounddef.find("title").text
+        )
+        and compounddef.find("briefdescription") is None
+        and compounddef.find("detaileddescription") is None
+    )
 
 def extract_metadata(state: State, xml):
     # parse_desc() / parse_inline_desc() is called from here, be sure to set
@@ -2798,7 +2805,15 @@ def parse_xml(state: State, xml: str):
     # Ignoring compounds w/o any description, except for groups,
     # which are created explicitly. Pages are treated as having something
     # unless they're stupid. See the function for details.
-    if not compounddef.find('briefdescription') and not compounddef.find('detaileddescription') and not compounddef.attrib['kind'] == 'group' and (not compounddef.attrib['kind'] == 'page' or is_a_stupid_empty_markdown_page(compounddef)):
+    if (
+        compounddef.find("briefdescription") is None
+        and compounddef.find("detaileddescription") is None
+        and not compounddef.attrib["kind"] == "group"
+        and (
+            not compounddef.attrib["kind"] == "page"
+            or is_a_stupid_empty_markdown_page(compounddef)
+        )
+    ):
         logging.debug("{}: neither brief nor detailed description present, skipping".format(state.current))
         return None
 
