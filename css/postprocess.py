@@ -136,7 +136,9 @@ def postprocess(files, process_imports, out_file):
                 out.write(line)
 
     with open(out_file, mode='w', encoding='utf8') as out:
+        full_output_path = os.path.abspath(os.path.realpath(out_file))
         print(f"Writing compiled css to {out_file}")
+        print(f"Full path for output: {full_output_path}")
         # Put a helper comment and a license blob on top
         out.write("""/* Generated using `./postprocess.py {}`. Do not edit. */
 
