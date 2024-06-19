@@ -6,7 +6,9 @@
   {% for css in STYLESHEETS %}
   <link rel="stylesheet" href="{{ css|basename_or_url|e }}" />
   {% endfor %}
+
   {% include 'gp_stylesheets.html' %}
+
   {% if FAVICON %}
   <link rel="icon" href="{{ FAVICON[0]|basename_or_url|e }}" type="{{ FAVICON[1] }}" />
   {% endif %}
@@ -27,7 +29,7 @@
 </head>
 
 <body
-    class="home-page bp-legacy home page-template page-template-homepage-template page-template-homepage-template-php page page-id-977 theme-socialize woocommerce-no-js tribe-no-js page-template-socialize-child gp-theme gp-responsive gp-wide-layout gp-retina gp-normal-scrolling gp-no-back-to-top gp-relative-header gp-header-standard gp-cart-disabled gp-search-all gp-profile-disabled gp-small-header-all gp-standard-page-header gp-no-sidebar gp-homepage wpb-js-composer js-comp-ver-7.6 vc_responsive no-js"
+    class="theme-socialize page-template-socialize-child gp-theme gp-responsive gp-wide-layout gp-retina gp-normal-scrolling gp-no-back-to-top gp-relative-header gp-header-standard gp-cart-disabled gp-search-all gp-profile-disabled gp-small-header-all gp-standard-page-header gp-no-sidebar"
 >
 	<div id="gp-site-wrapper">
 
@@ -313,25 +315,31 @@
 
     <div id="gp-content-wrapper" class="gp-container">
       <div id="gp-inner-container">
-        {# <div id="gp-left-column"> #}
+        <div id="gp-left-column">
           <div id="gp-content">
 
             <main>
               <article>
-                <div class="m-container m-container-inflatable">
-                  <div class="m-row">
-                    <div class="m-col-l-10 m-push-l-1">
-                    {% block main %}
-                    {% endblock %}
-
-                    </div>
-                  </div>
+                <div class="breadcrumbs" typeof="BreadcrumbList" vocab="http://schema.org/">
+                  {% block breadcrumbs %}
+                  {% endblock %}
                 </div>
+                <header class="gp-entry-header">
+                  <h1 class="gp-entry-title" itemprop="headline">
+                  {% block entry_header %}
+                  {% endblock %}
+                  {# need an explicit space here otherwise the newline gets removed #}
+
+
+                </h1>
+                </header>
+                {% block main %}
+                {% endblock %}
               </article>
             </main>
 
           </div> <!-- gp-content -->
-        {# </div> - gp-left-column - #}
+        </div> <!-- gp-left-column -->
       </div> <!-- gp-inner-container -->
     </div> <!-- gp-content-wrapper -->
 

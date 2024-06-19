@@ -2,7 +2,7 @@
 
 {% block title %}{% set j = joiner('/') %}{% for name, _ in compound.breadcrumb %}{{ j() }}{{ name }}{% endfor %} file | {{ super() }}{% endblock %}
 
-{% block header %}
+{% block breadcrumbs %}
           <span class="m-breadcrumb">
             <a href="index.html">
               {{ PROJECT_NAME }}
@@ -15,20 +15,21 @@
           </span>
           {%+ for name, target in compound.breadcrumb[:-1] %}
           <span class="m-breadcrumb">
-          <a href="{{ target }}">{{ name }}</a>
+          <a href="{{ target }}">
+            {{ name }}
+          </a>
           /
           </span>
           {% endfor %}
           <span class="m-breadcrumb">
             {{ compound.breadcrumb[-1][0] }}
           </span>
+{% endblock %}
 
-        <header class="gp-entry-header">
-          <h1 class="gp-entry-title" itemprop="headline">
-          {{ compound.breadcrumb[-1][0] }} <span class="m-thin">file</span>{% if compound.since %} {{ compound.since }}{% endif %}
-          {# need an explicit space here otherwise the newline gets removed #}
-
-
-          </h1>
-        </header>
+{% block entry_header %}
+          {{ compound.breadcrumb[-1][0] }}
+          <span class="m-thin">
+            file
+          </span>
+          {% if compound.since %} {{ compound.since }}{% endif %}
 {% endblock %}

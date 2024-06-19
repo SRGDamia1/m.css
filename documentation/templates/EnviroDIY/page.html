@@ -11,7 +11,7 @@
 {% endif %}
 {% endblock %}
 
-{% block main %}
+{% block breadcrumbs %}
           <span class="m-breadcrumb">
             <a href="index.html">
               {{ PROJECT_NAME }}
@@ -24,22 +24,21 @@
           </span>
           {%+ for name, target in compound.breadcrumb[:-1] %}
           <span class="m-breadcrumb">
-          <a href="{{ target }}">{{ name }}</a> &gt; <wbr/>
+          <a href="{{ target }}">
+            {{ name }}
+          </a> &gt; <wbr/>
           </span>
           {% endfor %}
           <span class="m-breadcrumb">
             {{ compound.breadcrumb[-1][0] }}
           </span>
+{% endblock %}
 
-        <header class="gp-entry-header">
-          <h1 class="gp-entry-title" itemprop="headline">
-
+{% block entry_header %}
           {{ compound.breadcrumb[-1][0] }}{% if compound.since %} {{ compound.since }}{% endif %}
-          {# need an explicit space here otherwise the newline gets removed #}
+{% endblock %}
 
-
-          </h1>
-        </header>
+{% block main %}
         {% if compound.brief %}
         <p>{{ compound.brief }}</p>
         {% endif %}

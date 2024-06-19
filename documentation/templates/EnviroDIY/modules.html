@@ -1,12 +1,11 @@
 {% set navbar_current = 'modules' %}
 {% extends 'base-index.html' %}
 
-{% block main %}
-        <header class="gp-entry-header">
-          <h1 class="gp-entry-title" itemprop="headline">
+{% block entry_header %}
             Modules
-          </h1>
-        </header>
+{% endblock %}
+
+{% block main %}
         <ul class="m-doc">
           {% for i in index.modules recursive %}
           {% if i.has_nestable_children %}

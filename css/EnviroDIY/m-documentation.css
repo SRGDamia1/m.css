@@ -33,12 +33,12 @@ ul.m-doc li.m-doc-collapsible > a:first-child,
 }
 a.m-doc,
 a.m-doc-self {
-  font-weight: bold;
+  font-weight: bold !important;
 }
 /* Make it possible to override the above */
 .m-thin a.m-doc,
 .m-thin a.m-doc-self {
-  font-weight: normal;
+  font-weight: normal !important;
 }
 ul.m-doc li.m-doc-expansible > a:first-child,
 ul.m-doc li.m-doc-collapsible > a:first-child,
@@ -77,7 +77,8 @@ span.m-doc-wrap {
   padding-left: 1rem;
   display: inline-block;
   vertical-align: text-top;
-  white-space: pre-line;
+  /* white-space: pre-line; */
+  white-space: normal;
   max-width: 100%; /* otherwise horizontal scrollbars, wtf */
 }
 

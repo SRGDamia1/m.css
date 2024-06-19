@@ -20,8 +20,6 @@
 {% macro details_define(define) %}{% include 'details-define.html' %}{% endmacro %}
 
 {% block main %}
-{% block header %}
-{% endblock %}
         {% if compound.brief %}
         <p>{{ compound.brief }}</p>
         {% endif %}
@@ -266,7 +264,6 @@
           {% endfor %}
         </section>
         {% endif %}
-
         {% if compound.has_typedef_details %}
         <section id=typedef-details>
           <h2>Typedef documentation</h2>
@@ -284,7 +281,6 @@
           {% endfor %}
         </section>
         {% endif %}
-
         {% if compound.has_func_details %}
         <section id="function-details">
           <h2>Function documentation</h2>
@@ -302,7 +298,6 @@
           {% endfor %}
         </section>
         {% endif %}
-
         {% if compound.has_var_details %}
         <section id="variable-details">
           <h2>Variable documentation</h2>
@@ -320,7 +315,6 @@
           {% endfor %}
         </section>
         {% endif %}
-
         {% if compound.has_define_details %}
         <section id="define-details">
           <h2>Define documentation</h2>
