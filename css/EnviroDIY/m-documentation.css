@@ -71,7 +71,6 @@ h3 a.m-doc-external {
 }
 span.m-doc-wrap-bumper {
   margin-right: -1rem;
-  display: inline-block;
   vertical-align: text-top;
 }
 span.m-doc-wrap {
@@ -285,7 +284,6 @@ a.m-doc-search-icon:hover svg,
 a.m-doc-search-icon:active svg {
   fill: var(--header-link-active-color);
 }
-
 .m-doc-search {
   display: none;
   z-index: 10;
