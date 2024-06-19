@@ -6,3 +6,4 @@ coverage/
 .history
 .vscode
 documentation/templates/EnviroDIY/gp_full*.html
+css/EnviroDIY/m-EnviroDIY+documentation.compiled.css

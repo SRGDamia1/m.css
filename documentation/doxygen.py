@@ -485,7 +485,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
     # blockquotes below.
     for index, i in enumerate(element):
         logging.debug(
-            f"      Parsing internal description of {i.tag} in file {state.current}"
+            f"      Parsing internal description of {i.tag} within {element.tag} in file {state.current}"
         )
         # As of 1.9.3 and https://github.com/doxygen/doxygen/pull/7422, a
         # stupid &zwj; is added at the front of every Markdown blockquote for
@@ -1953,7 +1953,6 @@ def parse_inline_desc(state: State, element: ET.Element) -> str:
     assert not parsed.section
     return parsed.parsed
 
-
 def parse_enum(state: State, element: ET.Element):
     logging.debug(f"Parsing enum {element.find('name').text} in file {state.current}")
     if element.tag !='memberdef':
@@ -2022,7 +2021,6 @@ def parse_enum(state: State, element: ET.Element):
         return enum
     return None
 
-
 def parse_template_params(state: State, element: ET.Element, description):
     if element is None: return False, None
     assert element.tag == 'templateparamlist'
@@ -2070,7 +2068,6 @@ def parse_template_params(state: State, element: ET.Element, description):
 
     return has_template_details, templates
 
-
 def parse_typedef(state: State, element: ET.Element):
     logging.debug(
         f"Parsing typedef {element.find('name').text} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}"
@@ -2105,7 +2102,6 @@ def parse_typedef(state: State, element: ET.Element):
             state.search += [result]
         return typedef
     return None
-
 
 def parse_func(state: State, element: ET.Element):
     logging.debug(
@@ -2318,7 +2314,6 @@ def parse_func(state: State, element: ET.Element):
     # /** @overload */ from file docs.
     return func if func.brief or can_have_details else None
 
-
 def parse_var(state: State, element: ET.Element):
     logging.debug(
         f"Parsing variable {fix_type_spacing(html.escape(element.find('name').text))} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}"
@@ -2355,7 +2350,6 @@ def parse_var(state: State, element: ET.Element):
             state.search += [result]
         return var
     return None
-
 
 def parse_define(state: State, element: ET.Element):
     logging.debug(
@@ -2431,14 +2425,16 @@ def is_a_stupid_empty_markdown_page(compounddef: ET.Element):
     # everything that starts with md_ and ends with the same thing as the title
     # (which means there's no explicit title). We *do* want to preserve empty
     # pages with custom titles.
-    return (
+    is_stupid = (
         compounddef.find("compoundname").text.startswith("md_")
         and compounddef.find("compoundname").text.endswith(
             compounddef.find("title").text
         )
-        and compounddef.find("briefdescription") is None
-        and compounddef.find("detaileddescription") is None
-    )
+            and len(compounddef.find("briefdescription")) == 0
+            and len(compounddef.find("detaileddescription")) == 0
+        )
+    logging.debug(f"{compounddef.attrib["id"]} {'is a stupid markdown page' if is_stupid else 'seems to usable markdown'}")
+    return is_stupid
 
 def extract_metadata(state: State, xml):
     # parse_desc() / parse_inline_desc() is called from here, be sure to set
@@ -2482,7 +2478,7 @@ def extract_metadata(state: State, xml):
         return
     assert len([i for i in root]) == 1
 
-    if compounddef is None:
+    if compounddef is None or len(compounddef) == 0:
         logging.debug("No useful info in {}, skipping".format(os.path.basename(xml)))
         return
 
@@ -2512,8 +2508,8 @@ def extract_metadata(state: State, xml):
     # having something unless they're stupid. See the function for details.
     compound.has_details = (
         compound.kind == "group"
-        or compound.brief is not None
-        or compounddef.find("detaileddescription")
+        or len(compound.brief) > 0
+        or len(compounddef.find("detaileddescription")) > 0
         or (
             compound.kind == "page" and not is_a_stupid_empty_markdown_page(compounddef)
         )
@@ -2806,8 +2802,8 @@ def parse_xml(state: State, xml: str):
     # which are created explicitly. Pages are treated as having something
     # unless they're stupid. See the function for details.
     if (
-        compounddef.find("briefdescription") is None
-        and compounddef.find("detaileddescription") is None
+        len(compounddef.find("briefdescription")) == 0
+        and len(compounddef.find("detaileddescription")) == 0
         and not compounddef.attrib["kind"] == "group"
         and (
             not compounddef.attrib["kind"] == "page"
@@ -3590,7 +3586,7 @@ def parse_xml(state: State, xml: str):
         and (
             compound.kind == "group"
             or compound.brief is not None
-            or compounddef.find("detaileddescription")
+            or len(compounddef.find("detaileddescription")) > 0
         )
     ):
         if compound.kind == 'namespace':
@@ -3627,7 +3623,7 @@ def parse_xml(state: State, xml: str):
 
 
 def parse_index_xml(state: State, xml):
-    logging.debug("Parsing {}".format(os.path.basename(xml)))
+    logging.debug("Parsing Index File {}".format(os.path.basename(xml)))
 
     tree = ET.parse(xml)
     root = tree.getroot()
@@ -4240,7 +4236,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         # Otherwise use path relative to script directory
         else:
             i = os.path.join(os.path.dirname(os.path.realpath(__file__)), i)
-            logging.debug("File found relative to m.css script at {}".format(i))
+            logging.debug("File not found relative to doxyfile trying at {}".format(i))
 
         logging.debug("copying {} to output".format(i))
         shutil.copy(i, os.path.join(html_output, os.path.basename(file_out)))
