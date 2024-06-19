@@ -41,6 +41,7 @@ import shutil
 import subprocess
 import urllib.parse
 import logging
+import json
 from types import SimpleNamespace as Empty
 from typing import Tuple, Dict, Any, List
 
@@ -57,6 +58,11 @@ import dot2svg
 import latex2svg
 import latex2svgextra
 import ansilexer
+
+
+class JSONDictEncoder(json.JSONEncoder):
+    def default(self, obj):
+        return obj.__dict__
 
 
 class WrappedLineFormatter(HtmlFormatter):
@@ -2309,6 +2315,17 @@ def parse_func(state: State, element: ET.Element):
             result.suffix = func.suffix
             state.search += [result]
 
+    # Fix up duplicated return types within the return description
+    if (func.type is not None and len(func.type) > 0) and (
+        func.return_value is not None and len(func.return_value) > 0
+    ):
+        if func.return_value.startswith(func.type):
+            func.return_value = func.return_value.replace(func.type, "", 1).lstrip()
+        elif func.return_value.startswith(f"<em>{func.type}</em>"):
+            func.return_value = func.return_value.replace(
+                f"<em>{func.type}</em>", "", 1
+            ).lstrip()
+
     # Return the function only if it has some documentation. Testing just for
     # func.has_details would erroneously omit functions that have e.g. just
     # /** @overload */ from file docs.
@@ -2433,7 +2450,9 @@ def is_a_stupid_empty_markdown_page(compounddef: ET.Element):
             and len(compounddef.find("briefdescription")) == 0
             and len(compounddef.find("detaileddescription")) == 0
         )
-    logging.debug(f"{compounddef.attrib["id"]} {'is a stupid markdown page' if is_stupid else 'seems to usable markdown'}")
+    logging.debug(
+        f"{compounddef.attrib['id']} {'is a stupid markdown page' if is_stupid else 'seems to usable markdown'}"
+    )
     return is_stupid
 
 def extract_metadata(state: State, xml):
@@ -4108,6 +4127,10 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     # with open(output, 'w', encoding="utf8") as f:
     #     print(state, file=f)
 
+    output = os.path.join(html_output, "postProcessedState.json")
+    with open(output, "w", encoding="utf8") as f:
+        json.dump(state, f, cls=JSONDictEncoder, indent=2)
+
     for file in xml_files:
         # print(file)
         if os.path.basename(file) == 'Doxyfile.xml':
@@ -4115,6 +4138,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
 
         elif os.path.basename(file) == 'index.xml':
             parsed = parse_index_xml(state, file)
+            output = os.path.join(html_output, "index_parsed.json")
+            with open(output, "w", encoding="utf8") as f:
+                json.dump(parsed, f, cls=JSONDictEncoder, indent=2)
 
             for i in index_pages:
                 file = '{}.html'.format(i)
@@ -4138,6 +4164,13 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         else:
             parsed = parse_xml(state, file)
             if not parsed: continue
+
+            output = os.path.join(
+                html_output, os.path.basename(file).replace(".xml", ".json")
+            )
+            with open(output, "w", encoding="utf8") as f:
+                json.dump(parsed, f, cls=JSONDictEncoder, indent=2)
+
             # print(parsed.compound.kind, parsed.compound.name,parsed.compound.id)
             if parsed.compound.kind == 'group' and parsed.compound.id.startswith('group__sensor__'):
                 template = env.get_template('sensor.html')
