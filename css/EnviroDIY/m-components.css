@@ -90,6 +90,10 @@ blockquote {
   padding: 1rem;
   border-left-style: solid;
   border-left-width: 0.25rem;
+
+  font-family: var(--font) !important;
+  font-size: var(--font-size) !important;
+  line-height: var(--line-height) !important;
 }
 hr {
   width: 75%;

@@ -1370,7 +1370,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 # Put some bogus prefix to the filename in case it is just
                 # `.ext`
                 lexer = find_lexer_class_for_filename("code" + filename)
-                if not lexer:
+                # warn if we cannot find a lexer and the language is anything other than 'unparsed'
+                if not lexer and filename != ".unparsed":
                     logging.warning(
                         "{}: unrecognized language of {} in <programlisting>, highlighting disabled".format(
                             state.current, filename
