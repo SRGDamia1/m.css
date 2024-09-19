@@ -1,8 +1,13 @@
 ..
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
               Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2018 Ryohei Machida <machida_mn@complex.ist.hokudai.ac.jp>
+    Copyright © 2021 Luke Peterson <hazelnusse@gmail.com>
+    Copyright © 2022 luz paz <luzpaz@pm.me>
+    Copyright © 2022 Varun Gandhi <git@cutcul.us>
+    Copyright © 2022 Mark Gillard <marzer_@hotmail.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -205,8 +210,15 @@ In addition to features `shared by all doc generators <{filename}/documentation.
 
     This list presents my opinions. Not everybody likes my opinions.
 
+The theme is deliberately *only* for C and C++. See the `Python documentation generator <{filename}python.rst>`__
+for a dedicated tool handling Python. Other languages such as C# or Java would
+be also better handled using dedicated tools that can make use of reflection
+features built into the language itself instead of attempting to (badly) parse
+the sources, plus a dedicated tool can better adjust to specifics of given
+language, such as not calling Python or Java packages "namespaces".
+
 Features that I don't see a point in because they just artificially inflate the
-amount of generated content for no added value.
+amount of generated content for no added value:
 
 -   Class hierarchy graphs are ignored (it only inflates the documentation with
     little added value)
@@ -291,6 +303,18 @@ Variable                        Description
                                 glaringly useless in every imaginable way and
                                 thus the theme is reusing it for something
                                 actually useful. Doxygen default is ``YES``.
+:ini:`STRIP_FROM_PATH`          Prefix to strip from directory and file paths
+                                shown in page titles.
+:ini:`STRIP_FROM_INC_PATH`      Prefix to strip from paths of :cpp:`#include`
+                                files shown for classes, namespaces and
+                                namespace members. Often set to the same value
+                                as :ini:`STRIP_FROM_INC_PATH`. Note that you
+                                have to set this option to something non-empty
+                                if you're using header name overrides in the
+                                `@class <https://www.doxygen.nl/manual/commands.html#cmdclass>`_
+                                command --- otherwise Doxygen strips all
+                                directory information from include files which
+                                m.css then has no way of restoring.
 =============================== ===============================================
 
 On top of the above, the script can take additional options in a way consistent
@@ -430,15 +454,19 @@ Variable                            Description
                                     not set, ``m.math.cache`` file in the
                                     output directory is used. Equivalent to an
                                     option of the same name in the
-                                    `m.math plugin <{filename}/plugins/math-and-code.rst#math>`.
+                                    `m.math plugin <{filename}/plugins/math-and-code.rst#math>`_.
+:py:`M_MATH_RENDER_AS_CODE`         Don't invoke LaTex and render math as
+                                    inline code and code blocks. Equivalent to
+                                    an option of the same name in the
+                                    `m.math plugin <{filename}/plugins/math-and-code.rst#math>`_.
 :py:`M_CODE_FILTERS_PRE: Dict`      Filters to apply before a code snippet is
                                     rendered. Equivalent to an option of the
-                                    same name in the `m.code plugin <{filename}/plugins/math-and-code.rst#filters>`.
+                                    same name in the `m.code plugin <{filename}/plugins/math-and-code.rst#filters>`_.
                                     Note that due to the limitations of Doxygen
                                     markup, named filters are not supported.
 :py:`M_CODE_FILTERS_POST: Dict`     Filters to apply after a code snippet is
                                     rendered. Equivalent to an option of the
-                                    same name in the `m.code plugin <{filename}/plugins/math-and-code.rst#filters>`.
+                                    same name in the `m.code plugin <{filename}/plugins/math-and-code.rst#filters>`_.
                                     Note that due to the limitations of Doxygen
                                     markup, named filters are not supported.
 =================================== ===========================================

@@ -1,8 +1,10 @@
 ..
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
               Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2020 Blair Conrad <blair@blairconrad.com>
+    Copyright © 2020 Sergei Izmailov <sergei.a.izmailov@gmail.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -79,9 +81,8 @@ for block-level math or the ``@f$`` command for inline math. It's possible to
 add extra CSS classes by placing ``@m_class`` in a paragraph before the actual
 math block (or right before inline math), see the
 `Doxygen theme-specific commands <http://localhost:8000/documentation/doxygen/#theme-specific-commands>`_
-for more information. The :ini:`M_MATH_CACHE_FILE` option is supported as well;
-there's no equivalent to the :ini:`M_MATH_RENDER_AS_CODE` option implemented at
-this point.
+for more information. The :ini:`M_MATH_CACHE_FILE` and
+:ini:`M_MATH_RENDER_AS_CODE` options are supported as well.
 
 In addition you need some LaTeX distribution installed. Use your distribution
 package manager, for example on Ubuntu:
@@ -240,6 +241,12 @@ to disable caching.
             logging.warning("LaTeX not found, fallback to rendering math as code")
             M_MATH_RENDER_AS_CODE = True
 
+    With :py:`M_MATH_RENDER_AS_CODE` enabled, math blocks are put into
+    :html:`<pre class="m-code m-math">` and inline math into
+    :html:`<code class="m-code m-math">`. Any additionally specified CSS
+    classes are included in this case as well, so the code blocks retain also
+    any coloring, if present.
+
 `Math figure`_
 --------------
 
@@ -367,6 +374,10 @@ option to highlight lines; if you want to add additional CSS classes, use the
             return 0;
         }
 
+Omitting the language parameter renders a plain code block without any
+highlighing. In that case the :rst:`class:` option is still recognized (and the
+:css:`.m-code` CSS class added as well) but :rst:`:hl-lines:` is ignored.
+
 The `builtin include directive <http://docutils.sourceforge.net/docs/ref/rst/directives.html#include>`_
 is also patched to use the improved code directive, and:
 
@@ -401,7 +412,11 @@ supported as well.
     of the source file.
 
 For inline code highlighting, use :rst:`:code:` interpreted text role. To
-specify which language should be highlighted, derive a custom role from it:
+specify which language should be highlighted, derive a custom role from it.
+Like with the :rst:`.. code::` directive it's possible to supply CSS classes
+via the :rst:`:class:` option, and if you omit the :rst:`:language:` option you
+get a plain inline code without any highlighting but :rst:`:class:` still
+applied, and the :css:`.m-code` CSS class added as well.
 
 .. code-figure::
 

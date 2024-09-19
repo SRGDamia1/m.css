@@ -1,8 +1,10 @@
 #
 #   This file is part of m.css.
 #
-#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023
+#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
 #             Vladimír Vondruš <mosra@centrum.cz>
+#   Copyright © 2018 Ryohei Machida <machida_mn@complex.ist.hokudai.ac.jp>
+#   Copyright © 2020 Yuri Edward <nicolas1.fraysse@epitech.eu>
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the "Software"),
@@ -26,11 +28,12 @@
 import os
 import unittest
 
-from distutils.version import LooseVersion
-
-from . import IntegrationTestCase, doxygen_version
+from . import IntegrationTestCase, doxygen_version, parse_version
 
 class Listing(IntegrationTestCase):
+    def __init__(self, *args, **kwargs):
+        IntegrationTestCase.__init__(self, *args, **kwargs)
+
     def test_index_pages(self):
         self.run_doxygen(wildcard='index.xml', index_pages=['annotated', 'namespaces', 'pages'])
         self.assertEqual(*self.actual_expected_contents('annotated.html'))
@@ -75,6 +78,13 @@ class Listing(IntegrationTestCase):
     def test_page_no_toc(self):
         self.run_doxygen(wildcard='page-no-toc.xml')
         self.assertEqual(*self.actual_expected_contents('page-no-toc.html'))
+
+# Like Listing, but tests with STRIP_FROM_INC_PATH set to a trivial value.
+# Both should result in the exact same output regardless of any Doxygen warts
+# inside.
+class ListingStripFromPath(Listing):
+    def __init__(self, *args, **kwargs):
+        Listing.__init__(self, *args, dir='listing', doxyfile='Doxyfile-strip-from-path', **kwargs)
 
 class Detailed(IntegrationTestCase):
     def test_namespace(self):
@@ -160,8 +170,17 @@ class ModulesInNamespace(IntegrationTestCase):
         self.run_doxygen(wildcard='*.xml')
         self.assertEqual(*self.actual_expected_contents('group__group1.html'))
         self.assertEqual(*self.actual_expected_contents('group__group2.html'))
-        self.assertEqual(*self.actual_expected_contents('namespaceNamespace.html'))
-        self.assertEqual(*self.actual_expected_contents('file3_8h.html'))
+
+        # The change in https://github.com/doxygen/doxygen/issues/8790 is
+        # stupid because the XML is no longer self-contained. I refuse to
+        # implement parsing of nested XMLs, so the output will lack some
+        # members if groups are used.
+        if parse_version(doxygen_version()) >= parse_version("1.9.7"):
+            self.assertEqual(*self.actual_expected_contents('namespaceNamespace.html', 'namespaceNamespace-stupid.html'))
+            self.assertEqual(*self.actual_expected_contents('file3_8h.html', 'file3_8h-stupid.html'))
+        else:
+            self.assertEqual(*self.actual_expected_contents('namespaceNamespace.html'))
+            self.assertEqual(*self.actual_expected_contents('file3_8h.html'))
 
 class Deprecated(IntegrationTestCase):
     def test(self):
@@ -206,7 +225,7 @@ class NamespaceMembersInFileScope(IntegrationTestCase):
         # The namespace should have the detailed docs
         self.assertEqual(*self.actual_expected_contents('namespaceNamespace.html'))
 
-    @unittest.skipUnless(LooseVersion(doxygen_version()) > LooseVersion("1.8.14"),
+    @unittest.skipUnless(parse_version(doxygen_version()) > parse_version("1.8.14"),
                          "https://github.com/doxygen/doxygen/pull/653")
     def test_file(self):
         self.run_doxygen(wildcard='File_8h.xml')
@@ -215,7 +234,7 @@ class NamespaceMembersInFileScope(IntegrationTestCase):
         self.assertEqual(*self.actual_expected_contents('File_8h.html'))
 
 class NamespaceMembersInFileScopeDefineBaseUrl(IntegrationTestCase):
-    @unittest.skipUnless(LooseVersion(doxygen_version()) > LooseVersion("1.8.14"),
+    @unittest.skipUnless(parse_version(doxygen_version()) > parse_version("1.8.14"),
                          "https://github.com/doxygen/doxygen/pull/653")
     def test(self):
         self.run_doxygen(wildcard='File_8h.xml')
@@ -250,11 +269,26 @@ class Includes(IntegrationTestCase):
         # group, even though in a single file, should have local includes; and
         # the SpreadClass struct is forward-declared in another file, which
         # triggers a silly Doxygen bug so it has per-member includes also
-        self.assertEqual(*self.actual_expected_contents('namespaceContained.html'))
+
+        # The change in https://github.com/doxygen/doxygen/issues/8790 is
+        # stupid because the XML is no longer self-contained. I refuse to
+        # implement parsing of nested XMLs, so the output will lack some
+        # members if groups are used.
+        if parse_version(doxygen_version()) >= parse_version("1.9.7"):
+            self.assertEqual(*self.actual_expected_contents('namespaceContained.html', 'namespaceContained-stupid.html'))
+        else:
+            self.assertEqual(*self.actual_expected_contents('namespaceContained.html'))
+
         self.assertEqual(*self.actual_expected_contents('namespaceSpread.html'))
         self.assertEqual(*self.actual_expected_contents('classClass.html'))
         self.assertEqual(*self.actual_expected_contents('group__group.html'))
-        self.assertEqual(*self.actual_expected_contents('structSpreadClass.html'))
+
+        # The bug this tests for happens only on < 1.8.20. Maybe it's fixed in
+        # 1.8.19 already, but I only have 1.8.18 and 1.8.20 available to test.
+        if parse_version(doxygen_version()) >= parse_version("1.8.20"):
+            self.assertEqual(*self.actual_expected_contents('structSpreadClass.html'))
+        else:
+            self.assertEqual(*self.actual_expected_contents('structSpreadClass.html', 'structSpreadClass-1818.html'))
 
         # These two should all have local includes because otherwise it gets
         # misleading; the Empty namespace a global one
@@ -268,11 +302,41 @@ class IncludesDisabled(IntegrationTestCase):
 
         # No include information as SHOW_INCLUDE_FILES is disabled globally,
         # and no useless detailed sections either
-        self.assertEqual(*self.actual_expected_contents('namespaceContained.html'))
+
+        # The change in https://github.com/doxygen/doxygen/issues/8790 is
+        # stupid because the XML is no longer self-contained. I refuse to
+        # implement parsing of nested XMLs, so the output will lack some
+        # members if groups are used.
+        if parse_version(doxygen_version()) >= parse_version("1.9.7"):
+            self.assertEqual(*self.actual_expected_contents('namespaceContained.html', 'namespaceContained-stupid.html'))
+        else:
+            self.assertEqual(*self.actual_expected_contents('namespaceContained.html'))
         self.assertEqual(*self.actual_expected_contents('namespaceSpread.html'))
         self.assertEqual(*self.actual_expected_contents('classClass.html'))
         self.assertEqual(*self.actual_expected_contents('group__group.html'))
         self.assertEqual(*self.actual_expected_contents('structSpreadClass.html'))
+
+class IncludesStripFromPath(IntegrationTestCase):
+    def test(self):
+        self.run_doxygen(wildcard='*.xml')
+
+        # Directories and files should not be prefixed with project/
+        self.assertEqual(*self.actual_expected_contents('dir_d44c64559bbebec7f509842c48db8b23.html'))
+        self.assertEqual(*self.actual_expected_contents('dir_f3b5534f769798fe34f6616e7fe90e4d.html'))
+        self.assertEqual(*self.actual_expected_contents('Data_8h.html'))
+        self.assertEqual(*self.actual_expected_contents('Library_8h.html'))
+        self.assertEqual(*self.actual_expected_contents('example_8cpp.html'))
+
+        # Namespaces and classes should show the correct #include not prefixed
+        # with project/includes/
+        self.assertEqual(*self.actual_expected_contents('namespaceLibrary.html'))
+        self.assertEqual(*self.actual_expected_contents('namespaceLibrary_1_1Helper.html'))
+        self.assertEqual(*self.actual_expected_contents('classLibrary_1_1Class.html'))
+        self.assertEqual(*self.actual_expected_contents('structLibrary_1_1Struct.html'))
+
+        # The file tree should show the two dirs and three files with correct
+        # nesting and again without the project/ prefix
+        self.assertEqual(*self.actual_expected_contents('files.html'))
 
 class IncludesUndocumentedFiles(IntegrationTestCase):
     def test(self):
@@ -281,7 +345,16 @@ class IncludesUndocumentedFiles(IntegrationTestCase):
         # The files are not documented, so there should be no include
         # information and no useless detailed sections either -- practically
         # the same output as when SHOW_INCLUDE_FILES is disabled globally
-        self.assertEqual(*self.actual_expected_contents('namespaceContained.html', '../compound_includes_disabled/namespaceContained.html'))
+
+        # The change in https://github.com/doxygen/doxygen/issues/8790 is
+        # stupid because the XML is no longer self-contained. I refuse to
+        # implement parsing of nested XMLs, so the output will lack some
+        # members if groups are used.
+        if parse_version(doxygen_version()) >= parse_version("1.9.7"):
+            self.assertEqual(*self.actual_expected_contents('namespaceContained.html', '../compound_includes_disabled/namespaceContained-stupid.html'))
+        else:
+            self.assertEqual(*self.actual_expected_contents('namespaceContained.html', '../compound_includes_disabled/namespaceContained.html'))
+
         self.assertEqual(*self.actual_expected_contents('namespaceSpread.html', '../compound_includes_disabled/namespaceSpread.html'))
         self.assertEqual(*self.actual_expected_contents('classClass.html', '../compound_includes_disabled/classClass.html'))
         self.assertEqual(*self.actual_expected_contents('group__group.html', '../compound_includes_disabled/group__group.html'))
@@ -352,5 +425,19 @@ class InlineNamespace(IntegrationTestCase):
                 self.skipTest("Doxygen doesn't support inline namespaces here")
 
         self.assertEqual(*self.actual_expected_contents('namespaceFoo_1_1Bar.html'))
+        self.assertEqual(*self.actual_expected_contents('File_8h.html'))
         self.assertEqual(*self.actual_expected_contents('annotated.html'))
         self.assertEqual(*self.actual_expected_contents('namespaces.html'))
+
+class NoFullPathNames(IntegrationTestCase):
+    def __init__(self, *args, **kwargs):
+        Listing.__init__(self, *args, doxyfile='doc/Doxyfile', **kwargs)
+
+    def test(self):
+        with self.assertLogs() as cm:
+            self.run_doxygen(wildcard='*.xml')
+
+        self.assertEqual(*self.actual_expected_contents('files.html'))
+        self.assertEqual(cm.output, [
+            "WARNING:root:potential issue: the parent of directory/ is project/ which is not a prefix, you may want to enable FULL_PATH_NAMES together with STRIP_FROM_PATH and STRIP_FROM_INC_PATH to preserve filesystem hierarchy"
+        ])

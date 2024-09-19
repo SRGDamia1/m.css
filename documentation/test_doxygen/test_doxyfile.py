@@ -1,8 +1,9 @@
 #
 #   This file is part of m.css.
 #
-#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023
+#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
 #             Vladimír Vondruš <mosra@centrum.cz>
+#   Copyright © 2018 Ryohei Machida <machida_mn@complex.ist.hokudai.ac.jp>
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the "Software"),
@@ -49,6 +50,8 @@ class Doxyfile(unittest.TestCase):
         'PROJECT_LOGO': '',
         'PROJECT_NAME': 'My Pet Project',
         'SHOW_INCLUDE_FILES': True,
+        'STRIP_FROM_INC_PATH': [],
+        'STRIP_FROM_PATH': [],
         'XML_OUTPUT': 'xml'
     }
     expected_config = {
@@ -74,6 +77,7 @@ class Doxyfile(unittest.TestCase):
         'M_CODE_FILTERS_PRE': {},
         'M_CODE_FILTERS_POST': {},
         'M_MATH_CACHE_FILE': 'm.math.cache',
+        'M_MATH_RENDER_AS_CODE': False,
 
         'SEARCH_DISABLED': False,
         'SEARCH_DOWNLOAD_BINARY': False,
