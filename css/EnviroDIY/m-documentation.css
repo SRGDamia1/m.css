@@ -133,7 +133,7 @@ ul.m-doc li.m-doc-collapsible > ul.m-doc {
 }
 ul.m-doc li.m-doc-expansible > a:first-child::before,
 ul.m-doc li.m-doc-collapsible > a:first-child::before {
-  background-color: var(--background-color);
+  background-color: var(--container-background-color);
   display: inline-block;
   width: 0.4rem;
   font-weight: bold;
