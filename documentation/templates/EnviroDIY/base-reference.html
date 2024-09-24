@@ -2,7 +2,7 @@
 
 {% set prefix = compound.prefix_wbr %}
 
-{% macro entry_module(module) %}{% include 'entry-module.html' %}{% endmacro %}
+{% macro entry_topic(topic) %}{% include 'entry-topic.html' %}{% endmacro %}
 {% macro entry_dir(dir) %}{% include 'entry-dir.html' %}{% endmacro %}
 {% macro entry_file(file) %}{% include 'entry-file.html' %}{% endmacro %}
 {% macro entry_namespace(namespace) %}{% include 'entry-namespace.html' %}{% endmacro %}
@@ -25,7 +25,7 @@
         {% endif %}
         {# <p>{{ compound }}</p> #}
         {# table of contents #}
-        {% if compound.sections or compound.modules or compound.dirs or compound.files or compound.namespaces or compound.classes or compound.typedefs or compound.funcs or compound.vars or compound.defines or compound.groups %}
+        {% if compound.sections or compound.topics or compound.dirs or compound.files or compound.namespaces or compound.classes or compound.typedefs or compound.funcs or compound.vars or compound.defines or compound.groups %}
         <nav class="m-block m-default">
           {# <h3>Contents</h3> #}
           <ul>
@@ -41,12 +41,12 @@
             <li><a href="#{{ id }}">{{ name }}</a></li>
             {% endif %}
             {% endfor %}
-            {% if compound.modules or compound.dirs or compound.files or compound.namespaces or compound.classes or compound.typedefs or compound.funcs or compound.vars or compound.defines or compound.groups %}
+            {% if compound.topics or compound.dirs or compound.files or compound.namespaces or compound.classes or compound.typedefs or compound.funcs or compound.vars or compound.defines or compound.groups %}
             <li>
               Reference
               <ul>
-                {% if compound.modules %}
-                <li><a href="#groups">Modules</a></li>
+                {% if compound.topics %}
+                <li><a href="#groups">Topics</a></li>
                 {% endif %}
                 {% if compound.dirs %}
                 <li><a href="#subdirs">Directories</a></li>
@@ -108,13 +108,13 @@
         {% if compound.description %}
           {{ compound.description }}
         {% endif %}
-        {% if compound.modules %}
+        {% if compound.topics %}
         <section id="groups">
-          {# <h2><a href="#groups">Modules</a></h2> #}
-          <h2>Modules</h2>
+          {# <h2><a href="#groups">Topics</a></h2> #}
+          <h2>Topics</h2>
           <dl class="m-doc">
-            {% for module in compound.modules %}
-{{ entry_module(module) }}
+            {% for topic in compound.topics %}
+{{ entry_topic(topic) }}
             {% endfor %}
           </dl>
         </section>

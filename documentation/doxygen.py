@@ -54,7 +54,7 @@ import subprocess
 import urllib.parse
 import logging
 import json
-from types import SimpleNamespace as Empty
+from types import MappingProxyType, SimpleNamespace as Empty
 from typing import Tuple, Dict, Any, List
 
 from importlib.machinery import SourceFileLoader
@@ -75,6 +75,14 @@ import ansilexer
 class JSONDictEncoder(json.JSONEncoder):
     def default(self, obj):
         return obj.__dict__
+
+# from https://bugs.python.org/issue34858
+class MappingProxyEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, MappingProxyType):
+      return obj.copy()
+    # return json.JSONEncoder.default(self, obj)
+    return JSONDictEncoder.default(self, obj)
 
 
 class WrappedLineFormatter(HtmlFormatter):
@@ -181,7 +189,7 @@ default_config = {
     'SEARCH_NAME_SIZE_BYTES': 1,
     'SEARCH_HELP':
 """<p class="m-noindent">Search for symbols, directories, files, pages or
-modules. You can omit any prefix from the symbol or file path; adding a
+topics. You can omit any prefix from the symbol or file path; adding a
 <code>:</code> or <code>/</code> suffix lists all members of given symbol or
 directory.</p>
 <p class="m-noindent">Use <span class="m-label m-dim">&darr;</span>
@@ -215,9 +223,9 @@ class StateCompound:
         self.deprecated: str
         self.is_final: bool = None
         self.children: List[str]
-        self.childrenClasses: List[str]
-        self.childrenNamespaces: List[str]
-        self.childrenCompoundRefs: List[str]
+        self.childrenClasses: List[str] # 'innerclass'
+        self.childrenNamespaces: List[str] # 'innernamespace'
+        self.childrenCompoundRefs: List[str] # 'derivedcompoundref'
         self.parent: str = None
         self.parentGroup: str = None
 
@@ -241,7 +249,7 @@ class State:
         self.current = '' # current file being processed (for logging)
         # Current kind of compound being processed. Affects current_include
         # below (i.e., per-entry includes are parsed only for namespaces or
-        # modules, because for classes they are consistent and don't need to be
+        # topics, because for classes they are consistent and don't need to be
         # repeated).
         self.current_kind = None
         # If this is None (or becomes None), it means the compound is spread
@@ -283,11 +291,13 @@ def add_wbr(text: str) -> str:
 def parse_ref(state: State, element: ET.Element, add_inline_css_class: str = None) -> str:
     id = element.attrib['refid']
 
+    # this is a reference to a compound - ie, something with its own xml file
     if element.attrib['kindref'] == 'compound':
         # TODO Unlike below, where the filename is dropped if it matches the
         # current compound URL, here I don't really know what to do because
         # <a> with empty href="" gets treated as a non-link by browsers.
         url = id + '.html'
+    # a reference to a member - ie, something inside another compound's xml file
     elif element.attrib['kindref'] == 'member':
         i = id.rindex('_1')
         url = id[:i] + '.html'
@@ -352,7 +362,7 @@ def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, s
     i = id.rindex('_1')
 
     # Extract the corresponding include, if the current compound is a namespace
-    # or a module
+    # or a topic (group/module)
     include = None
     has_details = False
     if state.current_kind in ['namespace', 'group']:
@@ -2691,6 +2701,8 @@ def extract_metadata(state: State, xml):
 
     # Files have <innerclass> and <innernamespace> but that's not what we want,
     # so separate the children queries based on compound type
+
+    # namespaces, classes, structs, and unions can have inner-classes, inner-namespaces, and inner-derived-compound-references
     if compounddef.attrib['kind'] in ['namespace', 'class', 'struct', 'union']:
         for i in compounddef.findall('innerclass'):
             compound.children += [i.attrib['refid']]
@@ -2709,14 +2721,17 @@ def extract_metadata(state: State, xml):
                 compound.children += [i.attrib['refid']]
         for i in compounddef.findall('derivedcompoundref'):
             compound.children += [i.attrib['refid']]
+    # directories and files can have inner-directories and inner-files
     elif compounddef.attrib['kind'] in ['dir', 'file']:
         for i in compounddef.findall('innerdir'):
             compound.children += [i.attrib['refid']]
         for i in compounddef.findall('innerfile'):
             compound.children += [i.attrib['refid']]
+    # pages can only have inner-pages
     elif compounddef.attrib['kind'] == 'page':
         for i in compounddef.findall(".//innerpage"):
             compound.children += [i.attrib['refid']]
+    # groups (aka topics or modules) can have inner-groups, inner-classes, inner-namespaces, and inner-derived-compound-references
     elif compounddef.attrib['kind'] == 'group':
         for i in compounddef.findall('innergroup'):
             compound.children += [i.attrib['refid']]
@@ -3006,7 +3021,7 @@ def parse_xml(state: State, xml: str):
     compound.description, templates, compound.sections, footer_navigation, example_navigation, search_keywords, compound.deprecated, compound.since = parse_toplevel_desc(state, compounddef.find('detaileddescription'))
     compound.example_navigation = None
     compound.footer_navigation = None
-    compound.modules = []
+    compound.topics = []
     compound.dirs = []
     compound.files = []
     compound.namespaces = []
@@ -3132,7 +3147,7 @@ def parse_xml(state: State, xml: str):
         state.current_include = ''
 
     # Files and dirs don't need it (it's implicit); and it makes no sense for
-    # pages or modules.
+    # pages or topics (groups/modules).
     else:
         state.current_include = None
 
@@ -3335,7 +3350,9 @@ def parse_xml(state: State, xml: str):
 
                     compound.derived_classes += [class_]
 
-        # Module (*not* member group)
+        # Topic Groups (*not* member group)
+        # These are called 'topics' in the Doxygen grouping documentation: https://www.doxygen.nl/manual/grouping.html
+        # These are defined with \ingroup, \defgroup, \addtogroup, and \weakgroup
         elif compounddef_child.tag == 'innergroup':
             assert compound.kind == 'group'
 
@@ -3346,7 +3363,7 @@ def parse_xml(state: State, xml: str):
             g.brief = group.brief
             g.deprecated = group.deprecated
             g.since = group.since
-            compound.modules += [g]
+            compound.topics += [g]
 
         # Other, grouped in sections
         elif compounddef_child.tag == 'sectiondef':
@@ -3582,8 +3599,11 @@ def parse_xml(state: State, xml: str):
                             compound.friend_funcs += [func]
                             if func.has_details: compound.has_func_details = True
 
-            # user defined groupings (\ingroup, \defgroup, \addtogroup, \weakgroup)
-            elif compounddef_child.attrib['kind'] == 'user-defined':  # user-defined section (group)
+            # user defined groupings
+            # These are called 'member groups' in the Doxygen grouping documentation: https://www.doxygen.nl/manual/grouping.html
+            # these are defined with @{..@} but no @ingroup or @defgroup
+            # these groupings aren't even required to have a name
+            elif compounddef_child.attrib['kind'] == 'user-defined':  # user-defined section (member group)
                 list = []
 
                 memberdef: ET.Element
@@ -3861,7 +3881,7 @@ def parse_index_xml(state: State, xml):
     top_level_dirs = []
     top_level_files = []
     top_level_pages = []
-    top_level_modules = []
+    top_level_topics = []
 
     # Non-top-level symbols, files and pages, assigned later
     orphans_nestable = {}
@@ -3913,7 +3933,7 @@ def parse_index_xml(state: State, xml):
             if compound.kind == 'namespace':
                 top_level_namespaces += [entry]
             elif compound.kind == 'group':
-                top_level_modules += [entry]
+                top_level_topics += [entry]
             elif compound.kind in ['class', 'struct', 'union']:
                 top_level_classes += [entry]
             elif compound.kind == 'dir':
@@ -3954,7 +3974,7 @@ def parse_index_xml(state: State, xml):
     parsed.index.symbols = top_level_namespaces + top_level_classes
     parsed.index.files = top_level_dirs + top_level_files
     parsed.index.pages = top_level_pages
-    parsed.index.modules = top_level_modules
+    parsed.index.topics = top_level_topics
 
     # Assign nestable children to their parents first, if the parents exist
     for parent, children in orphans_nestable.items():
@@ -4193,7 +4213,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
     predefined = {
         'pages': ("Pages", 'pages.html'),
         'namespaces': ("Namespaces", 'namespaces.html'),
-        'modules': ("Modules", 'modules.html'),
+        'topics': ("Topics", 'topics.html'),
         'annotated': ("Classes", 'annotated.html'),
         'files': ("Files", 'files.html'),
         'index': ("Main Page", 'index.html')
@@ -4303,7 +4323,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         logging.fatal("{}: CREATE_SUBDIRS is not supported, sorry. Disable it and try again.".format(doxyfile))
         raise NotImplementedError
 
-default_index_pages = ['pages', 'files', 'namespaces', 'modules', 'annotated']
+default_index_pages = ['pages', 'files', 'namespaces', 'topics', 'annotated']
 default_wildcard = '*.xml'
 default_templates = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates/doxygen/')
 
@@ -4367,7 +4387,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
 
     output = os.path.join(html_output, "postProcessedState.json")
     with open(output, "w", encoding="utf8") as f:
-        json.dump(state, f, cls=JSONDictEncoder, indent=2)
+        json.dump(state, f, cls=MappingProxyEncoder, indent=2)
 
     for file in xml_files:
         # print(file)
@@ -4378,7 +4398,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             parsed = parse_index_xml(state, file)
             output = os.path.join(html_output, "index_parsed.json")
             with open(output, "w", encoding="utf8") as f:
-                json.dump(parsed, f, cls=JSONDictEncoder, indent=2)
+                json.dump(parsed, f, cls=MappingProxyEncoder, indent=2)
 
             for i in index_pages:
                 file = '{}.html'.format(i)
@@ -4407,7 +4427,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 html_output, os.path.basename(file).replace(".xml", ".json")
             )
             with open(output, "w", encoding="utf8") as f:
-                json.dump(parsed, f, cls=JSONDictEncoder, indent=2)
+                json.dump(parsed, f, cls=MappingProxyEncoder, indent=2)
 
             # print(parsed.compound.kind, parsed.compound.name,parsed.compound.id)
             # if parsed.compound.kind == 'group' and parsed.compound.id.startswith('group__sensor__'):

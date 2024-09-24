@@ -1,6 +1,6 @@
 {% extends 'base-reference.html' %}
 
-{% block title %}{% set j = joiner(' &raquo; ') %}{% for name, _ in compound.breadcrumb %}{{ j() }}{{ name }}{% endfor %} module | {{ super() }}{% endblock %}
+{% block title %}{% set j = joiner(' &raquo; ') %}{% for name, _ in compound.breadcrumb %}{{ j() }}{{ name }}{% endfor %} topic | {{ super() }}{% endblock %}
 
 {% block breadcrumbs %}
           <span class="m-breadcrumb">
@@ -9,8 +9,8 @@
             </a>  &gt; <wbr/>
           </span>
           <span class="m-breadcrumb">
-            <a href="modules.html">
-              Modules
+            <a href="topics.html">
+              Topics
             </a>  &gt; <wbr/>
           </span>
           {%+ for name, target in compound.breadcrumb[:-1] %}
@@ -28,7 +28,7 @@
 {% block entry_header %}
           {{ compound.breadcrumb[-1][0] }}
           <span class="m-thin">
-            module
+            topic
           </span>
           {% if compound.since %} {{ compound.since }}{% endif %}
 {% endblock %}
