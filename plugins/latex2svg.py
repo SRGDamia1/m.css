@@ -31,6 +31,7 @@ import subprocess
 import shlex
 import re
 from tempfile import TemporaryDirectory
+from ctypes import windll
 from ctypes.util import find_library
 
 default_template = r"""
@@ -64,7 +65,83 @@ default_params = {
     'libgs': None,
 }
 
-libgs = find_library('gs')
+# Taken from the Camelot library's _gsprint.py
+# https://github.com/atlanhq/camelot/blob/master/camelot/ext/ghostscript/_gsprint.py
+# Camelot is distributed with a MIT license.
+def __win32_finddll():
+    try:
+        import winreg
+    except ImportError:
+        # assume Python 2
+        from _winreg import (
+            OpenKey,
+            CloseKey,
+            EnumKey,
+            QueryValueEx,
+            QueryInfoKey,
+            HKEY_LOCAL_MACHINE,
+        )
+    else:
+        from winreg import (
+            OpenKey,
+            CloseKey,
+            EnumKey,
+            QueryValueEx,
+            QueryInfoKey,
+            HKEY_LOCAL_MACHINE,
+        )
+
+    from distutils.version import LooseVersion
+    import os
+
+    dlls = []
+    # Look up different variants of Ghostscript and take the highest
+    # version for which the DLL is to be found in the filesystem.
+    for key_name in (
+        "AFPL Ghostscript",
+        "Aladdin Ghostscript",
+        "GNU Ghostscript",
+        "GPL Ghostscript",
+    ):
+        try:
+            k1 = OpenKey(HKEY_LOCAL_MACHINE, "Software\\%s" % key_name)
+            for num in range(0, QueryInfoKey(k1)[0]):
+                version = EnumKey(k1, num)
+                try:
+                    k2 = OpenKey(k1, version)
+                    dll_path = QueryValueEx(k2, "GS_DLL")[0]
+                    CloseKey(k2)
+                    if os.path.exists(dll_path):
+                        dlls.append((LooseVersion(version), dll_path))
+                except WindowsError:
+                    pass
+            CloseKey(k1)
+        except WindowsError:
+            pass
+    if dlls:
+        dlls.sort()
+        return dlls[-1][-1]
+    else:
+        return None
+
+
+if sys.platform == "win32":
+    libgs = __win32_finddll()
+    if not libgs:
+        raise RuntimeError("Please make sure that Ghostscript is installed")
+    libgs = windll.LoadLibrary(libgs)
+else:
+    try:
+        libgs = cdll.LoadLibrary("libgs.so")
+    except OSError:
+        # shared object file not found
+        libgs = find_library("gs")
+        if not libgs:
+            raise RuntimeError("Please make sure that Ghostscript is installed")
+        libgs = cdll.LoadLibrary(libgs)
+
+del __win32_finddll
+
 if not hasattr(os.environ, 'LIBGS') and not libgs:
     if sys.platform == 'darwin':
         # Fallback to homebrew Ghostscript on macOS
@@ -73,6 +150,7 @@ if not hasattr(os.environ, 'LIBGS') and not libgs:
             default_params['libgs'] = homebrew_libgs
     if not default_params['libgs']:
         print('Warning: libgs not found')
+
 # dvisvgm < 3.0 only looks for ghostscript < 10 on its own, attempt to supply
 # it directly if version 10 is found. Fixed in
 # https://github.com/mgieseki/dvisvgm/commit/46b11c02a46883309a824e3fc798f8093041daec
