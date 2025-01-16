@@ -1,24 +1,4 @@
 <script
-  data-no-defer="1"
-  data-ezscrex="false"
-  data-cfasync="false"
-  data-pagespeed-no-defer
-  data-cookieconsent="ignore"
->
-  var ctPublicFunctions = {
-    _ajax_nonce: 'bdc5bd0825',
-    _rest_nonce: '68d512e8c6',
-    _ajax_url: '\/wp-admin\/admin-ajax.php',
-    _rest_url: 'https:\/\/www.envirodiy.org\/wp-json\/',
-    data__cookies_type: 'native',
-    data__ajax_type: 'rest',
-    text__wait_for_decoding:
-      'Decoding the contact data, let us a few seconds to finish. Anti-Spam by CleanTalk',
-    cookiePrefix: '',
-    wprocket_detected: false,
-  };
-</script>
-<script
   type="text/javascript"
   src="https://www.envirodiy.org/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"
   id="jquery-core-js"
@@ -28,43 +8,6 @@
   src="https://www.envirodiy.org/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1"
   id="jquery-migrate-js"
 ></script>
-<script>
-  if (jQuery('body').hasClass('gp-theme')) {
-    var flexslider = { vars: {} };
-
-    function getGridSize() {
-      return jQuery(window).width() <= 567 ? 1 : jQuery(window).width() <= 1023 ? 1 : 1;
-    }
-
-    jQuery(window).on('load', function () {
-      jQuery('#gp_carousel_wrapper_1').flexslider({
-        animation: 'slide',
-        animationLoop: false,
-        itemWidth: 200,
-        itemMargin: 30,
-        slideshowSpeed: 5000,
-        animationSpeed: 600,
-        directionNav: false,
-        controlNav: false,
-        pauseOnAction: true,
-        pauseOnHover: false,
-        prevText: '',
-        nextText: '',
-        minItems: getGridSize(),
-        maxItems: getGridSize(),
-        start: function (slider) {
-          flexslider = slider;
-        },
-      });
-    });
-
-    jQuery(window).resize(function () {
-      var gridSize = getGridSize();
-      flexslider.vars.minItems = gridSize;
-      flexslider.vars.maxItems = gridSize;
-    });
-  }
-</script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () {
@@ -81,12 +24,12 @@
 </script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-includes/js/dist/style-engine.min.js?ver=03f13c515060de24b556"
+  src="https://www.envirodiy.org/wp-includes/js/dist/style-engine.min.js?ver=08cc10e9532531e22456"
   id="wp-style-engine-js"
 ></script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/modernizr.js?ver=6.5.4"
+  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/modernizr.js?ver=6.7.1"
   id="modernizr-js"
 ></script>
 <script
@@ -96,28 +39,33 @@
 ></script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/selectivizr.min.js?ver=6.5.4"
+  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/selectivizr.min.js?ver=6.7.1"
   id="selectivizr-js"
 ></script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/placeholders.min.js?ver=6.5.4"
+  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/placeholders.min.js?ver=6.7.1"
   id="placeholder-js"
 ></script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/plugins/js_composer/assets/lib/prettyphoto/js/jquery.prettyPhoto.min.js?ver=7.6"
+  src="https://www.envirodiy.org/wp-content/plugins/js_composer/assets/lib/vendor/prettyphoto/js/jquery.prettyPhoto.min.js?ver=8.1"
   id="prettyphoto-js"
 ></script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/jquery.flexslider-min.js?ver=6.5.4"
+  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/jquery.flexslider-min.js?ver=6.7.1"
   id="jquery-flexslider-js"
 ></script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/plugins/js_composer/assets/lib/bower/isotope/dist/isotope.pkgd.min.js?ver=7.6"
+  src="https://www.envirodiy.org/wp-content/plugins/js_composer/assets/lib/vendor/node_modules/isotope-layout/dist/isotope.pkgd.min.js?ver=8.1"
   id="isotope-js"
+></script>
+<script
+  type="text/javascript"
+  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/jquery.stellar.min.js?ver=6.7.1"
+  id="jquery-stellar-js"
 ></script>
 <script type="text/javascript" id="ghostpool-custom-js-js-extra">
   /* <![CDATA[ */
@@ -130,30 +78,11 @@
 </script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/jquery.stellar.min.js?ver=6.5.4"
-  id="jquery-stellar-js"
-></script>
-<script
-  type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/jquery.video-header.js?ver=6.5.4"
-  id="ghostpool-video-header-js"
-></script>
-<script
-  type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/custom.js?ver=6.5.4"
+  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/custom.js?ver=6.7.1"
   id="ghostpool-custom-js-js"
 ></script>
-<script type="text/javascript" id="ghostpool-ajax-loop-js-extra">
-  /* <![CDATA[ */
-  var ghostpoolAjax = {
-    ajaxurl: 'https:\/\/www.envirodiy.org\/wp-admin\/admin-ajax.php',
-    ajaxnonce: '8c415c2c51',
-    querystring: '',
-  };
-  /* ]]> */
-</script>
 <script
   type="text/javascript"
-  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/ajax-loop.js?ver=6.5.4"
+  src="https://www.envirodiy.org/wp-content/themes/socialize/lib/scripts/ajax-loop.js?ver=6.7.1"
   id="ghostpool-ajax-loop-js"
 ></script>
