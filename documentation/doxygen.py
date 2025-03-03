@@ -2699,6 +2699,51 @@ def extract_metadata(state: State, xml):
         # Parse template list for classes
         _, compound.templates = parse_template_params(state, compounddef.find('templateparamlist'), {})
 
+    # Find members of user-defined "member groups" (these have the tag 'sectiondef' with the kind 'user-defined').
+    # These are called "member groups" in the Doxygen grouping documentation: https://www.doxygen.nl/manual/grouping.html
+    # Member groups are defined with ///@{ ... ///@} or /**@{*/ ... /**@}*/
+    # They don't have a @defgroup and group_label associated with them, just a name and maybe a description.
+    # When member groups are nested inside of other groupings, instead of the sub-grouping being listed as an "inner___",
+    # on the grand-parent, the grand-parent contains a copy of the name and description for the inner-member-group and subset references to members.
+    # Prior to https://github.com/doxygen/doxygen/pull/9797, the full memberdef was listed in the xml of both the
+    # parent and grandparent. Changes were made in response to this issue: https://github.com/doxygen/doxygen/issues/8790
+    for compounddef_child in compounddef.findall('sectiondef'):
+        if compounddef_child.attrib['kind'] in ['user-defined']:
+            member_list = []
+            memberdef_list = []
+
+            member: ET.Element
+            for member in compounddef_child.findall('member'):
+                # These are the kinds supported within user-defined sections in the parse_xml function
+                if member.attrib['kind'] in ['enum', 'typedef', 'function', 'signal', 'slot', 'variable', 'define', 'friend']:
+                    member_list += [member.attrib['refid']]
+                else: # pragma: no cover
+                    logging.warning("{}: unknown member kind within member group {}".format(state.current, member.attrib['kind']))
+            memberdef: ET.Element
+            for memberdef in compounddef_child.findall('memberdef'):
+                # These are the kinds supported within user-defined sections in the parse_xml function
+                if memberdef.attrib['kind'] in ['enum', 'typedef', 'function', 'signal', 'slot', 'variable', 'define', 'friend']:
+                    memberdef_list += [memberdef.attrib['id']]
+                else: # pragma: no cover
+                    logging.warning("{}: unknown memberdef kind within member group {}".format(state.current, memberdef.attrib['kind']))
+
+            logging.debug("{}: member group found with {} reference members and {} full member-defs".format(state.current, len(member_list), len(memberdef_list)))
+
+            # if we got only "members" defined elsewhere, this member group like an 'inner-group' and we'll add it like a child
+            if len(member_list) and not len(memberdef_list):
+                header = compounddef_child.find('header')
+                if header is None:
+                    logging.error("{}: member groups without @name are not supported, ignoring".format(state.current))
+                member_group_name = header.text
+                member_group_id=slugify(member_group_name)
+                compound.children += [member_group_id]
+            # if we only got complete memberdefs in this member group, then we can defer processing those members until parsing the xml in the next step
+            elif not len(member_list) and len(memberdef_list):
+                pass
+            # if it's a mix.. (not sure if this is possible) we'll do nothing but throw a warning
+            else:
+                logging.warning("Got a member group with both fully defined members and referenced members. The referenced members will be ignored!")
+
     # Files have <innerclass> and <innernamespace> but that's not what we want,
     # so separate the children queries based on compound type
 
@@ -3605,21 +3650,23 @@ def parse_xml(state: State, xml: str):
             # these groupings aren't even required to have a name
             elif compounddef_child.attrib['kind'] == 'user-defined':  # user-defined section (member group)
                 list = []
+                member_list = []
+                memberdef_list = []
 
                 memberdef: ET.Element
                 for memberdef in compounddef_child.findall('memberdef'):
                     logging.debug(
-                        f"Parsing user-defined compound of kind: {memberdef.attrib['kind']}"
+                        f"Parsing {memberdef.attrib['kind']} member of user-defined group: "
                     )
                     if memberdef.attrib['kind'] == 'enum':  # enum within user-defined section/group
                         enum = parse_enum(state, memberdef)
                         if enum:
-                            list += [('enum', enum)]
+                            memberdef_list += [('enum', enum)]
                             if enum.has_details: compound.has_enum_details = True
                     elif memberdef.attrib['kind'] == 'typedef':  # typedef within user-defined section/group
                         typedef = parse_typedef(state, memberdef)
                         if typedef:
-                            list += [('typedef', typedef)]
+                            memberdef_list += [('typedef', typedef)]
                             if typedef.has_details: compound.has_typedef_details = True
                     elif memberdef.attrib['kind'] in ['function', 'signal', 'slot']:  # functions within user-defined section/group
                         # Gather only private functions that are virtual and
@@ -3630,17 +3677,17 @@ def parse_xml(state: State, xml: str):
 
                         func = parse_func(state, memberdef)
                         if func:
-                            list += [('func', func)]
+                            memberdef_list += [('func', func)]
                             if func.has_details: compound.has_func_details = True
                     elif memberdef.attrib['kind'] == 'variable':  # variable within user-defined section/group
                         var = parse_var(state, memberdef)
                         if var:
-                            list += [('var', var)]
+                            memberdef_list += [('var', var)]
                             if var.has_details: compound.has_var_details = True
                     elif memberdef.attrib['kind'] == 'define':  # define within user-defined section/group
                         define = parse_define(state, memberdef)
                         if define:
-                            list += [('define', define)]
+                            memberdef_list += [('define', define)]
                             if define.has_details: compound.has_define_details = True
                     elif memberdef.attrib['kind'] == 'friend':  # friend within user-defined section/group
                         # Ignore friend classes. This does not ignore friend
@@ -3653,23 +3700,23 @@ def parse_xml(state: State, xml: str):
                         else:
                             func = parse_func(state, memberdef)
                             if func:
-                                list += [('func', func)]
+                                memberdef_list += [('func', func)]
                                 if func.has_details: compound.has_func_details = True
                     else: # pragma: no cover
                         logging.warning("{}: unknown user-defined <memberdef> kind {}".format(state.current, memberdef.attrib['kind']))
 
-                if list:
-                    header = compounddef_child.find('header')
-                    if header is None:
-                        logging.error("{}: member groups without @name are not supported, ignoring".format(state.current))
-                    else:
-                        group = Empty()
-                        group.name = header.text
-                        group.id = slugify(group.name)
-                        group.description = parse_desc(state, compounddef_child.find('description'))
-                        group.members = list
-                        compound.groups += [group]
-                else:
+                member: ET.Element
+                for member in compounddef_child.findall('member'):
+                    # These are the kinds supported within user-defined sections in the parse_xml function
+                    if member.attrib['kind'] in ['enum', 'typedef', 'function', 'signal', 'slot', 'variable', 'define', 'friend']:
+                        member_list += [member.attrib['refid']]
+                    else: # pragma: no cover
+                        logging.warning("{}: unknown referenced user-define group member kind {}".format(state.current, member.attrib['kind']))
+
+                logging.debug("{}: member group found with {} reference members and {} full member-defs".format(state.current, len(member_list), len(memberdef_list)))
+
+                # if we got only "members" defined elsewhere, reference should have already been processed into children, so do nothing here
+                if len(member_list) and not len(memberdef_list):
                     logging.debug(
                         "{}: no memberdefs found within user-defined group {}".format(
                             state.current,
@@ -3680,6 +3727,21 @@ def parse_xml(state: State, xml: str):
                             ),
                         )
                     )
+                # if we only got complete memberdefs in this member group, add this group with its members to the compound
+                elif not len(member_list) and len(memberdef_list):
+                    header = compounddef_child.find('header')
+                    if header is None:
+                        logging.error("{}: member groups without @name are not supported, ignoring".format(state.current))
+                    else:
+                        group = Empty()
+                        group.name = header.text
+                        group.id = slugify(group.name)
+                        group.description = parse_desc(state, compounddef_child.find('description'))
+                        group.members = memberdef_list
+                        compound.groups += [group]
+                # if it's a mix.. (not sure if this is possible) we'll do nothing but throw a warning
+                else:
+                    logging.warning("Got a member group with both fully defined members and referenced members. The referenced members will be ignored!")
 
             elif compounddef_child.attrib['kind'] not in ['private-type',
                                                           'private-static-func',

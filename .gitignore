@@ -9,3 +9,4 @@ documentation/templates/EnviroDIY/gp_full*.html
 css/EnviroDIY/m-EnviroDIY.compiled.css
 css/EnviroDIY/m-EnviroDIY+documentation.compiled.css
 css/EnviroDIY/m-EnviroDIY.documentation.compiled.css
+plugins/l2s.py
