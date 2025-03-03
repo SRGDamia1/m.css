@@ -1,7 +1,7 @@
 /*
     This file is part of m.css.
 
-    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
+    Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
               Vladimír Vondruš <mosra@centrum.cz>
     Copyright © 2019 Cris Luengo <cris.l.luengo@gmail.com>
     Copyright © 2021 Josh <dev@jotch.dev>
@@ -1561,7 +1561,9 @@ span.m-dim a:active {
 }
 .m-block.m-dim,
 .m-text.m-dim,
-.m-label.m-flat.m-dim {
+.m-label.m-flat.m-dim,
+pre.m-math.m-dim,
+code.m-math.m-dim {
   color: var(--dim-color);
 }
 .m-block.m-dim a,
@@ -2652,6 +2654,26 @@ li > div.m-graph:last-child,
 li > div.m-plot:last-child {
   margin-bottom: 1rem;
 }
+li:last-child > p:last-child,
+li:last-child > p.m-nopadb,
+li:last-child > blockquote:last-child,
+li:last-child > blockquote.m-nopadb,
+li:last-child > pre:last-child,
+li:last-child > pre.m-nopadb,
+li:last-child > .m-code-figure:last-child,
+li:last-child > .m-code-figure.m-nopadb,
+li:last-child > .m-console-figure:last-child,
+li:last-child > .m-console-figure.m-nopadb,
+li:last-child > .m-note:last-child,
+li:last-child > .m-note.m-nopadb,
+li:last-child > .m-frame:last-child,
+li:last-child > .m-frame.m-nopadb,
+li:last-child > .m-block:last-child,
+li:last-child > .m-block.m-nopadb,
+li:last-child > div.m-button:last-child,
+li:last-child > div.m-button.m-nopadb,
+li:last-child > div.m-scroll:last-child,
+li:last-child > div.m-scroll.m-nopadb,
 li:last-child > table.m-table:last-child,
 li:last-child > table.m-table.m-nopadb,
 li:last-child > img.m-image:last-child,
