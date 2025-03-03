@@ -31,7 +31,8 @@ import subprocess
 import shlex
 import re
 from tempfile import TemporaryDirectory
-from ctypes import windll
+# from ctypes import windll
+from ctypes import *
 from ctypes.util import find_library
 
 default_template = r"""
