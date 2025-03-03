@@ -3,7 +3,7 @@
 #
 #   This file is part of m.css.
 #
-#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
 #             Vladimír Vondruš <mosra@centrum.cz>
 #   Copyright © 2018 Ryohei Machida <machida_mn@complex.ist.hokudai.ac.jp>
 #   Copyright © 2018 Arvid Gerstmann <dev@arvid-g.de>
@@ -1204,6 +1204,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 # The alt text can apparently be specified only with the HTML
                 # <img> tag, not with @image. It's also present only since
                 # 1.9.1(?).
+                # TODO Doxygen seems to be double-escaping this, which
+                #   ultimately means we cannot escape this ourselves as it'd be
+                #   wrong. See test_contents.HtmlEscape for a repro case.
                 alt = i.attrib.get('alt', 'Image')
 
                 caption = i.text
@@ -2871,25 +2874,26 @@ def postprocess_state(state: State):
             # Fill breadcrumb with leaf names and URLs
             include = []
             for i in reversed(path_reverse):
-                include += [state.compounds[i].leaf_name]
+                # TODO the escaping / unescaping is a mess, fix that
+                include += [html.unescape(state.compounds[i].leaf_name)]
 
             state.includes['/'.join(include)] = compound.id
 
     # Resolve navbar links that are just an ID
-    def resolve_link(html, title, url, id):
-        if not html and not title and not url:
+    def resolve_link(html_, title, url, id):
+        if not html_ and not title and not url:
             assert id in state.compounds, "Navbar references {} which wasn't found".format(id)
             found = state.compounds[id]
             title, url = found.name, found.url
-        return html, title, url, id
+        return html_, title, url, id
     for var in 'LINKS_NAVBAR1', 'LINKS_NAVBAR2':
         links = []
-        for html, title, url, id, sub in state.config[var]:
-            html, title, url, id = resolve_link(html, title, url, id)
+        for html_, title, url, id, sub in state.config[var]:
+            html_, title, url, id = resolve_link(html_, title, url, id)
             sublinks = []
             for i in sub:
                 sublinks += [resolve_link(*i)]
-            links += [(html, title, url, id, sublinks)]
+            links += [(html_, title, url, id, sublinks)]
         state.config[var] = links
 
 
@@ -3159,9 +3163,20 @@ def parse_xml(state: State, xml: str):
         # the damn thing does the worst possible and keeps just the leaf
         # filename there. Which is useless, so assume that if someone wants
         # to override include names, they also set STRIP_FROM_INC_PATH.
+        #
+        # Furthermore, if VERBATIM_HEADERS is disabled, the <includes> tag has
+        # no refid, in which case we can't really make use of that either as
+        # we won't know what to link to. Print at least a helpful warning in
+        # that case.
         compound_includes = compounddef.find('includes')
         if state.doxyfile['STRIP_FROM_INC_PATH'] and compound.kind in ['struct', 'class', 'union'] and compound_includes is not None:
-            compound.include = make_class_include(state, compound_includes.attrib['refid'], compound_includes.text)
+            if 'refid' in compound_includes.attrib:
+                compound.include = make_class_include(state, compound_includes.attrib['refid'], compound_includes.text)
+            else:
+                actual_file = make_include_strip_from_path(file, state.doxyfile['STRIP_FROM_INC_PATH'])
+                if compound_includes.text != actual_file:
+                    logging.warning("{}: cannot use a custom include name <{}> with VERBATIM_HEADERS disabled, falling back to <{}>".format(state.current, compound_includes.text, actual_file))
+                compound.include = make_include(state, file)
         else:
             compound.include = make_include(state, file)
 
@@ -4479,7 +4494,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                     # Add back a trailing newline so we don't need to bother
                     # with patching test files to include a trailing newline to
                     # make Git happy. Can't use keep_trailing_newline because
-                    # that'd add it also for nested templates :(
+                    # that'd add it also for nested templates :( The rendered
+                    # file should never contain a trailing newline on its own.
+                    assert not rendered.endswith('\n')
                     f.write(b'\n')
         else:
             parsed = parse_xml(state, file)
@@ -4512,7 +4529,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 # Add back a trailing newline so we don't need to bother with
                 # patching test files to include a trailing newline to make Git
                 # happy. Can't use keep_trailing_newline because that'd add it
-                # also for nested templates :(
+                # also for nested templates :( The rendered file should never
+                # contain a trailing newline on its own.
+                assert not rendered.endswith('\n')
                 f.write(b'\n')
 
     # Empty index page in case no mainpage documentation was provided so
@@ -4539,7 +4558,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             # Add back a trailing newline so we don't need to bother with
             # patching test files to include a trailing newline to make Git
             # happy. Can't use keep_trailing_newline because that'd add it
-            # also for nested templates :(
+            # also for nested templates :( The rendered file should never
+            # contain a trailing newline on its own.
+            assert not rendered.endswith('\n')
             f.write(b'\n')
 
     if not state.config['SEARCH_DISABLED']:
@@ -4567,7 +4588,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 # Add back a trailing newline so we don't need to bother with
                 # patching test files to include a trailing newline to make Git
                 # happy. Can't use keep_trailing_newline because that'd add it
-                # also for nested templates :(
+                # also for nested templates :( The rendered file should never
+                # contain a trailing newline on its own.
+                assert not rendered.endswith('\n')
                 f.write(b'\n')
 
     # Copy all referenced files

@@ -1,7 +1,12 @@
 #include <functional>
 #include <pybind11/pybind11.h>
+#include <pybind11/chrono.h> /* for std::chrono */
 #include <pybind11/stl.h> /* needed for std::vector! */
 #include <pybind11/functional.h> /* for std::function */
+
+#if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 207
+#include <pybind11/stl/filesystem.h> /* for std::filesystem::path */
+#endif
 
 namespace py = pybind11;
 
@@ -26,6 +31,8 @@ bool overloaded(float) { return {}; }
 void takesAFunction(std::function<int(float, std::vector<float>&)>) {}
 void takesAFunctionReturningVoid(std::function<void()>) {}
 
+void dateTime(std::chrono::time_point<std::chrono::system_clock>, std::chrono::nanoseconds) {}
+
 struct MyClass {
     static MyClass staticFunction(int, float) { return {}; }
 
@@ -39,16 +46,30 @@ struct MyClass {
     private: float _foo = 0.0f;
 };
 
-struct MyClass23 {
+void defaultUnrepresentableArgument(MyClass) {}
+
+struct Pybind23 {
     void setFoo(float) {}
 
     void setFooCrazy(const Crazy<3, int>&) {}
 };
 
-struct MyClass26 {
+struct Pybind26 {
     static int positionalOnly(int, float) { return 1; }
     static int keywordOnly(float, const std::string&) { return 2; }
     static int positionalKeywordOnly(int, float, const std::string&) { return 3; }
+};
+
+struct Pybind27 {
+    #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 207
+    /* In https://github.com/pybind/pybind11/commit/5bcaaa0423c6757ca1c2738d0a54947dacdb03a1
+       it says that std::filesystem_path gets converted to pathlib.Path (i.e.,
+       as a return value?) instead of os.PathLike, but that's not the case,
+       both are exposed as os.PathLike */
+    static std::filesystem::path path(const std::filesystem::path& path) {
+        return path;
+    }
+    #endif
 };
 
 void duck(py::args, py::kwargs) {}
@@ -69,6 +90,7 @@ PYBIND11_MODULE(pybind_signatures, m) {
         .def("duck", &duck, "A function taking args/kwargs directly")
         .def("takes_a_function", &takesAFunction, "A function taking a Callable")
         .def("takes_a_function_returning_none", &takesAFunctionReturningVoid, "A function taking a Callable that returns None")
+        .def("date_time", &dateTime, "A function taking a datetime.datetime and timedelta")
         .def("escape_docstring", &voidFunction, "A docstring that <em>should</em> be escaped")
         .def("failed_parse_docstring", &crazySignature, "A failed parse should <strong>also</strong> escape the docstring")
 
@@ -106,9 +128,16 @@ could be another, but it's not added yet.)");
         .def_property("foo", &MyClass::foo, &MyClass::setFoo, "A read/write property")
         .def_property_readonly("bar", &MyClass::foo, "A read-only property");
 
-    py::class_<MyClass23> pybind23{m, "MyClass23", "Testing pybind 2.3 features"};
+    /* Has to be done only after the MyClass is defined */
+    m.def("default_unrepresentable_argument", &defaultUnrepresentableArgument, "A function with an unrepresentable default argument", py::arg("a") = MyClass{});
 
-    /* Checker so the Python side can detect if testing pybind 2.3 features is
+    m.def_submodule("just_overloads", "Stubs for this module should import typing as well")
+        .def("overloaded", static_cast<std::string(*)(int)>(&overloaded), "Overloaded for ints")
+        .def("overloaded", static_cast<bool(*)(float)>(&overloaded), "Overloaded for floats");
+
+    py::class_<Pybind23> pybind23{m, "Pybind23", "Testing pybind 2.3 features"};
+
+    /* Checker so the Python side can detect if testing pybind 2.3+ features is
        feasible */
     pybind23.attr("is_pybind23") =
         #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 203
@@ -120,13 +149,13 @@ could be another, but it's not added yet.)");
 
     #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 203
     pybind23
-        .def_property("writeonly", nullptr, &MyClass23::setFoo, "A write-only property")
-        .def_property("writeonly_crazy", nullptr, &MyClass23::setFooCrazy, "A write-only property with a type that can't be parsed");
+        .def_property("writeonly", nullptr, &Pybind23::setFoo, "A write-only property")
+        .def_property("writeonly_crazy", nullptr, &Pybind23::setFooCrazy, "A write-only property with a type that can't be parsed");
     #endif
 
-    py::class_<MyClass26> pybind26{m, "MyClass26", "Testing pybind 2.6 features"};
+    py::class_<Pybind26> pybind26{m, "Pybind26", "Testing pybind 2.6 features"};
 
-    /* Checker so the Python side can detect if testing pybind 2.6 features is
+    /* Checker so the Python side can detect if testing pybind 2.6+ features is
        feasible */
     pybind26.attr("is_pybind26") =
         #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
@@ -138,8 +167,25 @@ could be another, but it's not added yet.)");
 
     #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 206
     pybind26
-        .def_static("positional_only", &MyClass26::positionalOnly, "Positional-only arguments", py::arg("a"), py::pos_only{}, py::arg("b"))
-        .def_static("keyword_only", &MyClass26::keywordOnly, "Keyword-only arguments", py::arg("b"), py::kw_only{}, py::arg("keyword") = "no")
-        .def_static("positional_keyword_only", &MyClass26::positionalKeywordOnly, "Positional and keyword-only arguments", py::arg("a"), py::pos_only{}, py::arg("b"), py::kw_only{}, py::arg("keyword") = "no");
+        .def_static("positional_only", &Pybind26::positionalOnly, "Positional-only arguments", py::arg("a"), py::pos_only{}, py::arg("b"))
+        .def_static("keyword_only", &Pybind26::keywordOnly, "Keyword-only arguments", py::arg("b"), py::kw_only{}, py::arg("keyword") = "no")
+        .def_static("positional_keyword_only", &Pybind26::positionalKeywordOnly, "Positional and keyword-only arguments", py::arg("a"), py::pos_only{}, py::arg("b"), py::kw_only{}, py::arg("keyword") = "no");
+    #endif
+
+    py::class_<Pybind27> pybind27{m, "Pybind27", "Testing pybind 2.7 features"};
+
+    /* Checker so the Python side can detect if testing pybind 2.7+ features is
+       feasible */
+    pybind27.attr("is_pybind27") =
+        #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 207
+        true
+        #else
+        false
+        #endif
+        ;
+
+    #if PYBIND11_VERSION_MAJOR*100 + PYBIND11_VERSION_MINOR >= 207
+    pybind27
+        .def_static("path", &Pybind27::path, "Take and return a std::filesystem::path");
     #endif
 }

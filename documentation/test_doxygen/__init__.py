@@ -1,7 +1,7 @@
 #
 #   This file is part of m.css.
 #
-#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
 #             Vladimír Vondruš <mosra@centrum.cz>
 #   Copyright © 2019 Cris Luengo <cris.l.luengo@gmail.com>
 #
@@ -82,16 +82,18 @@ class BaseTestCase(unittest.TestCase):
         if os.path.exists(os.path.join(self.path, 'html')): shutil.rmtree(os.path.join(self.path, 'html'))
 
     def run_doxygen(self, templates=default_templates, wildcard=default_wildcard, index_pages=default_index_pages, config={}):
-        state = State({**copy.deepcopy(default_config), **config})
+        state = State(copy.deepcopy(default_config))
         parse_doxyfile(state, os.path.join(self.path, self.doxyfile))
+        # Make the supplied config values overwrite what's in the Doxyfile
+        state.config = {**state.config, **config}
         run(state, templates=templates, wildcard=wildcard, index_pages=index_pages, sort_globbed_files=True)
 
     def actual_expected_contents(self, actual, expected = None):
         if not expected: expected = actual
         with open(os.path.join(self.path, expected)) as f:
-            expected_contents = f.read().strip()
+            expected_contents = f.read()
         with open(os.path.join(self.path, 'html', actual)) as f:
-            actual_contents = f.read().strip()
+            actual_contents = f.read()
         actual_contents = _normalize_hashes.sub('g'*33, actual_contents)
         expected_contents = _normalize_hashes.sub('g'*33, expected_contents)
         return actual_contents, expected_contents

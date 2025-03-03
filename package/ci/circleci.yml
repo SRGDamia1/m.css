@@ -3,12 +3,6 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@1.1.1
 
-notify:
-  webhooks:
-    # Unfortunately Gitter messages are too verbose (one five-line message per
-    # each job in the build matrix) and thus not wanted
-    #- url: https://webhooks.gitter.im/e/cfbadbd34d28708a57c6
-
 executors:
   python-3_06:
     docker:
@@ -314,6 +308,9 @@ jobs:
     - install-base:
         extra: graphviz cmake ninja-build wget
     - install-python-deps:
+        # Matplotlib 3.10 has different output again
+        # TODO update once I have it in Arch
+        matplotlib-version: ==3.9.3
         # NumPy 2.0 doesn't work with pybind < 2.12
         numpy-version: ==1.26.4
         # Ubuntu 22.04 has pygments 2.11
@@ -324,6 +321,7 @@ jobs:
     - test-documentation-themes:
         python-version: "3.10"
         # 2.9 series seems to be the first to work with Python 3.10
+        # TODO have something that tests 2.6 and 2.7 explicitly
         pybind-version: "2.9.2"
         # 1.9.1 is in Ubuntu 22.04 repos, HOWEVER both 1.9.1 and 1.9.2 link
         # against libclang-9.so.1, which is stupid. I think I even asked if the
@@ -338,6 +336,9 @@ jobs:
     - install-base:
         extra: graphviz cmake ninja-build wget
     - install-python-deps:
+        # Matplotlib 3.10 has different output again
+        # TODO update once I have it in Arch
+        matplotlib-version: ==3.9.3
         # NumPy 2.0 doesn't work with pybind < 2.12
         numpy-version: ==1.26.4
         # Ubuntu 24.04 has pygments 2.17
@@ -359,7 +360,13 @@ jobs:
     steps:
     - install-base:
         extra: graphviz cmake ninja-build wget
-    - install-python-deps
+    - install-python-deps:
+        # Matplotlib 3.10 has different output again
+        # TODO update once I have it in Arch
+        matplotlib-version: ==3.9.3
+        # pygments 2.19 change the output slightly
+        # TODO update once I dare to update my Arch
+        pygments-version: ==2.18
     - checkout
     - test-theme
     - test-plugins

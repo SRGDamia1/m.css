@@ -1,7 +1,7 @@
 #
 #   This file is part of m.css.
 #
-#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#   Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
 #             Vladimír Vondruš <mosra@centrum.cz>
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,7 +23,7 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5...3.10)
 project(McssDocumentationPybindTests)
 
 find_package(pybind11 CONFIG REQUIRED)
@@ -32,6 +32,12 @@ foreach(target pybind_signatures pybind_enums pybind_external_overload_docs pybi
     pybind11_add_module(${target} ${target}/${target}.cpp)
     set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${target})
 endforeach()
+
+# Need a special location for this one
+pybind11_add_module(pybind_content_html_escape content_html_escape/content_html_escape/pybind.cpp)
+set_target_properties(pybind_content_html_escape PROPERTIES
+    OUTPUT_NAME pybind
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/content_html_escape/content_html_escape)
 
 # Need a special location for this one
 pybind11_add_module(pybind_inspect_create_intersphinx inspect_create_intersphinx/inspect_create_intersphinx/pybind.cpp)
@@ -51,6 +57,12 @@ set_target_properties(pybind_search PROPERTIES
     OUTPUT_NAME pybind
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/search/search)
 
+# Need a special location for this one
+pybind11_add_module(pybind_broken_signatures pybind_broken_signatures/pybind_broken_signatures/pybind.cpp)
+set_target_properties(pybind_broken_signatures PROPERTIES
+    OUTPUT_NAME pybind
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pybind_broken_signatures/pybind_broken_signatures)
+
 # Need a special name for this one
 pybind11_add_module(pybind_name_mapping pybind_name_mapping/sub.cpp)
 set_target_properties(pybind_name_mapping PROPERTIES
@@ -62,3 +74,9 @@ pybind11_add_module(pybind_submodules_package pybind_submodules_package/sub.cpp)
 set_target_properties(pybind_submodules_package PROPERTIES
     OUTPUT_NAME sub
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pybind_submodules_package/pybind_submodules_package)
+
+# Need a special name for this one
+pybind11_add_module(pybind_stubs_module_dependencies stubs_module_dependencies/stubs_module_dependencies/pybind.cpp)
+set_target_properties(pybind_stubs_module_dependencies PROPERTIES
+    OUTPUT_NAME pybind
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stubs_module_dependencies/stubs_module_dependencies)
