@@ -137,8 +137,8 @@ else:
     except OSError:
         # shared object file not found
         libgs = find_library("gs")
-        if not libgs:
-            raise RuntimeError("Please make sure that Ghostscript is installed")
+        # if not libgs:
+        #     raise RuntimeError("Please make sure that Ghostscript is installed")
         libgs = cdll.LoadLibrary(libgs)
 
 del __win32_finddll
@@ -149,6 +149,16 @@ if not hasattr(os.environ, 'LIBGS') and not libgs:
         homebrew_libgs = '/usr/local/opt/ghostscript/lib/libgs.dylib'
         if os.path.exists(homebrew_libgs):
             default_params['libgs'] = homebrew_libgs
+    if sys.platform == 'linux':
+        # On certain Linux distros find_library() may not work even though the
+        # library is in usual paths. Try some candidates before failing hard.
+        for linux_libgs in [
+            '/usr/lib/libgs.so.10',
+            '/usr/lib/{}-linux-gnu/libgs.so.10'.format(os.uname().machine)
+        ]:
+            if os.path.exists(linux_libgs):
+                default_params['libgs'] = linux_libgs
+                break
     if not default_params['libgs']:
         print('Warning: libgs not found')
 
