@@ -3273,14 +3273,14 @@ def parse_xml(state: State, xml: str):
         # logging.debug(f"  Parsing {compounddef_child.tag} ({compounddef_child.attrib['kind'] if 'kind' in compounddef_child.attrib.keys() else ""}) within {compound.name} ({compound.kind})")
         logging.debug(
             "    Parsing {} ({}) within {} ({}) in {}".format(
-                compounddef_child.tag,
+                compounddef_child.tag.strip(),
                 (
-                    compounddef_child.attrib['kind']
+                    compounddef_child.attrib['kind'].strip()
                     if 'kind' in compounddef_child.attrib.keys()
                     else ""
                 ),
-                compound.name,
-                compound.kind,
+                compound.name.strip(),
+                compound.kind.strip(),
                 state.current,
             )
         )
