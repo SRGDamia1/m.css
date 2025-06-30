@@ -2622,7 +2622,9 @@ def extract_metadata(state: State, xml):
     # far Doxygen treats even *.c files as language="C++". Reproduced in the
     # test_ignored.Languages test case.
     if compounddef.attrib.get('language', 'C++') not in ['C++']:
-        logging.warning("{}: unsupported language {}, skipping whole file".format(state.current, compounddef.attrib['language']))
+        #NOTE: Don't bother to warn about stupid markdown pages
+        if compounddef.attrib.get('language', 'C++') not in ['Markdown']:
+            logging.warning("{}: unsupported language {}, skipping whole file".format(state.current, compounddef.attrib['language']))
         return
     assert len([i for i in root]) == 1
 
