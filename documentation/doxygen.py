@@ -1192,6 +1192,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 path = os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['XML_OUTPUT'], name)
                 if os.path.exists(path):
                     state.images += [path]
+                elif name.startswith('http://') or name.startswith('https://'):
+                    pass # don't need to warn about missing image links
                 else:
                     logging.warning("{}: image {} was not found in XML_OUTPUT".format(state.current, name))
 
