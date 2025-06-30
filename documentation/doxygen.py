@@ -2713,8 +2713,8 @@ def extract_metadata(state: State, xml):
     # parent and grandparent. Changes were made in response to this issue: https://github.com/doxygen/doxygen/issues/8790
     for compounddef_child in compounddef.findall('sectiondef'):
         if compounddef_child.attrib['kind'] in ['user-defined']:
-            member_list = []
-            memberdef_list = []
+            member_list = [] # only references
+            memberdef_list = [] #fully defined members
 
             member: ET.Element
             for member in compounddef_child.findall('member'):
@@ -2731,7 +2731,7 @@ def extract_metadata(state: State, xml):
                 else: # pragma: no cover
                     logging.warning("{}: unknown memberdef kind within member group {}".format(state.current, memberdef.attrib['kind']))
 
-            logging.debug("{}: member group found with {} reference members and {} full member-defs".format(state.current, len(member_list), len(memberdef_list)))
+            logging.debug("{}: member group found in user-defined section with {} reference members and {} full member-defs when extracting metadata".format(state.current, len(member_list), len(memberdef_list)))
 
             # if we got only "members" defined elsewhere, this member group like an 'inner-group' and we'll add it like a child
             if len(member_list) and not len(memberdef_list):
@@ -2988,6 +2988,7 @@ def build_search_data(state: State, merge_subtrees=True, add_lookahead_barriers=
     trie.sort(map)
 
     return serialize_search_data(Serializer(file_offset_bytes=state.config['SEARCH_FILE_OFFSET_BYTES'], result_id_bytes=state.config['SEARCH_RESULT_ID_BYTES'], name_size_bytes=state.config['SEARCH_NAME_SIZE_BYTES']), trie, map, search_type_map, symbol_count, merge_subtrees=merge_subtrees, merge_prefixes=merge_prefixes)
+
 
 def parse_xml(state: State, xml: str):
     # Reset counter for unique math formulas
@@ -3436,7 +3437,7 @@ def parse_xml(state: State, xml: str):
             # The reason for this, as discussed in the linked PR, is because
             # some random downstream project failed due to encountering
             # duplicate IDs (which are there for file/namespace members also,
-            # by the way! or for relatedalso members!!). And Doxygen maintainer
+            # by the way! or for related members!!). And Doxygen maintainer
             # VERY HELPFULLY OFFERED TO CRIPPLE THE XML OUTPUT FOR EVERYONE
             # ELSE just to fix that damn thing. Once I calm down I may try to
             # convince them to revert this insanity, until then enjoy the
@@ -3449,7 +3450,10 @@ def parse_xml(state: State, xml: str):
             is_stupid = False
             for memberdef in compounddef_child:
                 if memberdef.tag == 'member':
-                    logging.warning("{}: sorry, parsing of non-self-contained XML not implemented: due to https://github.com/doxygen/doxygen/issues/8790 the output will not list file / namespace {} members".format(state.current, compounddef_child.attrib['kind']))
+                    logging.warning("{}: sorry, the output will not list file / namespace {} members due to https://github.com/doxygen/doxygen/issues/8790. Parsing of non-self-contained XML not implemented.".format(state.current, compounddef_child.attrib['kind']))
+                    sectiondef_header = compounddef_child.find('header').text if compounddef_child.find('header') is not None else memberdef.find('name').text
+                    member_name = memberdef.find('name').text
+                    logging.info("{}: Reference to {} inside {} dropped, find it at {}".format(state.current, member_name.strip(), sectiondef_header.strip(), memberdef.attrib['refid']))
                     is_stupid = True
                     break
             if is_stupid:
@@ -3729,7 +3733,7 @@ def parse_xml(state: State, xml: str):
                     else: # pragma: no cover
                         logging.warning("{}: unknown referenced user-define group member kind {}".format(state.current, member.attrib['kind']))
 
-                logging.debug("{}: member group found with {} reference members and {} full member-defs".format(state.current, len(member_list), len(memberdef_list)))
+                logging.debug("{}: member group found in user-defined section with {} reference members and {} full member-defs when parsing xml".format(state.current, len(member_list), len(memberdef_list)))
 
                 # if we got only "members" defined elsewhere, reference should have already been processed into children, so do nothing here
                 if len(member_list) and not len(memberdef_list):
