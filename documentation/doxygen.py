@@ -2795,6 +2795,12 @@ def extract_metadata(state: State, xml):
 
     state.compounds[compound.id] = compound
 
+    output = os.path.join(
+        os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound.id + '_metadata.json'
+    )
+    with open(output, "w", encoding="utf8") as f:
+        json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
+
 
 def postprocess_state(state: State):
     # Save parent for each child
@@ -2898,6 +2904,12 @@ def postprocess_state(state: State):
                 sublinks += [resolve_link(*i)]
             links += [(html_, title, url, id, sublinks)]
         state.config[var] = links
+
+    for compound_id, compound in state.compounds.items():
+        output = os.path.join(
+            os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound_id + '_meta_postprocessed.json')
+        with open(output, "w", encoding="utf8") as f:
+            json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
 
 
 def build_search_data(state: State, merge_subtrees=True, add_lookahead_barriers=True, merge_prefixes=True) -> bytearray:
