@@ -3464,7 +3464,7 @@ def parse_xml(state: State, xml: str):
             is_stupid = False
             for memberdef in compounddef_child:
                 if memberdef.tag == 'member':
-                    logging.warning("{}: sorry, the output will not list file / namespace {} members due to https://github.com/doxygen/doxygen/issues/8790. Parsing of non-self-contained XML not implemented.".format(state.current, compounddef_child.attrib['kind']))
+                    logging.info("{}: sorry, the output will not list file / namespace {} members due to https://github.com/doxygen/doxygen/issues/8790. Parsing of non-self-contained XML not implemented.".format(state.current, compounddef_child.attrib['kind']))
                     sectiondef_header = compounddef_child.find('header').text if compounddef_child.find('header') is not None else memberdef.find('name').text
                     member_name = memberdef.find('name').text
                     logging.info("{}: Reference to {} inside {} dropped, find it at {}".format(state.current, member_name.strip(), sectiondef_header.strip(), memberdef.attrib['refid']))
