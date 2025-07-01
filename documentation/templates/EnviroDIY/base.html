@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ css|basename_or_url|e }}" />
   {% endfor %}
 
-  {% include 'gp_stylesheets.html' %}
+  {% include 'gp_header_includes.html' %}
 
   {% if FAVICON %}
   <link rel="icon" href="{{ FAVICON[0]|basename_or_url|e }}" type="{{ FAVICON[1] }}" />
@@ -99,7 +99,6 @@
               class="gp-mobile-logo"
             />
             {% else %}
-
             <svg class="gp-desktop-logo" width="200px" height="42px" onload="init(evt)">
               <script type="text/ecmascript">
                 <![CDATA[
@@ -126,7 +125,6 @@
               <text id="project_name" x="50%" y="50%" fill="#8ec551" font-size="55" text-anchor="middle">{{ PROJECT_NAME }}</text>
               <text id="project_number" x="50%" y="100%" fill="#da9230" font-size="55" text-anchor="middle">{{ PROJECT_NUMBER }}</text>
             </svg>
-
             <svg class="gp-scrolling-logo" width="264px" height="55px" onload="init(evt)">
               <script type="text/ecmascript">
                 <![CDATA[
@@ -153,7 +151,6 @@
               <text id="project_name" x="50%" y="50%" fill="#8ec551" font-size="55" text-anchor="middle">{{ PROJECT_NAME }}</text>
               <text id="project_number" x="50%" y="50%" fill="#da9230" font-size="55" text-anchor="middle">{{ PROJECT_NUMBER }}</text>
             </svg>
-
             <svg class="gp-mobile-logo" width="132px" height="28px" onload="init(evt)">
               <script type="text/ecmascript">
                 <![CDATA[
