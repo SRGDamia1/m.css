@@ -26,6 +26,16 @@
   {% endif %}
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script type="text/javascript" src="clipboard.js"></script>
+  {% if USE_MATHJAX %}
+  {% if MATHJAX_VERSION == "MathJax_3" %}
+  {% if MATHJAX_CODEFILE %}<script type="text/javascript">{{ MATHJAX_CODEFILE }}</script>{% endif %}
+  <script type="text/javascript" id="MathJax-script" async="async" src="{{ MATHJAX_RELPATH }}/es5/tex-{{ MATHJAX_FORMAT.lower() }}.js"></script>
+  {% endif %}
+  {% if MATHJAX_VERSION == "MathJax_2" %}
+  <script type="text/javascript" async="async" src="{{ MATHJAX_RELPATH }}MathJax.js?config=TeX-AMS_{{ MATHJAX_FORMAT.upper() }}{% if MATHJAX_CODEFILE %},{{ MATHJAX_CODEFILE }}{% endif %}"></script>
+  {% endif %}
+  {% endif %}
+
 </head>
 
 <body
@@ -98,7 +108,7 @@
               height="28"
               class="gp-mobile-logo"
             />
-            {% else %}
+          {% else %}
             <svg class="gp-desktop-logo" width="200px" height="42px" onload="init(evt)">
               <script type="text/ecmascript">
                 <![CDATA[
@@ -177,7 +187,7 @@
               <text id="project_name" x="50%" y="50%" fill="#8ec551" font-size="55" text-anchor="middle">{{ PROJECT_NAME }}</text>
               <text id="project_number" x="50%" y="100%" fill="#da9230" font-size="55" text-anchor="middle">{{ PROJECT_NUMBER }}</text>
             </svg>
-            {% endif %}
+          {% endif %}
           </a>
         </div> <!-- gp-logo -->
 

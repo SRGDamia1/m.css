@@ -1473,7 +1473,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             filter = state.config['M_CODE_FILTERS_PRE'].get(lexer.name)
             if filter: code = filter(code)
 
-            highlighted = highlight(code, lexer, formatter).rstrip()
+            highlighted = highlight(code, lexer, formatter).rstrip().replace('\n</div><div', '</div>\n<div')
+
             # Pygments < 2.14 leave useless empty spans in the output. Filter
             # them out to have the markup consistent across versions for easier
             # testing.
@@ -1507,13 +1508,23 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
             # Fallback rendering as code requested
             if state.config['M_MATH_RENDER_AS_CODE']:
+                logging.debug("{}: rendering formula as code: {}".format(state.current, i.text))
                 out.parsed += '<{0} class="m-code m-math{1}{2}">{3}</{0}>'.format(
                     'pre' if formula_block else 'code',
                     ' ' + add_css_class if formula_block and add_css_class else '',
                     # TODO try w/ this removed
                     ' ' + add_inline_css_class if not formula_block and add_inline_css_class else '',
                     i.text)
+            elif state.doxyfile['USE_MATHJAX']:
+                logging.debug("{}: leaving formula as un-formatted code for MathJax: {}".format(state.current, i.text))
+                out.parsed += '<{0} class="m-code m-math{1}{2}">{3}</{0}>'.format(
+                    'p',
+                    ' ' + add_css_class if formula_block and add_css_class else '',
+                    # TODO try w/ this removed
+                    ' ' + add_inline_css_class if not formula_block and add_inline_css_class else '',
+                    i.text)
             else:
+                logging.debug("{}: converting math latex to svg: {}".format(state.current, i.text))
                 # Assume that Doxygen wrapped the formula properly to
                 # distinguish between inline, block or special environment
                 depth, svg = latex2svgextra.fetch_cached_or_render('{}'.format(i.text))
@@ -4230,8 +4241,16 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         ('HTML_OUTPUT', None, str),
         ('XML_OUTPUT', None, str),
 
+        ('USE_MATHJAX', None, bool),
+        ('MATHJAX_VERSION', None, str),
+        ('MATHJAX_FORMAT', None, str),
+        ('MATHJAX_RELPATH', None, str),
+        ('MATHJAX_EXTENSIONS', None, str), # NOT SUPPORTED
+        ('MATHJAX_CODEFILE', None, str),
+
         ('DOT_FONTNAME', None, str),
         ('DOT_FONTSIZE', None, int),
+
         ('CREATE_SUBDIRS', None, bool), # processing fails below if this is set
         ('JAVADOC_AUTOBRIEF', None, bool),
         ('QT_AUTOBRIEF', None, bool),
@@ -4435,12 +4454,16 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     # there is no cache, reset the cache to an empty state to avoid
     # order-dependent issues when testing
     math_cache_file = os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.config['M_MATH_CACHE_FILE'])
-    if state.config['M_MATH_CACHE_FILE'] and os.path.exists(math_cache_file):
-        latex2svgextra.unpickle_cache(math_cache_file)
-    else:
-        latex2svgextra.unpickle_cache(None)
+    if not state.config['M_MATH_RENDER_AS_CODE'] and not state.doxyfile['USE_MATHJAX']:
+        if state.config['M_MATH_CACHE_FILE'] and os.path.exists(math_cache_file):
+            logging.debug("Unpickling latex2svg math cache file: {}".format(math_cache_file))
+            latex2svgextra.unpickle_cache(math_cache_file)
+        else:
+            logging.debug("No latex2svg math cache to unpickle")
+            latex2svgextra.unpickle_cache(None)
 
     # Configure graphviz/dot
+    logging.debug("Configuring GraphViz (dot) with font {} size {}".format(state.doxyfile['DOT_FONTNAME'].strip(), state.doxyfile['DOT_FONTSIZE']))
     dot2svg.configure(state.doxyfile['DOT_FONTNAME'], state.doxyfile['DOT_FONTSIZE'])
 
     if sort_globbed_files:
@@ -4640,7 +4663,8 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         shutil.copy(i, os.path.join(html_output, os.path.basename(file_out)))
 
     # Save updated math cache file
-    if state.config['M_MATH_CACHE_FILE']:
+    if not state.config['M_MATH_RENDER_AS_CODE'] and not state.doxyfile['USE_MATHJAX'] and state.config['M_MATH_CACHE_FILE']:
+        logging.debug("Pickling latex2svg math cache file: {}".format(math_cache_file))
         latex2svgextra.pickle_cache(math_cache_file)
 
 if __name__ == '__main__': # pragma: no cover
