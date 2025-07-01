@@ -1,4 +1,4 @@
-.m-code-arduino { var(--code-background-color); }
+.m-code-pygments-default { var(--code-background-color); }
 .m-code-pygments-default .hll { background-color: #ffffcc }
 .m-code-pygments-default .c { color: #3D7B7B; font-style: italic } /* Comment */
 .m-code-pygments-default .err { border: 1px solid #FF0000 } /* Error */
