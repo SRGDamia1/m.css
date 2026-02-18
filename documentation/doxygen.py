@@ -1002,12 +1002,18 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     elif i.attrib['kind'] == 'note':
                         title = 'Note'
                         css_class = 'm-info'
-                    elif i.attrib['kind'] == 'attention':
-                        title = 'Attention'
-                        css_class = 'm-warning'
                     elif i.attrib['kind'] == 'warning':
                         title = 'Warning'
+                        css_class = 'm-warning'
+                    elif i.attrib['kind'] in ['remark', 'tip']:
+                        title = 'Tip'
+                        css_class = 'm-success'
+                    elif i.attrib['kind'] in ['attention', 'caution']:
+                        title = 'Caution'
                         css_class = 'm-danger'
+                    elif i.attrib['kind'] == 'important':
+                        title = 'Important'
+                        css_class = 'm-default'
                     elif i.attrib['kind'] == 'author':
                         title = 'Author'
                         css_class = 'm-default'
@@ -1034,10 +1040,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         css_class = 'm-success'
                     elif i.attrib['kind'] == 'invariant':
                         title = 'Invariant'
-                        css_class = 'm-success'
-                    elif i.attrib['kind'] == 'remark':
-                        title = 'Remark'
-                        css_class = 'm-default'
+                        css_class = "m-success"
                     elif i.attrib['kind'] == 'par':
                         title = html.escape(i.findtext('title', ''))
                         css_class = 'm-default'
