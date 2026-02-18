@@ -329,8 +329,9 @@ def parse_ref(state: State, element: ET.Element, add_inline_css_class: str = Non
 
 # Returns a shortened path if the prefix matches
 def remove_path_prefix(path: str, prefix: str) -> str:
-    common_path = os.path.commonprefix([path, prefix])
-    return path[len(common_path):].lstrip(os.path.sep) if common_path else path
+    if path.startswith(prefix):
+        return path[len(prefix):].lstrip(os.path.sep)
+    return path
 
 # Return the string that has the longest prefix stripped, as defined by Doxygen
 # in src/util.cpp

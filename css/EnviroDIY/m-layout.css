@@ -438,6 +438,10 @@ article section > h6 a {
   text-decoration: var(--link-decoration-heading);
 }
 
+nav.m-sidebar > h4 {
+  color: hsla(225deg, 15%, 90%, 0.56)
+}
+
 /* Landing page, jumbo article */
 #m-landing-image,
 #m-cover-image,

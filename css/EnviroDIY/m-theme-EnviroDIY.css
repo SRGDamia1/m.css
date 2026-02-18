@@ -32,7 +32,7 @@
   --font-size: 14px;
   --table-font-size: 0.9em; /* *not* rem, so it follows surrounding font size */
   --line-height: normal;
-  --paragraph-indent: 1.5rem;
+  --paragraph-indent: 0rem;
   --paragraph-align: justify;
   --link-decoration: underline;
   --link-decoration-nav: none;

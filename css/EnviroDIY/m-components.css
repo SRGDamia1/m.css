@@ -30,8 +30,11 @@
 html {
   font-size: var(--font-size);
   background-color: var(--background-color);
+  scroll-behavior: smooth;
 }
 body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-family: var(--font);
   font-size: var(--font-size);
   line-height: var(--line-height);
@@ -149,6 +152,12 @@ a {
 a.m-flat {
   text-decoration: none;
 }
+a.m-toc {
+  text-decoration: none;
+  color: var(--color);
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
 a:hover,
 a:focus,
 a:active {
@@ -172,7 +181,8 @@ mark {
 /* Block/inline code */
 pre,
 code {
-  font-family: var(--code-font), monospace, monospace; /* https://en.wikipedia.org/wiki/User:Davidgothberg/Test59 */
+  font-family:
+    var(--code-font), monospace, monospace; /* https://en.wikipedia.org/wiki/User:Davidgothberg/Test59 */
   font-size: var(--code-font-size);
   color: var(--code-color);
   background-color: var(--code-background-color);
@@ -419,6 +429,14 @@ dl.m-footnote dd span.m-footnote a {
   font-style: italic;
 }
 
+.m-sidebar {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mark-color) transparent;
+  height: calc(100vh - 3em);
+}
+
 /* Note, frame, block */
 .m-container-inflatable {
   background-color: var(--container-background-color);
@@ -524,8 +542,7 @@ div.m-button a .m-small:last-child {
 /* Tables */
 table.m-table {
   border-collapse: collapse;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
   font-size: var(--table-font-size);
 }
 table.m-table.m-big {
@@ -2578,6 +2595,9 @@ div.m-math,
 div.m-graph,
 div.m-plot {
   margin-bottom: 1rem;
+}
+main li {
+  margin-bottom: 0.25rem;
 }
 p:last-child,
 p.m-nopadb,
