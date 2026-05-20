@@ -4121,6 +4121,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         state.basedir = os.path.dirname(doxyfile)
 
     logging.debug("Parsing configuration from {}".format(doxyfile))
+    # logging.debug("Pre-filled values:{}".format(values))
 
     comment_re = re.compile(r"""^\s*(#.*)?$""")
     variable_re = re.compile(r"""^\s*(##!\s*)?(?P<key>[A-Z0-9_@]+)\s*=\s*(?P<quote>['"]?)(?P<value>.*)(?P=quote)\s*(?P<backslash>\\?)$""")
@@ -4133,8 +4134,8 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         'OUTPUT_DIRECTORY': [''],
         'XML_OUTPUT': ['xml'],
         'HTML_OUTPUT': ['html'],
-        'DOT_FONTNAME': ['Helvetica'],
-        'DOT_FONTSIZE': ['10'],
+        'DOT_FONTNAME': ['Source Sans Pro'],
+        'DOT_FONTSIZE': ['16'],
         'SHOW_INCLUDE_FILES': ['YES'],
         'STRIP_FROM_PATH': [''],
         'STRIP_FROM_INC_PATH': [''],
@@ -4235,6 +4236,7 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         # Order roughly the same as in python.py default_config to keep those
         # two consistent
         ('PROJECT_NAME', None, str),
+        ('PROJECT_LOGO', None, str),
         ('PROJECT_NUMBER', None, str),
         ('PROJECT_BRIEF', None, str),
         ('PROJECT_LOGO', None, str),
@@ -4294,7 +4296,11 @@ def parse_doxyfile(state: State, doxyfile, values = None):
         ('M_MATH_CACHE_FILE', 'M_MATH_CACHE_FILE', str),
         ('M_MATH_RENDER_AS_CODE', 'M_MATH_RENDER_AS_CODE', bool),
     ]:
-        if key not in values: continue
+        if key not in values:
+            # logging.debug(f"Key {key}{' ('+alias+')' if alias else ''} not found in {doxyfile}")
+            continue
+
+        logging.debug(f"For key {key}{' ('+alias+')' if alias else ''} got value {values[key]} from {doxyfile}")
 
         if type_ is str:
             value = '\n'.join(values[key])
@@ -4308,24 +4314,35 @@ def parse_doxyfile(state: State, doxyfile, values = None):
             assert False
 
         # if we have different information in this Doxyfile and what we've previously read and both are different from the default
-        if (alias and alias in state.config.keys() and state.config[alias] != default_config[alias] and value != default_config[alias]) or (
-                key in state.config.keys() and state.config[key] != default_config[key] and value != default_config[key]):
+        if (alias and alias in state.config.keys() and alias in default_config.keys() and state.config[alias] != default_config[alias] and value != default_config[alias]) or (
+                alias and alias in state.config.keys() and alias not in default_config.keys() and value != state.config[alias]) or (
+                key in state.config.keys() and key in default_config.keys() and state.config[key] != default_config[key] and value != default_config[key]) or (
+                key in state.config.keys() and key not in default_config.keys() and value != state.config[key]):
             # if we have lists combine them
             if type_ is list:
                 logging.warning(f"Extending {alias} with {key} from {doxyfile}")
                 state.config[alias].extend(value)
             else:
                 # if it's not a list ignore it and issue a warning
-                logging.warning(f"Ignoring {value} for {key} from {doxyfile} because {alias} has already been set to {state.config[alias]}")
+                if alias and alias in state.config.keys():
+                    logging.warning(f"Ignoring {value} for {key} from {doxyfile} because {alias} has already been set to {state.config[alias]}")
+                else:
+                    logging.warning(f"Ignoring {value} for {key} from {doxyfile} because {key} has already been set to {state.config[key]}")
+                    # make sure we really do have the key in the doxyfile keys!
+                    if key not in state.doxyfile.keys():
+                        state.doxyfile[key] = state.config[key]
+                        state.config.pop(key)
         # if we have no information in this Doxyfile and a value was already set in the config, ignore the re-read default
-        elif (alias and alias in state.config.keys() and value == default_config[alias]) or (
-                key in state.config.keys() and value == default_config[key]):
-            logging.debug(f"Ignoring default value for {key} ({alias}) from {doxyfile}.")
+        elif (alias and alias in state.config.keys() and alias in default_config.keys() and value == default_config[alias]) or (
+                key in state.config.keys() and key in default_config.keys() and value == default_config[key]):
+            logging.debug(f"Ignoring default value for {key}{' ('+alias+')' if alias else ''} from {doxyfile}.")
         # If there's nothing in the python file, just use the Doxyfile
         elif alias:
             state.config[alias] = value
         else:
             state.doxyfile[key] = value
+
+        # logging.debug(f"After processing {key}{' ('+alias+')' if alias else ''} from {doxyfile}, {'config' if alias else 'doxyfile'} value is {state.config[alias] if alias else state.doxyfile[key]}")
 
     # Process M_LINKS_NAVBAR[12] into either (HTML, sublinks) or
     # (title, URL, ID, sublinks), with sublinks being either
@@ -4452,6 +4469,12 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     xml_input = os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['XML_OUTPUT'])
     xml_files_metadata = [os.path.join(xml_input, f) for f in glob.glob(os.path.join(xml_input, "*.xml"))]
     xml_files = [os.path.join(xml_input, f) for f in glob.glob(os.path.join(xml_input, wildcard))]
+    # logging.debug("Globbed files: {}".format(xml_files))
+    # logging.debug("Metadata files: {}".format(xml_files_metadata))
+    # logging.debug(state.config)
+    # logging.debug(state.doxyfile)
+    # logging.debug("Parent Output Directory: {}".format(state.doxyfile['OUTPUT_DIRECTORY']))
+    # logging.debug("HTML Output Directory: {}".format(state.doxyfile['HTML_OUTPUT']))
     html_output = os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT'])
 
     # If math rendering cache is not disabled, load the previous version. If
