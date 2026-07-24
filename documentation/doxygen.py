@@ -2812,11 +2812,12 @@ def extract_metadata(state: State, xml):
 
     state.compounds[compound.id] = compound
 
-    output = os.path.join(
-        os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound.id + '_metadata.json'
-    )
-    with open(output, "w", encoding="utf8") as f:
-        json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
+    # json_output = os.path.join(
+    #     os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound.id + '_metadata.json'
+    # )
+    # with open(json_output, "w", encoding="utf8") as f:
+    #     logging.info("Writing {} metadata as json to {}".format(compound.id,os.path.abspath(json_output)))
+    #     json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
 
 
 def postprocess_state(state: State):
@@ -2923,9 +2924,10 @@ def postprocess_state(state: State):
         state.config[var] = links
 
     for compound_id, compound in state.compounds.items():
-        output = os.path.join(
+        json_output = os.path.join(
             os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound_id + '_meta_postprocessed.json')
-        with open(output, "w", encoding="utf8") as f:
+        with open(json_output, "w", encoding="utf8") as f:
+            logging.info("Writing compound {} as json".format(os.path.abspath(json_output)))
             json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
 
 
@@ -4533,8 +4535,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     # with open(output, 'w', encoding="utf8") as f:
     #     print(state, file=f)
 
-    output = os.path.join(html_output, "postProcessedState.json")
-    with open(output, "w", encoding="utf8") as f:
+    json_output = os.path.join(html_output, "postProcessedState.json")
+    with open(json_output, "w", encoding="utf8") as f:
+        logging.info("Writing state {} as json".format(os.path.abspath(json_output)))
         json.dump(state, f, cls=MappingProxyEncoder, indent=2)
 
     for file in xml_files:
@@ -4544,14 +4547,19 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
 
         elif os.path.basename(file) == 'index.xml':
             parsed = parse_index_xml(state, file)
-            output = os.path.join(html_output, "index_parsed.json")
-            with open(output, "w", encoding="utf8") as f:
-                json.dump(parsed, f, cls=MappingProxyEncoder, indent=2)
 
             for i in index_pages:
                 file = '{}.html'.format(i)
 
+                if i in parsed.__dict__["index"].__dict__.keys():
+                    json_output = os.path.join(html_output, file.replace(".html", ".json"))
+                    cropped_index = {"index": {i: copy.deepcopy(parsed.__dict__["index"].__dict__[i])}}
+                    with open(json_output, "w", encoding="utf8") as f:
+                        logging.info("Writing cropped parsed {} json to {}".format(i, os.path.abspath(json_output)))
+                        json.dump(cropped_index, f, cls=MappingProxyEncoder, indent=2)
+
                 template = env.get_template(file)
+                logging.info("Rendering {} from {}".format(i, template))
                 rendered = template.render(index=parsed.index,
                     DOXYGEN_VERSION=parsed.version,
                     FILENAME=file,
@@ -4561,6 +4569,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
 
                 output = os.path.join(html_output, file)
                 with open(output, 'wb') as f:
+                    logging.info("Writing {} from {}".format(os.path.abspath(output), template))
                     f.write(rendered.encode('utf-8'))
                     # Add back a trailing newline so we don't need to bother
                     # with patching test files to include a trailing newline to
@@ -4573,20 +4582,15 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             parsed = parse_xml(state, file)
             if not parsed: continue
 
-            output = os.path.join(
+            json_output = os.path.join(
                 html_output, os.path.basename(file).replace(".xml", ".json")
             )
-            with open(output, "w", encoding="utf8") as f:
+            with open(json_output, "w", encoding="utf8") as f:
+                logging.info("Writing parsed {} ({}) json to {}".format(parsed.compound.name, parsed.compound.kind, os.path.abspath(json_output)))
                 json.dump(parsed, f, cls=MappingProxyEncoder, indent=2)
 
-            # print(parsed.compound.kind, parsed.compound.name,parsed.compound.id)
-            # if parsed.compound.kind == 'group' and parsed.compound.id.startswith('group__sensor__'):
-            #     template = env.get_template('sensor.html')
-            # elif parsed.compound.kind == 'group' and parsed.compound.id.startswith('group__modem__'):
-            #     template = env.get_template('modem.html')
-            # else:
-            #     template = env.get_template('{}.html'.format(parsed.compound.kind))
             template = env.get_template('{}.html'.format(parsed.compound.kind))
+            logging.info("Rendering {} from {}".format(parsed.compound.name, template))
             rendered = template.render(compound=parsed.compound,
                 DOXYGEN_VERSION=parsed.version,
                 FILENAME=parsed.compound.url,
@@ -4596,6 +4600,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
 
             output = os.path.join(html_output, parsed.compound.url)
             with open(output, 'wb') as f:
+                logging.info("Writing {} from {}".format(os.path.abspath(output), template))
                 f.write(rendered.encode('utf-8'))
                 # Add back a trailing newline so we don't need to bother with
                 # patching test files to include a trailing newline to make Git
@@ -4609,7 +4614,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     # there's at least some entrypoint. Doxygen version is not set in this
     # case, as this is totally without Doxygen involvement.
     if not os.path.join(xml_input, 'indexpage.xml') in xml_files_metadata:
-        logging.debug("writing index.html for an empty mainpage")
+        logging.info("Writing index.html for an empty mainpage")
 
         compound = Empty()
         compound.kind = 'page'
@@ -4617,6 +4622,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         compound.description = ''
         compound.breadcrumb = [(state.doxyfile['PROJECT_NAME'], 'index.html')]
         template = env.get_template('page.html')
+        logging.info("Rendering {} from {}".format(compound.name, template))
         rendered = template.render(compound=compound,
             DOXYGEN_VERSION=None,
             FILENAME='index.html',
@@ -4625,6 +4631,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             **state.doxyfile, **state.config)
         output = os.path.join(html_output, 'index.html')
         with open(output, 'wb') as f:
+            logging.info("Writing {} from {}".format(os.path.abspath(output), template))
             f.write(rendered.encode('utf-8'))
             # Add back a trailing newline so we don't need to bother with
             # patching test files to include a trailing newline to make Git
@@ -4648,13 +4655,15 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
 
         # OpenSearch metadata, in case we have the base URL
         if state.config['SEARCH_BASE_URL']:
-            logging.debug("writing OpenSearch metadata file")
+            logging.info("Writing OpenSearch metadata file")
 
             template = env.get_template('opensearch.xml')
+            logging.info("Rendering state for opensearch from {}".format(template))
             # TODO: whitelist only what matters from doxyfile
             rendered = template.render(**state.doxyfile, **state.config)
             output = os.path.join(html_output, 'opensearch.xml')
             with open(output, 'wb') as f:
+                logging.info("Writing {} from {}".format(os.path.abspath(output), template))
                 f.write(rendered.encode('utf-8'))
                 # Add back a trailing newline so we don't need to bother with
                 # patching test files to include a trailing newline to make Git
