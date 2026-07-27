@@ -491,8 +491,11 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
     out.is_reasonable_paragraph = element.tag == 'para'
 
     out.parsed: str = ''
+    out.markdown: str = ''
     if element.text:
-        out.parsed = html.escape(element.text.strip() if trim else element.text)
+        text_content = element.text.strip() if trim else element.text
+        out.parsed = html.escape(text_content)
+        out.markdown = text_content
 
         # There's some inline text at the start, *do not* add any CSS class to
         # the first child element
@@ -555,9 +558,12 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         if index == 0 and i.tag == 'zwj' and element.tag == 'para' and immediate_parent is not None and immediate_parent.tag == 'blockquote':
             if i.tail:
                 tail: str = html.escape(i.tail)
+                tail_md = i.tail
                 if trim:
                     tail = tail.strip()
+                    tail_md = tail_md.strip()
                 out.parsed += tail
+                out.markdown += tail_md
             continue
 
         # State used later
@@ -571,6 +577,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         if previous_section and (i.tag != 'simplesect' or i.attrib['kind'] == 'return'):
             assert not out.write_paragraph_close_tag
             out.parsed = out.parsed.rstrip() + '</aside>'
+            out.markdown = out.markdown.rstrip() + '\n'
 
         # Decide if a formula / code snippet is a block or not
         # <formula> can be both, depending on what's inside
@@ -710,6 +717,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 # element and that is mutually exclusive.
                 assert not end_previous_paragraph
                 out.parsed += '<p>'
+                out.markdown += '\n'
                 out.write_paragraph_close_tag = True
 
         # Block elements. Until Doxygen 1.10 it was at most <sect4>, 1.11 seems
@@ -730,11 +738,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 if not out.section: out.section = ('', '', [])
                 out.section = (out.section[0], out.section[1], out.section[2] + [parsed.section])
                 out.parsed += '<section id="{}">{}</section>'.format(extract_id_hash(state, i), parsed.parsed)
+                out.markdown += parsed.markdown
 
             # Render directly the contents otherwise, propagate parsed stuff up
             else:
                 merge_parsed_subsections(parsed)
                 out.parsed += parsed.parsed
+                out.markdown += parsed.markdown
 
             if parsed.search_keywords:
                 out.search_keywords += parsed.search_keywords
@@ -788,10 +798,16 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     out.section = (id, title, [])
                     # out.parsed += '<{0}><a href="#{1}">{2}</a></{0}>'.format(tag, id, title)
                     out.parsed += '<{0}>{2}</{0}>'.format(tag, id, title)
+                    # Determine markdown heading level based on HTML tag
+                    md_level = int(tag[1])
+                    out.markdown += '\n' + ('#' * md_level) + ' ' + title + '\n'
 
                 # Otherwise add the ID directly to the heading
                 else:
                     out.parsed += '<{0} id="{1}">{2}</{0}>'.format(tag, id, title)
+                    # Determine markdown heading level based on HTML tag
+                    md_level = int(tag[1])
+                    out.markdown += '\n' + ('#' * md_level) + ' ' + title + '\n'
 
         # Apparently, in 1.8.18, <heading> is used for Markdown headers only if
         # we run out of sect1-4 tags. Which also happens when there's a heading
@@ -828,14 +844,18 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         h_tag_level = 6
                         logging.warning("{}: more than three levels of Markdown headings in member descriptions are not supported, stopping at <h6>".format(state.current))
 
-                out.parsed += '<h{0}>{1}</h{0}>'.format(h_tag_level, html.escape(i.text))
+                heading_text = i.text
+                out.parsed += '<h{0}>{1}</h{0}>'.format(h_tag_level, html.escape(heading_text))
+                out.markdown += '\n' + ('#' * h_tag_level) + ' ' + heading_text + '\n'
 
         elif i.tag == 'parblock':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
+            parblock_parsed = parse_desc_internal(state, i)
             out.parsed += '<div{}>{}</div>'.format(
                 ' class="{}"'.format(add_css_class) if add_css_class else '',
-                parse_desc(state, i))
+                parblock_parsed.parsed)
+            out.markdown += parblock_parsed.markdown
 
         elif i.tag == 'para':
             assert element.tag != 'para' # should be top-level block element
@@ -864,8 +884,12 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     # the CSS class was meant to be added to the paragraph
                     # itself, not into a nested (block) element.
                     out.parsed += '<p{}>'.format(' class="{}"'.format(add_css_class) if add_css_class else '')
+                    out.markdown += '\n'
                 out.parsed += parsed.parsed
-                if parsed.write_paragraph_close_tag: out.parsed += '</p>'
+                out.markdown += parsed.markdown
+                if parsed.write_paragraph_close_tag:
+                    out.parsed += '</p>'
+                    out.markdown += '\n'
 
             # Paragraphs can have nested parameter / return value / ...
             # descriptions, merge them to current state
@@ -893,19 +917,35 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         elif i.tag == 'blockquote':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
-            out.parsed += '<blockquote>{}</blockquote>'.format(parse_desc(state, i))
+            blockquote_parsed = parse_desc_internal(state, i)
+            out.parsed += '<blockquote>{}</blockquote>'.format(blockquote_parsed.parsed)
+            # Format markdown as blockquote (prefix with "> ")
+            if blockquote_parsed.markdown:
+                out.markdown += '\n' + '\n'.join('> ' + line for line in blockquote_parsed.markdown.split('\n')) + '\n'
 
         elif i.tag in ['itemizedlist', 'orderedlist']:
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
             tag = 'ul' if i.tag == 'itemizedlist' else 'ol'
+            is_ordered = i.tag == 'orderedlist'
             out.parsed += '<{}{}>'.format(tag,
                 ' class="{}"'.format(add_css_class) if add_css_class else '')
+
+            # Prepare for markdown list
+            out.markdown += '\n'
+            item_number = 1
 
             for li in i:
                 assert li.tag == 'listitem'
                 parsed = parse_desc_internal(state, li)
                 out.parsed += '<li>{}</li>'.format(parsed.parsed)
+
+                # Add markdown list item
+                if is_ordered:
+                    out.markdown += f'{item_number}. {parsed.markdown}\n'
+                    item_number += 1
+                else:
+                    out.markdown += f'- {parsed.markdown}\n'
 
                 # Lists can have nested parameter / return value / ...
                 # descriptions, bubble them up. THIS IS FUCKEN UNBELIEVABLE.
@@ -916,25 +956,33 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     out.search_keywords += parsed.search_keywords
 
             out.parsed += '</{}>'.format(tag)
+            out.markdown += '\n'
 
         elif i.tag == 'table':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
             out.parsed += '<table {}>'.format(
-                'class="m-table ' + add_css_class  + '' if add_css_class else 'class="m-table m-fullwidth m-flat"')
+                'class="m-table ' + add_css_class + '"' if add_css_class else 'class="m-table m-fullwidth m-flat"')
             # out.parsed += '<table class="m-table{}">'.format(
             #     ' ' + add_css_class if add_css_class else '')
             thead_written = False
             inside_tbody = False
 
+            # Start markdown table
+            out.markdown += '\n'
+            md_rows = []
+            md_has_header = False
+
             row: ET.Element
             for row in i:
                 if row.tag == 'caption':
                     out.parsed += '<caption>{}</caption>'.format(parse_inline_desc(state, row))
+                    # Markdown tables don't have captions, skip in markdown
 
                 if row.tag == 'row':
                     is_header_row = True
                     row_data = ''
+                    md_row_data = []
                     for entry in row:
                         assert entry.tag == 'entry'
                         is_header = entry.attrib['thead'] == 'yes'
@@ -942,10 +990,12 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         rowspan = ' rowspan="{}"'.format(entry.attrib['rowspan']) if 'rowspan' in entry.attrib else ''
                         colspan = ' colspan="{}"'.format(entry.attrib['colspan']) if 'colspan' in entry.attrib else ''
                         classes = ' class="{}"'.format(entry.attrib['class']) if 'class' in entry.attrib else ''
+                        entry_parsed = parse_desc_internal(state, entry)
                         row_data += '<{0}{2}{3}{4}>{1}</{0}>'.format(
                             'th' if is_header else 'td',
-                            parse_desc(state, entry),
+                            entry_parsed.parsed,
                             rowspan, colspan, classes)
+                        md_row_data.append(entry_parsed.markdown.replace('\n', ' ').strip())
 
                     # Table head is opened upon encountering first header row
                     # and closed upon encountering first body row (in case it was
@@ -955,6 +1005,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         if not thead_written:
                             out.parsed += '<thead>'
                             thead_written = True
+                            md_has_header = True
                     else:
                         if thead_written and not inside_tbody:
                             out.parsed += '</thead>'
@@ -963,9 +1014,18 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                             inside_tbody = True
 
                     out.parsed += '<tr>{}</tr>'.format(row_data)
+                    md_rows.append(md_row_data)
 
             if inside_tbody: out.parsed += '</tbody>'
             out.parsed += '</table>'
+
+            # Format markdown table
+            if md_rows:
+                for i_row, md_row in enumerate(md_rows):
+                    out.markdown += '| ' + ' | '.join(md_row) + ' |\n'
+                    if i_row == 0 and md_has_header:
+                        out.markdown += '| ' + ' | '.join(['---'] * len(md_row)) + ' |\n'
+            out.markdown += '\n'
 
         elif i.tag == 'simplesect':
             assert element.tag == 'para' # is inside a paragraph :/
@@ -1065,8 +1125,10 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                             css_class=css_class,
                             heading=heading,
                             title=title)
+                        out.markdown += '\n**' + title + '**\n'
                     else:
                         out.parsed += '<aside class="{}">'.format(css_class)
+                        out.markdown += '\n'
 
                 # Parse the section contents and bubble important stuff up
                 parsed, search_keywords, search_enum_values_as_keywords = parse_desc_keywords(state, i)
@@ -1127,6 +1189,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 anchor=match.group(2),
                 title=title,
                 description=parse_desc(state, i.find('xrefdescription')))
+            # For markdown, just add a reference with the title
+            out.markdown += f'\n**{title}**: [{file}]({file}.html#{match.group(2)})\n'
 
         elif i.tag == 'parameterlist':
             assert element.tag == 'para' # is inside a paragraph :/
@@ -1172,20 +1236,29 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # example for a footnote list. In that case use the provided class
             # instead of m-doc.
             out.parsed += '<dl class="{}">'.format(add_css_class if add_css_class else 'm-doc')
+            out.markdown += '\n'
 
             for var in i:
                 if var.tag == 'varlistentry':
-                    out.parsed += '<dt>{}</dt>'.format(parse_type(state, var.find('term')).strip())
+                    term_text = parse_type(state, var.find('term')).strip()
+                    out.parsed += '<dt>{}</dt>'.format(term_text)
+                    out.markdown += f'**{term_text}**\n'
                 else:
                     assert var.tag == 'listitem'
-                    out.parsed += '<dd>{}</dd>'.format(parse_desc(state, var))
+                    listitem_parsed = parse_desc_internal(state, var)
+                    out.parsed += '<dd>{}</dd>'.format(listitem_parsed.parsed)
+                    out.markdown += f': {listitem_parsed.markdown}\n'
 
             out.parsed += '</dl>'
+            out.markdown += '\n'
 
         elif i.tag in ['verbatim', 'preformatted']:
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
-            out.parsed += '<pre>{}</pre>'.format(html.escape(i.text or ''))
+            verbatim_text = i.text or ''
+            out.parsed += '<pre>{}</pre>'.format(html.escape(verbatim_text))
+            # Markdown code block with triple backticks
+            out.markdown += f'\n```\n{verbatim_text}\n```\n'
 
         elif i.tag == 'image':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div', 'ulink']
@@ -1262,15 +1335,18 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     source, size=size,
                     attribs=' class="m-graph{}"'.format(' ' + add_css_class if add_css_class else '')),
                     caption)
+                out.markdown += f'\n[Graph]\n*{caption}*\n'
             else:
                 out.parsed += '<div class="m-graph{}">{}</div>'.format(
                     ' ' + add_css_class if add_css_class else '', dot2svg.dot2svg(source, size))
+                out.markdown += '\n[Graph]\n'
 
         elif i.tag == 'hruler':
             assert element.tag == 'para' # is inside a paragraph :/
 
             has_block_elements = True
             out.parsed += '<hr/>'
+            out.markdown += '\n---\n'
 
         elif i.tag == 'htmlonly':
             # The @htmlonly command has a block version, which is able to get
@@ -1279,7 +1355,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # @htmlinclude is exposed in XML and that one is always wrapped in
             # a paragraph.
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
-            if i.text: out.parsed += i.text
+            if i.text:
+                out.parsed += i.text
+                # HTML-only content has no markdown equivalent, skip
 
         # Internal docs, parse only if these are enabled
         elif i.tag == 'internal':
@@ -1287,12 +1365,14 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 parsed = parse_desc_internal(state, i)
                 merge_parsed_subsections(parsed)
                 out.parsed += parsed.parsed
+                out.markdown += parsed.markdown
 
         # Custom <div> with CSS classes (for making dim notes etc)
         elif i.tag == '{http://mcss.mosra.cz/doxygen/}div':
             has_block_elements = True
-
-            out.parsed += '<div class="{}">{}</div>'.format(i.attrib['{http://mcss.mosra.cz/doxygen/}class'], parse_inline_desc(state, i).strip())
+            div_parsed = parse_inline_desc_internal(state, i)
+            out.parsed += '<div class="{}">{}</div>'.format(i.attrib['{http://mcss.mosra.cz/doxygen/}class'], div_parsed.parsed.strip())
+            out.markdown += div_parsed.markdown
 
         # Adding a custom CSS class to the immediately following block/inline
         # element
@@ -1501,6 +1581,20 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 ' ' + add_css_class if code_block and add_css_class else '',
                 highlighted)
 
+            # Markdown code block
+            if code_block:
+                # Determine language for markdown fence
+                lang = ''
+                if isinstance(lexer, CppLexer) or isinstance(lexer, ArduinoLexer):
+                    lang = 'cpp'
+                elif isinstance(lexer, BashSessionLexer):
+                    lang = 'bash'
+                elif not isinstance(lexer, TextLexer):
+                    lang = lexer.name.lower() if hasattr(lexer, 'name') else ''
+                out.markdown += f'\n```{lang}\n{code}```\n'
+            else:
+                out.markdown += f'`{code}`'
+
         # Either block or inline
         elif i.tag == 'formula':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
@@ -1519,6 +1613,11 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     # TODO try w/ this removed
                     ' ' + add_inline_css_class if not formula_block and add_inline_css_class else '',
                     i.text)
+                # Markdown math using $ delimiters
+                if formula_block:
+                    out.markdown += f'\n$$\n{i.text}\n$$\n'
+                else:
+                    out.markdown += f'${i.text}$'
             elif state.doxyfile['USE_MATHJAX']:
                 logging.debug("{}: leaving formula as un-formatted code for MathJax: {}".format(state.current, i.text))
                 out.parsed += '<{0} class="m-code m-math{1}{2}">{3}</{0}>'.format(
@@ -1527,6 +1626,11 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     # TODO try w/ this removed
                     ' ' + add_inline_css_class if not formula_block and add_inline_css_class else '',
                     i.text)
+                # Markdown math using $ delimiters
+                if formula_block:
+                    out.markdown += f'\n$$\n{i.text}\n$$\n'
+                else:
+                    out.markdown += f'${i.text}$'
             else:
                 logging.debug("{}: converting math latex to svg: {}".format(state.current, i.text))
                 # Assume that Doxygen wrapped the formula properly to
@@ -1538,6 +1642,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     out.parsed += '<div class="m-math{}">{}</div>'.format(
                         ' ' + add_css_class if add_css_class else '',
                         latex2svgextra.patch(i.text, svg, None, ''))
+                    out.markdown += f'\n$$\n{i.text}\n$$\n'
                 else:
                     # CSS classes and styling for proper vertical alignment.
                     # Depth is relative to font size, describes how below the
@@ -1545,11 +1650,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     # 125% as set above in the config.
                     attribs = ' class="m-math{}"'.format(' ' + add_inline_css_class if add_inline_css_class else '')
                     out.parsed += latex2svgextra.patch(i.text, svg, depth, attribs)
+                    out.markdown += f'${i.text}$'
 
         # Inline elements
         elif i.tag == 'linebreak':
             # Strip all whitespace before the linebreak, as it is of no use
             out.parsed = out.parsed.rstrip() + '<br />'
+            out.markdown = out.markdown.rstrip() + '  \n'  # Markdown linebreak is two spaces + newline
 
         elif i.tag == 'anchor':
             # Doxygen doesn't prefix HTML <a name=""> anchors the same way as
@@ -1567,12 +1674,14 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     if last_1 != -1:
                         id = state.current_definition_url_base[last_1+2:]
 
-
             out.parsed += '<a name="{}"></a>'.format(id)
+            # Anchors don't have markdown equivalent, skip
 
         elif i.tag == 'computeroutput':
             content = parse_inline_desc(state, i).strip()
-            if content: out.parsed += '<code>{}</code>'.format(content)
+            if content:
+                out.parsed += '<code>{}</code>'.format(content)
+                out.markdown += f'`{content}`'
 
         elif i.tag in ['emphasis', 'bold', 'small', 'superscript', 'subscript', 'strike', 's', 'del']:
             mapping = {'emphasis': 'em',
@@ -1583,21 +1692,43 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                        'strike': 's',
                        's': 's',
                        'del': 's'}
+            md_mapping = {'emphasis': ('*', '*'),
+                          'bold': ('**', '**'),
+                          'small': ('', ''),  # No markdown equivalent
+                          'superscript': ('<sup>', '</sup>'),
+                          'subscript': ('<sub>', '</sub>'),
+                          'strike': ('~~', '~~'),
+                          's': ('~~', '~~'),
+                          'del': ('~~', '~~')}
 
-            content = parse_inline_desc(state, i).strip()
-            if content: out.parsed += '<{0}{1}>{2}</{0}>'.format(
-                mapping[i.tag],
-                ' class="{}"'.format(add_inline_css_class) if add_inline_css_class else '',
-                content)
+            content_parsed = parse_inline_desc_internal(state, i)
+            content = content_parsed.parsed.strip()
+            content_md = content_parsed.markdown.strip()
+            if content:
+                out.parsed += '<{0}{1}>{2}</{0}>'.format(
+                    mapping[i.tag],
+                    ' class="{}"'.format(add_inline_css_class) if add_inline_css_class else '',
+                    content)
+                md_pre, md_post = md_mapping[i.tag]
+                out.markdown += f'{md_pre}{content_md}{md_post}'
 
         elif i.tag == 'ref':
-            out.parsed += parse_ref(state, i, add_inline_css_class)
+            ref_html = parse_ref(state, i, add_inline_css_class)
+            out.parsed += ref_html
+            # Extract link text and URL for markdown
+            ref_parsed = parse_inline_desc_internal(state, i)
+            ref_text = ref_parsed.markdown.strip()
+            # Build a basic markdown link (URL extraction is complex, simplify)
+            out.markdown += f'`{ref_text}`'  # Use code format for refs in markdown
 
         elif i.tag == 'ulink':
+            link_parsed = parse_inline_desc_internal(state, i)
             out.parsed += '<a href="{}"{}>{}</a>'.format(
                 html.escape(i.attrib['url']),
                 ' class="{}"'.format(add_inline_css_class) if add_inline_css_class else '',
-                add_wbr(parse_inline_desc(state, i).strip()))
+                add_wbr(link_parsed.parsed.strip()))
+            # Markdown link
+            out.markdown += f'[{link_parsed.markdown.strip()}]({i.attrib["url"]})'
 
         # <span> with custom CSS classes. This is (ab)used by the
         # M_SHOW_UNDOCUMENTED option to make things appear to be documented
@@ -1881,6 +2012,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             try:
                 entity = mapping[i.tag]
                 out.parsed += '&{};'.format(entity)
+                # For markdown, output the actual character or approximation
+                # Most entities have Unicode equivalents
+                out.markdown += '&{};'.format(entity)  # Keep entity in markdown too
             except: # pragma: no cover
                 logging.warning("{}: ignoring <{}> in desc".format(state.current, i.tag))
 
@@ -1938,6 +2072,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
     if previous_section:
         assert not out.write_paragraph_close_tag
         out.parsed = out.parsed.rstrip() + '</aside>'
+        out.markdown = out.markdown.rstrip() + '\n'
 
     # Brief description always needs to be single paragraph because we're
     # sending it out without enclosing <p>.
@@ -2077,6 +2212,20 @@ def parse_inline_desc(state: State, element: ET.Element) -> str:
     assert not parsed.templates and not parsed.params and not parsed.return_value and not parsed.return_values and not parsed.exceptions
     assert not parsed.section
     return parsed.parsed
+
+def parse_inline_desc_internal(state: State, element: ET.Element):
+    """Parse inline description and return the full object with both parsed and markdown."""
+    if element is None:
+        out = Empty()
+        out.parsed = ''
+        out.markdown = ''
+        return out
+
+    # Verify that we didn't ignore any important info by accident
+    parsed = parse_desc_internal(state, element, trim=False)
+    assert not parsed.templates and not parsed.params and not parsed.return_value and not parsed.return_values and not parsed.exceptions
+    assert not parsed.section
+    return parsed
 
 def parse_enum(state: State, element: ET.Element):
     logging.debug(f"Parsing enum {element.find('name').text} in file {state.current}")
