@@ -549,6 +549,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
     out.search_enum_values_as_keywords = False
     out.deprecated = None
     out.since = None
+    out.language = None  # Track the language from programlisting blocks
 
     # DOXYGEN <PARA> PATCHING 1/4
     #
@@ -615,6 +616,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         if parsed.deprecated:
             assert not out.since
             out.deprecated = parsed.deprecated
+        if parsed.language:
+            out.language = parsed.language
 
     i: ET.Element
     # The index gets only used in <programlisting> code vs inline detection, to
@@ -3366,7 +3369,7 @@ def parse_xml(state: State, xml: str):
     compound.has_template_details = False
     compound.templates = None
     compound.brief, compound.brief_markdown = parse_desc_with_markdown(state, compounddef.find('briefdescription'))
-    compound.description, compound.description_markdown, templates, compound.sections, footer_navigation, example_navigation, search_keywords, compound.deprecated, compound.since = parse_toplevel_desc(state, compounddef.find('detaileddescription'))
+    compound.description, compound.description_markdown, templates, compound.sections, footer_navigation, example_navigation, search_keywords, compound.deprecated, compound.since, compound.language = parse_toplevel_desc(state, compounddef.find('detaileddescription'))
     compound.example_navigation = None
     compound.footer_navigation = None
     compound.topics = []
