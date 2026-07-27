@@ -2142,6 +2142,16 @@ def parse_desc(state: State, element: ET.Element) -> str:
     assert not parsed.section # might be problematic
     return parsed.parsed
 
+def parse_desc_with_markdown(state: State, element: ET.Element) -> Tuple[str, str]:
+    """Parse description and return both HTML and markdown."""
+    if element is None: return '', ''
+
+    # Verify that we didn't ignore any important info by accident
+    parsed = parse_desc_internal(state, element)
+    assert not parsed.templates and not parsed.params and not parsed.return_value and not parsed.return_values
+    assert not parsed.section # might be problematic
+    return parsed.parsed, parsed.markdown
+
 def parse_desc_keywords(state: State, element: ET.Element) -> Tuple[str, List[Tuple[str, str, int]], bool]:
     if element is None: return ''
 
@@ -2151,58 +2161,68 @@ def parse_desc_keywords(state: State, element: ET.Element) -> Tuple[str, List[Tu
     assert not parsed.section # might be problematic
     return parsed.parsed, parsed.search_keywords, parsed.search_enum_values_as_keywords
 
-def parse_enum_desc(state: State, element: ET.Element) -> Tuple[str, List[Tuple[str, str, int]], bool, bool]:
+def parse_enum_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Tuple[str, str, int]], bool, bool]:
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
-    parsed.parsed += parse_desc(state, element.find('inbodydescription'))
+    inbody = parse_desc_internal(state, element.find('inbodydescription'))
+    parsed.parsed += inbody.parsed
+    parsed.markdown += inbody.markdown
     if parsed.templates or parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @tparam / @param / @return / @retval / @exception found in enum description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.search_keywords, parsed.search_enum_values_as_keywords, parsed.deprecated, parsed.since
+    return parsed.parsed, parsed.markdown, parsed.search_keywords, parsed.search_enum_values_as_keywords, parsed.deprecated, parsed.since
 
-def parse_enum_value_desc(state: State, element: ET.Element) -> Tuple[str, List[Tuple[str, str, int]], bool]:
+def parse_enum_value_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Tuple[str, str, int]], bool]:
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
     if parsed.templates or parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @tparam / @param / @return / @retval / @exception found in enum value description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.parsed, parsed.markdown, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_var_desc(state: State, element: ET.Element) -> Tuple[str, List[Any], List[Tuple[str, str, int]], bool]:
+def parse_var_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], List[Tuple[str, str, int]], bool]:
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
-    parsed.parsed += parse_desc(state, element.find('inbodydescription'))
+    inbody = parse_desc_internal(state, element.find('inbodydescription'))
+    parsed.parsed += inbody.parsed
+    parsed.markdown += inbody.markdown
     if parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @param / @return / @retval / @exception found in variable description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.parsed, parsed.markdown, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_toplevel_desc(state: State, element: ET.Element) -> Tuple[str, List[Any], str, Any, Any, List[Tuple[str, str, int]], bool]:
+def parse_toplevel_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], str, Any, Any, List[Tuple[str, str, int]], bool]:
     state.parsing_toplevel_desc = True
     parsed = parse_desc_internal(state, element)
     state.parsing_toplevel_desc = False
     if parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @param / @return / @retval / @exception found in top-level description, ignoring".format(state.current))
-    return parsed.parsed, parsed.templates, parsed.section[2] if parsed.section else '', parsed.footer_navigation, parsed.example_navigation, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.parsed, parsed.markdown, parsed.templates, parsed.section[2] if parsed.section else '', parsed.footer_navigation, parsed.example_navigation, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_typedef_desc(state: State, element: ET.Element) -> Tuple[str, List[Any], List[Tuple[str, str, int]], bool]:
+def parse_typedef_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], List[Tuple[str, str, int]], bool]:
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
-    parsed.parsed += parse_desc(state, element.find('inbodydescription'))
+    inbody = parse_desc_internal(state, element.find('inbodydescription'))
+    parsed.parsed += inbody.parsed
+    parsed.markdown += inbody.markdown
     if parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @param / @return / @retval / @exception found in typedef description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.parsed, parsed.markdown, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_func_desc(state: State, element: ET.Element) -> Tuple[str, List[Any], List[Any], str, List[Any], List[Any], List[Tuple[str, str, int]], bool]:
+def parse_func_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], List[Any], str, List[Any], List[Any], List[Tuple[str, str, int]], bool]:
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
-    parsed.parsed += parse_desc(state, element.find('inbodydescription'))
+    inbody = parse_desc_internal(state, element.find('inbodydescription'))
+    parsed.parsed += inbody.parsed
+    parsed.markdown += inbody.markdown
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.templates, parsed.params, parsed.return_value, parsed.return_values, parsed.exceptions, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.parsed, parsed.markdown, parsed.templates, parsed.params, parsed.return_value, parsed.return_values, parsed.exceptions, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_define_desc(state: State, element: ET.Element) -> Tuple[str, List[Any], str, List[Tuple[str, str, int]], bool]:
+def parse_define_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], str, List[Tuple[str, str, int]], bool]:
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
-    parsed.parsed += parse_desc(state, element.find('inbodydescription'))
+    inbody = parse_desc_internal(state, element.find('inbodydescription'))
+    parsed.parsed += inbody.parsed
+    parsed.markdown += inbody.markdown
     if parsed.templates or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @tparam / @retval / @exception found in macro description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.params, parsed.return_value, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.parsed, parsed.markdown, parsed.params, parsed.return_value, parsed.search_keywords, parsed.deprecated, parsed.since
 
 def parse_inline_desc(state: State, element: ET.Element) -> str:
     if element is None: return ''
@@ -2243,8 +2263,8 @@ def parse_enum(state: State, element: ET.Element):
     # https://github.com/doxygen/doxygen/commit/a18e4c76ed6415893800c7d77a2f798614fb638b
     if not enum.name or enum.name.startswith('@'):
         enum.name = '(anonymous)'
-    enum.brief = parse_desc(state, element.find('briefdescription'))
-    enum.description, search_keywords, search_enum_values_as_keywords, enum.deprecated, enum.since = parse_enum_desc(state, element)
+    enum.brief, enum.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
+    enum.description, enum.description_markdown, search_keywords, search_enum_values_as_keywords, enum.deprecated, enum.since = parse_enum_desc(state, element)
     enum.is_protected = element.attrib['prot'] == 'protected'
     enum.is_strong = False
     if 'strong' in element.attrib:
@@ -2261,8 +2281,8 @@ def parse_enum(state: State, element: ET.Element):
         value.name = enumvalue.find('name').text
         # There can be an implicit initializer for enum value
         value.initializer = html.escape(enumvalue.findtext('initializer', ''))
-        value.brief = parse_desc(state, enumvalue.find('briefdescription'))
-        value.description, value_search_keywords, value.deprecated, value.since = parse_enum_value_desc(state, enumvalue)
+        value.brief, value.brief_markdown = parse_desc_with_markdown(state, enumvalue.find('briefdescription'))
+        value.description, value.description_markdown, value_search_keywords, value.deprecated, value.since = parse_enum_value_desc(state, enumvalue)
         if value.brief or value.description:
             if enum.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
                 result = Empty()
@@ -2361,8 +2381,8 @@ def parse_typedef(state: State, element: ET.Element):
     typedef.type = parse_type(state, element.find('type'))
     typedef.args = parse_type(state, element.find('argsstring'))
     typedef.name = element.find('name').text
-    typedef.brief = parse_desc(state, element.find('briefdescription'))
-    typedef.description, templates, search_keywords, typedef.deprecated, typedef.since = parse_typedef_desc(state, element)
+    typedef.brief, typedef.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
+    typedef.description, typedef.description_markdown, templates, search_keywords, typedef.deprecated, typedef.since = parse_typedef_desc(state, element)
     typedef.is_protected = element.attrib['prot'] == 'protected'
     typedef.has_template_details, typedef.templates = parse_template_params(state, element.find('templateparamlist'), templates)
 
@@ -2391,8 +2411,8 @@ def parse_func(state: State, element: ET.Element):
     state.current_definition_url_base, func.base_url, func.id, func.include, func.has_details = parse_id_and_include(state, element)
     func.type = parse_type(state, element.find('type'))
     func.name = fix_type_spacing(html.escape(element.find('name').text))
-    func.brief = parse_desc(state, element.find('briefdescription'))
-    func.description, templates, params, func.return_value, func.return_values, func.exceptions, search_keywords, func.deprecated, func.since = parse_func_desc(state, element)
+    func.brief, func.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
+    func.description, func.description_markdown, templates, params, func.return_value, func.return_values, func.exceptions, search_keywords, func.deprecated, func.since = parse_func_desc(state, element)
 
     def is_identifier(a): return a == '_' or a.isalnum()
 
@@ -2641,8 +2661,8 @@ def parse_var(state: State, element: ET.Element):
     var.is_protected = element.attrib['prot'] == 'protected'
     var.is_private = element.attrib['prot'] == 'private'
     var.name = element.find('name').text
-    var.brief = parse_desc(state, element.find('briefdescription'))
-    var.description, templates, search_keywords, var.deprecated, var.since = parse_var_desc(state, element)
+    var.brief, var.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
+    var.description, var.description_markdown, templates, search_keywords, var.deprecated, var.since = parse_var_desc(state, element)
     var.has_template_details, var.templates = parse_template_params(state, element.find('templateparamlist'), templates)
 
     if var.base_url == state.current_compound_url and (var.description or var.has_template_details):
@@ -2673,8 +2693,8 @@ def parse_define(state: State, element: ET.Element):
     state.current_definition_url_base, define.base_url, define.id, define.include, define.has_details = parse_id_and_include(state, element)
     define.name = element.find('name').text
     define.initializer = element.find('initializer').text if element.find('initializer') is not None else None
-    define.brief = parse_desc(state, element.find('briefdescription'))
-    define.description, params, define.return_value, search_keywords, define.deprecated, define.since = parse_define_desc(state, element)
+    define.brief, define.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
+    define.description, define.description_markdown, params, define.return_value, search_keywords, define.deprecated, define.since = parse_define_desc(state, element)
     define.has_param_details = False
     define.params = None
     for p in element.findall('param'):
@@ -2827,7 +2847,7 @@ def extract_metadata(state: State, xml):
     # for pages because that doesn't reflect CASE_SENSE_NAMES. THANKS DOXYGEN.
     # This is similar to compound.url_base handling in parse_xml() below.
     compound.url = 'index.html' if compound.kind == 'page' and compound.id == 'indexpage' else compound.id + '.html'
-    compound.brief = parse_desc(state, compounddef.find('briefdescription'))
+    compound.brief, compound.brief_markdown = parse_desc_with_markdown(state, compounddef.find('briefdescription'))
     # Groups are explicitly created so they *have details*, other
     # things need to have at least some documentation. Pages are treated as
     # having something unless they're stupid. See the function for details.
@@ -3257,8 +3277,8 @@ def parse_xml(state: State, xml: str):
     compound.include = None
     compound.has_template_details = False
     compound.templates = None
-    compound.brief = parse_desc(state, compounddef.find('briefdescription'))
-    compound.description, templates, compound.sections, footer_navigation, example_navigation, search_keywords, compound.deprecated, compound.since = parse_toplevel_desc(state, compounddef.find('detaileddescription'))
+    compound.brief, compound.brief_markdown = parse_desc_with_markdown(state, compounddef.find('briefdescription'))
+    compound.description, compound.description_markdown, templates, compound.sections, footer_navigation, example_navigation, search_keywords, compound.deprecated, compound.since = parse_toplevel_desc(state, compounddef.find('detaileddescription'))
     compound.example_navigation = None
     compound.footer_navigation = None
     compound.topics = []
@@ -3945,7 +3965,7 @@ def parse_xml(state: State, xml: str):
                         group = Empty()
                         group.name = header.text
                         group.id = slugify(group.name)
-                        group.description = parse_desc(state, compounddef_child.find('description'))
+                        group.description, group.description_markdown = parse_desc_with_markdown(state, compounddef_child.find('description'))
                         group.members = memberdef_list
                         compound.groups += [group]
                 # if it's a mix.. (not sure if this is possible) we'll do nothing but throw a warning
