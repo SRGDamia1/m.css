@@ -327,6 +327,42 @@ def parse_ref(state: State, element: ET.Element, add_inline_css_class: str = Non
 
     return '<a href="{}" class="{}">{}</a>'.format(url, class_, add_wbr(parse_inline_desc(state, element).strip()))
 
+def parse_ref_md(state: State, element: ET.Element) -> str:
+    """Generate a markdown reference link parallel to parse_ref"""
+    id = element.attrib['refid']
+
+    # this is a reference to a compound - ie, something with its own xml file
+    if element.attrib['kindref'] == 'compound':
+        url = id + '.html'
+    # a reference to a member - ie, something inside another compound's xml file
+    elif element.attrib['kindref'] == 'member':
+        i = id.rindex('_1')
+        url = id[:i] + '.html'
+        # There's no point in including the filename itself if linking to an
+        # anchor on the same page.
+        if url == state.current_compound_url:
+            url = ''
+        url += '#' + id[i+2:]
+    else: # pragma: no cover
+        logging.critical("{}: unknown <ref> kind {}".format(state.current, element.attrib['kindref']))
+        assert False
+
+    if 'external' in element.attrib:
+        for i in state.doxyfile['TAGFILES']:
+            name, _, baseurl = i.partition('=')
+            if os.path.basename(name) == os.path.basename(element.attrib['external']):
+                url = os.path.join(baseurl, url)
+                break
+        else: # pragma: no cover
+            logging.critical("{}: tagfile {} not specified in Doxyfile".format(state.current, element.attrib['external']))
+            assert False
+
+    # Get the link text from the element content
+    link_text = parse_inline_desc_internal(state, element).markdown.strip()
+    
+    # Return markdown link format
+    return '[{}]({})'.format(link_text, url)
+
 # Returns a shortened path if the prefix matches
 def remove_path_prefix(path: str, prefix: str) -> str:
     if path.startswith(prefix):
@@ -455,6 +491,26 @@ def parse_type(state: State, type: ET.Element) -> str:
 
     # Remove spacing inside <> and before & and *
     return fix_type_spacing(out)
+
+def parse_type_md(state: State, type: ET.Element) -> str:
+    """Generate markdown type information parallel to parse_type"""
+    # Constructors and typeless enums might not have it
+    if type is None: return None
+    out = type.text if type.text else ''
+
+    i: ET.Element
+    for i in type:
+        if i.tag == 'ref':
+            out += parse_ref_md(state, i)
+        elif i.tag == 'anchor':
+            # Anchors don't have markdown equivalent, skip
+            pass
+        else: # pragma: no cover
+            logging.warning("{}: ignoring {} in <type>".format(state.current, i.tag))
+
+        if i.tail: out += i.tail
+
+    return out
 
 def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.Element = None, trim = True, add_css_class = None):
     logging.debug(
@@ -1241,8 +1297,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             for var in i:
                 if var.tag == 'varlistentry':
                     term_text = parse_type(state, var.find('term')).strip()
+                    term_text_md = parse_type_md(state, var.find('term')).strip()
                     out.parsed += '<dt>{}</dt>'.format(term_text)
-                    out.markdown += f'**{term_text}**\n'
+                    out.markdown += f'**{term_text_md}**\n'
                 else:
                     assert var.tag == 'listitem'
                     listitem_parsed = parse_desc_internal(state, var)
@@ -1715,11 +1772,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         elif i.tag == 'ref':
             ref_html = parse_ref(state, i, add_inline_css_class)
             out.parsed += ref_html
-            # Extract link text and URL for markdown
-            ref_parsed = parse_inline_desc_internal(state, i)
-            ref_text = ref_parsed.markdown.strip()
-            # Build a basic markdown link (URL extraction is complex, simplify)
-            out.markdown += f'`{ref_text}`'  # Use code format for refs in markdown
+            # Generate markdown reference using parallel function
+            ref_md = parse_ref_md(state, i)
+            out.markdown += ref_md
 
         elif i.tag == 'ulink':
             link_parsed = parse_inline_desc_internal(state, i)
