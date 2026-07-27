@@ -333,11 +333,11 @@ def parse_ref_md(state: State, element: ET.Element) -> str:
 
     # this is a reference to a compound - ie, something with its own xml file
     if element.attrib['kindref'] == 'compound':
-        url = id + '.html'
+        url = id + '.md'
     # a reference to a member - ie, something inside another compound's xml file
     elif element.attrib['kindref'] == 'member':
         i = id.rindex('_1')
-        url = id[:i] + '.html'
+        url = id[:i] + '.md'
         # There's no point in including the filename itself if linking to an
         # anchor on the same page.
         if url == state.current_compound_url:
@@ -359,7 +359,7 @@ def parse_ref_md(state: State, element: ET.Element) -> str:
 
     # Get the link text from the element content
     link_text = parse_inline_desc_internal(state, element).markdown.strip()
-    
+
     # Return markdown link format
     return '[{}]({})'.format(link_text, url)
 
@@ -1805,6 +1805,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             else:
                 out.parsed += '<span>{}</span>'.format(content)
 
+            out.markdown += content
+
         # I'm hijacking the inner page to create page heirarchy without adding text to the pages
         # When the @subpage command is used on a page, it inserts a link on the original page
         # The @ingroup command doesn't work properly for pages parsed by m.css.
@@ -2106,6 +2108,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # this is a start of a new paragraph. Stripping of the whole thing
             # is done by the caller.
             out.parsed += html.escape(i.tail.lstrip())
+            out.markdown += i.tail.lstrip()
 
         # Otherwise strip if requested by the caller, if this is right after a
         # line break or a <mcss:div>, or if <mcss:class> was before (which
@@ -2117,6 +2120,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             elif out.parsed.endswith('<br />') or i.tag in ['{http://mcss.mosra.cz/doxygen/}div', '{http://mcss.mosra.cz/doxygen/}class']:
                 tail = tail.lstrip()
             out.parsed += tail
+            out.markdown += tail
 
         # Remember the previous element. Needed by Doxygen 1.9
         # code-after-blockquote discovery.
@@ -2152,10 +2156,12 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 end = out.parsed.find('</p>')
                 assert out.parsed.startswith('<p>') and end != -1
                 out.parsed = out.parsed[3:end]
+                # does not need to be added to markdown, as it is already stripped by the caller
 
             elif paragraph_count == 1:
                 assert out.parsed.startswith('<p>') and out.parsed.endswith('</p>')
                 out.parsed = out.parsed[3:-4]
+                # does not need to be added to markdown, as it is already stripped by the caller
 
         # Sane behavior otherwise. Well, no. I give up.
         else:
@@ -2177,6 +2183,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             elif paragraph_count == 1:
                 assert out.parsed.startswith('<p>') and out.parsed.endswith('</p>')
                 out.parsed = out.parsed[3:-4]
+                # does not need to be added to markdown, as it is already stripped by the caller
 
     # Strip superfluous <p> for simple elements (list items, parameter and
     # return value description, table cells), but only if there is just a
