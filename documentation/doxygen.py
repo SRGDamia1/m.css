@@ -1559,8 +1559,15 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             if id[:2] == '_1':
                 id = id[2:]
             else:
-                assert id.startswith(state.current_definition_url_base), "ID `%s` does not start with `%s`" % (id, state.current_definition_url_base)
-                id = id[len(state.current_definition_url_base)+2:]
+                if id.startswith(state.current_definition_url_base):
+                    id = id[len(state.current_definition_url_base)+2:]
+                else:  # handle botched anchors
+                    logging.warning("{}: anchor ID `{}` does not start with `{}`".format(state.current, id, state.current_definition_url_base))
+                    last_1 = state.current_definition_url_base.rfind('_1')
+                    if last_1 != -1:
+                        id = state.current_definition_url_base[last_1+2:]
+
+
             out.parsed += '<a name="{}"></a>'.format(id)
 
         elif i.tag == 'computeroutput':
