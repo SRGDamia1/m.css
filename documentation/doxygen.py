@@ -440,6 +440,25 @@ def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, s
 
     return id[:i], id[:i] + '.html', id[i+2:], include, has_details
 
+def parse_location(element: ET.Element):
+    """Parse location information from a memberdef element."""
+    location_element = element.find('location')
+    if location_element is None:
+        return None
+
+    location = Empty()
+    location_attribs = location_element.attrib
+
+    # Parse each location field, using None if not present
+    location.file = location_attribs.get('file', None)
+    location.line = int(location_attribs['line']) if 'line' in location_attribs else None
+    location.column = int(location_attribs['column']) if 'column' in location_attribs else None
+    location.bodyFile = location_attribs.get('bodyfile', None)
+    location.bodyStart = int(location_attribs['bodystart']) if 'bodystart' in location_attribs else None
+    location.bodyEnd = int(location_attribs['bodyend']) if 'bodyend' in location_attribs else None
+
+    return location
+
 def extract_id_hash(state: State, element: ET.Element) -> str:
     # Can't use parse_id() here as sections with _1 in it have it verbatim
     # unescaped and mess up with rindex(). OTOH, can't use this approach in
@@ -2318,6 +2337,7 @@ def parse_enum(state: State, element: ET.Element):
 
     enum = Empty()
     state.current_definition_url_base, enum.base_url, enum.id, enum.include, enum.has_details = parse_id_and_include(state, element)
+    enum.location = parse_location(element)
     enum.type = parse_type(state, element.find('type'))
     enum.name = element.find('name').text
     # Doxygen < 1.9.7 puts a generated name into the XML, starting with @,
@@ -2439,6 +2459,7 @@ def parse_typedef(state: State, element: ET.Element):
 
     typedef = Empty()
     state.current_definition_url_base, typedef.base_url, typedef.id, typedef.include, typedef.has_details = parse_id_and_include(state, element)
+    typedef.location = parse_location(element)
     typedef.is_using = element.findtext('definition', '').startswith('using')
     typedef.type = parse_type(state, element.find('type'))
     typedef.args = parse_type(state, element.find('argsstring'))
@@ -2471,6 +2492,7 @@ def parse_func(state: State, element: ET.Element):
 
     func = Empty()
     state.current_definition_url_base, func.base_url, func.id, func.include, func.has_details = parse_id_and_include(state, element)
+    func.location = parse_location(element)
     func.type = parse_type(state, element.find('type'))
     func.name = fix_type_spacing(html.escape(element.find('name').text))
     func.brief, func.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
@@ -2702,6 +2724,7 @@ def parse_var(state: State, element: ET.Element):
 
     var = Empty()
     state.current_definition_url_base, var.base_url, var.id, var.include, var.has_details = parse_id_and_include(state, element)
+    var.location = parse_location(element)
     var.type = parse_type(state, element.find('type'))
     if var.type.startswith('constexpr'):
         var.type = var.type[10:]
@@ -2753,6 +2776,7 @@ def parse_define(state: State, element: ET.Element):
 
     define = Empty()
     state.current_definition_url_base, define.base_url, define.id, define.include, define.has_details = parse_id_and_include(state, element)
+    define.location = parse_location(element)
     define.name = element.find('name').text
     define.initializer = element.find('initializer').text if element.find('initializer') is not None else None
     define.brief, define.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
@@ -2899,6 +2923,7 @@ def extract_metadata(state: State, xml):
     compound = StateCompound()
     compound.id  = compounddef.attrib['id']
     compound.kind = compounddef.attrib['kind']
+    compound.location = parse_location(compounddef)
     # Compound name is page filename, so we have to use title there. The same
     # is for groups. In some cases, such as anonymous namespaces in Doxygen
     # 1.9.7+, <compoundname> is empty. Corresponding test case is in
@@ -3321,6 +3346,7 @@ def parse_xml(state: State, xml: str):
     compound = Empty()
     compound.kind = compounddef.attrib['kind']
     compound.id = compounddef.attrib['id']
+    compound.location = parse_location(compounddef)
     # Compound name is page filename, so we have to use title there. The same
     # is for groups.
     compound.name = compounddef.find('title').text if compound.kind in ['page', 'group'] and compounddef.findtext('title') else compounddef.find('compoundname').text
