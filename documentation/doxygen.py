@@ -1671,6 +1671,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 elif not isinstance(lexer, TextLexer):
                     lang = lexer.name.lower() if hasattr(lexer, 'name') else ''
                 out.markdown += f'\n```{lang}\n{code}```\n'
+                # Store the language so it can be used in templates
+                if lang:
+                    out.language = lang
             else:
                 out.markdown += f'`{code}`'
 
@@ -2272,13 +2275,13 @@ def parse_var_desc(state: State, element: ET.Element) -> Tuple[str, str, List[An
     assert not parsed.section # might be problematic
     return parsed.parsed, parsed.markdown, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_toplevel_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], str, Any, Any, List[Tuple[str, str, int]], bool]:
+def parse_toplevel_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], str, Any, Any, List[Tuple[str, str, int]], bool, str]:
     state.parsing_toplevel_desc = True
     parsed = parse_desc_internal(state, element)
     state.parsing_toplevel_desc = False
     if parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @param / @return / @retval / @exception found in top-level description, ignoring".format(state.current))
-    return parsed.parsed, parsed.markdown, parsed.templates, parsed.section[2] if parsed.section else '', parsed.footer_navigation, parsed.example_navigation, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.parsed, parsed.markdown, parsed.templates, parsed.section[2] if parsed.section else '', parsed.footer_navigation, parsed.example_navigation, parsed.search_keywords, parsed.deprecated, parsed.since, parsed.language
 
 def parse_typedef_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], List[Tuple[str, str, int]], bool]:
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
@@ -3086,7 +3089,7 @@ def extract_metadata(state: State, xml):
     #     json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
 
 
-def postprocess_state(state: State):
+def postprocess_state(state: State, debug_template=False):
     # Save parent for each child
     for _, compound in state.compounds.items():
         for child in compound.children:
@@ -3189,12 +3192,13 @@ def postprocess_state(state: State):
             links += [(html_, title, url, id, sublinks)]
         state.config[var] = links
 
-    for compound_id, compound in state.compounds.items():
-        json_output = os.path.join(
-            os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound_id + '_meta_postprocessed.json')
-        with open(json_output, "w", encoding="utf8") as f:
-            logging.info("Writing compound {} as json".format(os.path.abspath(json_output)))
-            json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
+    if debug_template:
+        for compound_id, compound in state.compounds.items():
+            json_output = os.path.join(
+                os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound_id + '_meta_postprocessed.json')
+            with open(json_output, "w", encoding="utf8") as f:
+                logging.info("Writing compound {} as json".format(os.path.abspath(json_output)))
+                json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
 
 
 def build_search_data(state: State, merge_subtrees=True, add_lookahead_barriers=True, merge_prefixes=True) -> bytearray:
@@ -4734,7 +4738,7 @@ default_index_pages = ['pages', 'files', 'namespaces', 'topics', 'annotated']
 default_wildcard = '*.xml'
 default_templates = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates/doxygen/')
 
-def run(state: State, *, templates=default_templates, wildcard=default_wildcard, index_pages=default_index_pages, search_add_lookahead_barriers=True, search_merge_subtrees=True, search_merge_prefixes=True, sort_globbed_files=False):
+def run(state: State, *, templates=default_templates, wildcard=default_wildcard, index_pages=default_index_pages, search_add_lookahead_barriers=True, search_merge_subtrees=True, search_merge_prefixes=True, sort_globbed_files=False, template_type='html', debug_template=False):
     xml_input = os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['XML_OUTPUT'])
     xml_files_metadata = [os.path.join(xml_input, f) for f in glob.glob(os.path.join(xml_input, "*.xml"))]
     xml_files = [os.path.join(xml_input, f) for f in glob.glob(os.path.join(xml_input, wildcard))]
@@ -4745,6 +4749,10 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     # logging.debug("Parent Output Directory: {}".format(state.doxyfile['OUTPUT_DIRECTORY']))
     # logging.debug("HTML Output Directory: {}".format(state.doxyfile['HTML_OUTPUT']))
     html_output = os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT'])
+
+    # Template extension based on template type
+    template_ext = '.{}.jinja2'.format(template_type)
+    output_ext = '.{}'.format(template_type)
 
     # If math rendering cache is not disabled, load the previous version. If
     # there is no cache, reset the cache to an empty state to avoid
@@ -4773,7 +4781,21 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     # as a fallback
     template_paths = [templates]
     if templates != default_templates: template_paths += [default_templates]
-    env = Environment(loader=FileSystemLoader(template_paths),
+
+    # Create a custom loader that tries to add template extension if file not found
+    class ExtensionFallbackLoader(FileSystemLoader):
+        def __init__(self, searchpath, template_ext, **kwargs):
+            super().__init__(searchpath, **kwargs)
+            self.template_ext = template_ext
+
+        def get_source(self, environment, template):
+            try:
+                return super().get_source(environment, template)
+            except:
+                # If template not found, try with extension appended
+                return super().get_source(environment, template + self.template_ext)
+
+    env = Environment(loader=ExtensionFallbackLoader(template_paths, template_ext),
                       trim_blocks=True, lstrip_blocks=True, enable_async=True)
 
     # Filter to return file basename or the full URL, if absolute
@@ -4796,16 +4818,17 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     for file in xml_files_metadata:
         extract_metadata(state, file)
 
-    postprocess_state(state)
+    postprocess_state(state, debug_template=debug_template)
 
     # output = os.path.join(html_output, "postProcessedState.dump")
     # with open(output, 'w', encoding="utf8") as f:
     #     print(state, file=f)
 
-    json_output = os.path.join(html_output, "postProcessedState.json")
-    with open(json_output, "w", encoding="utf8") as f:
-        logging.info("Writing state {} as json".format(os.path.abspath(json_output)))
-        json.dump(state, f, cls=MappingProxyEncoder, indent=2)
+    if debug_template:
+        json_output = os.path.join(html_output, "postProcessedState.json")
+        with open(json_output, "w", encoding="utf8") as f:
+            logging.info("Writing state {} as json".format(os.path.abspath(json_output)))
+            json.dump(state, f, cls=MappingProxyEncoder, indent=2)
 
     for file in xml_files:
         # print(file)
@@ -4816,16 +4839,17 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             parsed = parse_index_xml(state, file)
 
             for i in index_pages:
-                file = '{}.html'.format(i)
+                file = '{}{}'.format(i, output_ext)
 
                 if i in parsed.__dict__["index"].__dict__.keys():
-                    json_output = os.path.join(html_output, file.replace(".html", ".json"))
-                    cropped_index = {"index": {i: copy.deepcopy(parsed.__dict__["index"].__dict__[i])}}
-                    with open(json_output, "w", encoding="utf8") as f:
-                        logging.info("Writing cropped parsed {} json to {}".format(i, os.path.abspath(json_output)))
-                        json.dump(cropped_index, f, cls=MappingProxyEncoder, indent=2)
+                    if debug_template:
+                        json_output = os.path.join(html_output, i + ".json")
+                        cropped_index = {"index": {i: copy.deepcopy(parsed.__dict__["index"].__dict__[i])}}
+                        with open(json_output, "w", encoding="utf8") as f:
+                            logging.info("Writing cropped parsed {} json to {}".format(i, os.path.abspath(json_output)))
+                            json.dump(cropped_index, f, cls=MappingProxyEncoder, indent=2)
 
-                template = env.get_template(file)
+                template = env.get_template(i + template_ext)
                 logging.info("Rendering {} from {}".format(i, template))
                 rendered = template.render(index=parsed.index,
                     DOXYGEN_VERSION=parsed.version,
@@ -4849,23 +4873,26 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             parsed = parse_xml(state, file)
             if not parsed: continue
 
-            json_output = os.path.join(
-                html_output, os.path.basename(file).replace(".xml", ".json")
-            )
-            with open(json_output, "w", encoding="utf8") as f:
-                logging.info("Writing parsed {} ({}) json to {}".format(parsed.compound.name, parsed.compound.kind, os.path.abspath(json_output)))
-                json.dump(parsed, f, cls=MappingProxyEncoder, indent=2)
+            if debug_template:
+                json_output = os.path.join(
+                    html_output, os.path.basename(file).replace(".xml", ".json")
+                )
+                with open(json_output, "w", encoding="utf8") as f:
+                    logging.info("Writing parsed {} ({}) json to {}".format(parsed.compound.name, parsed.compound.kind, os.path.abspath(json_output)))
+                    json.dump(parsed, f, cls=MappingProxyEncoder, indent=2)
 
-            template = env.get_template('{}.html'.format(parsed.compound.kind))
+            template = env.get_template(parsed.compound.kind + template_ext)
+            # Update output URL with correct extension
+            output_url = parsed.compound.url.replace('.html', output_ext)
             logging.info("Rendering {} from {}".format(parsed.compound.name, template))
             rendered = template.render(compound=parsed.compound,
                 DOXYGEN_VERSION=parsed.version,
-                FILENAME=parsed.compound.url,
+                FILENAME=output_url,
                 SEARCHDATA_FORMAT_VERSION=searchdata_format_version,
                 # TODO: whitelist only what matters from doxyfile
                 **state.doxyfile, **state.config)
 
-            output = os.path.join(html_output, parsed.compound.url)
+            output = os.path.join(html_output, output_url)
             with open(output, 'wb') as f:
                 logging.info("Writing {} from {}".format(os.path.abspath(output), template))
                 f.write(rendered.encode('utf-8'))
@@ -4881,22 +4908,23 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     # there's at least some entrypoint. Doxygen version is not set in this
     # case, as this is totally without Doxygen involvement.
     if not os.path.join(xml_input, 'indexpage.xml') in xml_files_metadata:
-        logging.info("Writing index.html for an empty mainpage")
+        index_file = 'index' + output_ext
+        logging.info("Writing {} for an empty mainpage".format(index_file))
 
         compound = Empty()
         compound.kind = 'page'
         compound.name = state.doxyfile['PROJECT_NAME']
         compound.description = ''
-        compound.breadcrumb = [(state.doxyfile['PROJECT_NAME'], 'index.html')]
-        template = env.get_template('page.html')
+        compound.breadcrumb = [(state.doxyfile['PROJECT_NAME'], index_file)]
+        template = env.get_template('page' + template_ext)
         logging.info("Rendering {} from {}".format(compound.name, template))
         rendered = template.render(compound=compound,
             DOXYGEN_VERSION=None,
-            FILENAME='index.html',
+            FILENAME=index_file,
             SEARCHDATA_FORMAT_VERSION=searchdata_format_version,
             # TODO: whitelist only what matters from doxyfile
             **state.doxyfile, **state.config)
-        output = os.path.join(html_output, 'index.html')
+        output = os.path.join(html_output, index_file)
         with open(output, 'wb') as f:
             logging.info("Writing {} from {}".format(os.path.abspath(output), template))
             f.write(rendered.encode('utf-8'))
@@ -4981,9 +5009,15 @@ if __name__ == '__main__': # pragma: no cover
     parser.add_argument('--search-no-lookahead-barriers', help="don't insert search lookahead barriers", action='store_true')
     parser.add_argument('--search-no-prefix-merging', help="don't merge search result prefixes", action='store_true')
     parser.add_argument('--sort-globbed-files', help="sort globbed files for better reproducibility", action='store_true')
+    parser.add_argument('--template-type', help="template file type (html or md)", choices=['html', 'md'], default='html')
     parser.add_argument('-o', '--output', help='file to save output to')
     parser.add_argument('--debug', help="verbose debug output", action='store_true')
+    parser.add_argument('--debug-template', help="dump json for template debugging", action='store_true')
     args = parser.parse_args()
+
+    # If templates weren't explicitly provided and template_type is 'md', use doxybook2 templates
+    if args.templates == default_templates and args.template_type == 'md':
+        args.templates = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates/doxybook2/')
 
     if args.output is not None:
         if args.debug:
@@ -5025,4 +5059,4 @@ if __name__ == '__main__': # pragma: no cover
 
     logging.debug("Template directory: {}".format(args.templates))
 
-    run(state, templates=os.path.abspath(args.templates), wildcard=args.wildcard, index_pages=args.index_pages, search_merge_subtrees=not args.search_no_subtree_merging, search_add_lookahead_barriers=not args.search_no_lookahead_barriers, search_merge_prefixes=not args.search_no_prefix_merging)
+    run(state, templates=os.path.abspath(args.templates), wildcard=args.wildcard, index_pages=args.index_pages, search_merge_subtrees=not args.search_no_subtree_merging, search_add_lookahead_barriers=not args.search_no_lookahead_barriers, search_merge_prefixes=not args.search_no_prefix_merging, template_type=args.template_type, debug_template=args.debug_template)
