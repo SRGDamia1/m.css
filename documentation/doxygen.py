@@ -879,14 +879,14 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     out.parsed += '<{0}>{2}</{0}>'.format(tag, id, title)
                     # Determine markdown heading level based on HTML tag
                     md_level = int(tag[1])
-                    out.markdown += '\n' + ('#' * md_level) + ' ' + title + '\n'
+                    out.markdown += '\n\n' + ('#' * md_level) + ' ' + title + '\n'
 
                 # Otherwise add the ID directly to the heading
                 else:
                     out.parsed += '<{0} id="{1}">{2}</{0}>'.format(tag, id, title)
                     # Determine markdown heading level based on HTML tag
                     md_level = int(tag[1])
-                    out.markdown += '\n' + ('#' * md_level) + ' ' + title + '\n'
+                    out.markdown += '\n\n' + ('#' * md_level) + ' ' + title + '\n'
 
         # Apparently, in 1.8.18, <heading> is used for Markdown headers only if
         # we run out of sect1-4 tags. Which also happens when there's a heading
@@ -925,7 +925,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
                 heading_text = i.text
                 out.parsed += '<h{0}>{1}</h{0}>'.format(h_tag_level, html.escape(heading_text))
-                out.markdown += '\n' + ('#' * h_tag_level) + ' ' + heading_text + '\n'
+                out.markdown += '\n\n' + ('#' * h_tag_level) + ' ' + heading_text + '\n'
 
         elif i.tag == 'parblock':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
@@ -1019,12 +1019,23 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 parsed = parse_desc_internal(state, li)
                 out.parsed += '<li>{}</li>'.format(parsed.parsed)
 
-                # Add markdown list item
-                if is_ordered:
-                    out.markdown += f'{item_number}. {parsed.markdown}\n'
-                    item_number += 1
-                else:
-                    out.markdown += f'- {parsed.markdown}\n'
+                # Add markdown list item with proper nesting support
+                content = parsed.markdown.strip()
+                if content:
+                    lines = content.split('\n')
+                    # First line goes directly after the list marker
+                    if is_ordered:
+                        out.markdown += f'{item_number}. {lines[0]}\n'
+                        item_number += 1
+                    else:
+                        out.markdown += f'- {lines[0]}\n'
+
+                    # Indent all subsequent lines (including nested lists) by 2 spaces
+                    for line in lines[1:]:
+                        if line:
+                            out.markdown += f'  {line}\n'
+                        else:
+                            out.markdown += '\n'
 
                 # Lists can have nested parameter / return value / ...
                 # descriptions, bubble them up. THIS IS FUCKEN UNBELIEVABLE.
@@ -1204,17 +1215,41 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                             css_class=css_class,
                             heading=heading,
                             title=title)
-                        out.markdown += '\n**' + title + '**\n'
+
+                        # GitHub-style alert formatting for markdown
+                        if i.attrib['kind'] == 'note':
+                            out.markdown += '\n\n> [!NOTE]\n'
+                        elif i.attrib['kind'] in ['remark', 'tip']:
+                            out.markdown += '\n\n> [!TIP]\n'
+                        elif i.attrib['kind'] == 'important':
+                            out.markdown += '\n\n> [!IMPORTANT]\n'
+                        elif i.attrib['kind'] == 'warning':
+                            out.markdown += '\n\n> [!WARNING]\n'
+                        elif i.attrib['kind'] in ['attention', 'caution']:
+                            out.markdown += '\n\n> [!CAUTION]\n'
+                        else:
+                            out.markdown += '\n**' + title + '**\n'
+
                     else:
                         out.parsed += '<aside class="{}">'.format(css_class)
                         out.markdown += '\n'
 
                 # Parse the section contents and bubble important stuff up
-                parsed, search_keywords, search_enum_values_as_keywords = parse_desc_keywords(state, i)
-                out.parsed += parsed
-                if search_keywords:
-                    out.search_keywords += search_keywords
-                if search_enum_values_as_keywords:
+                parsed_desc = parse_desc_internal(state, i)
+                out.parsed += parsed_desc.parsed
+
+                # For markdown, prefix parsed content with '> ' for GitHub alerts
+                if title and i.attrib['kind'] in ['note', 'remark', 'tip', 'important', 'warning', 'attention', 'caution']:
+                    # Prefix each line with '> ' for blockquote formatting
+                    if parsed_desc.markdown:
+                        markdown_lines = parsed_desc.markdown.strip().split('\n')
+                        out.markdown += '\n'.join('> ' + line for line in markdown_lines) + '\n'
+                else:
+                    out.markdown += parsed_desc.markdown
+
+                if parsed_desc.search_keywords:
+                    out.search_keywords += parsed_desc.search_keywords
+                if parsed_desc.search_enum_values_as_keywords:
                     out.search_enum_values_as_keywords = True
 
                 # There's something after, close it
@@ -1426,7 +1461,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
             has_block_elements = True
             out.parsed += '<hr/>'
-            out.markdown += '\n---\n'
+            out.markdown += '\n\n---\n\n'
 
         elif i.tag == 'htmlonly':
             # The @htmlonly command has a block version, which is able to get
@@ -2218,6 +2253,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         assert out.parsed.startswith('<p>') and out.parsed.endswith('</p>')
         out.parsed = out.parsed[3:-4]
 
+    # Trim trailing whitespace from markdown before returning
+    out.markdown = out.markdown.rstrip()
+
     return out
 
 
@@ -2238,7 +2276,8 @@ def parse_desc_with_markdown(state: State, element: ET.Element) -> Tuple[str, st
     parsed = parse_desc_internal(state, element)
     assert not parsed.templates and not parsed.params and not parsed.return_value and not parsed.return_values
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.markdown
+    # Trim trailing whitespace from markdown before returning
+    return parsed.parsed, parsed.markdown.rstrip()
 
 def parse_desc_keywords(state: State, element: ET.Element) -> Tuple[str, List[Tuple[str, str, int]], bool]:
     if element is None: return ''
@@ -2335,6 +2374,60 @@ def parse_inline_desc_internal(state: State, element: ET.Element):
     assert not parsed.section
     return parsed
 
+def parse_references(element: ET.Element):
+    """Parse reimplements, reimplementedby, references, and referencedby elements from memberdef."""
+    refs = Empty()
+
+    # Parse reimplements (single element)
+    reimplements_elem = element.find('reimplements')
+    if reimplements_elem is not None and 'refid' in reimplements_elem.attrib:
+        refs.reimplements = Empty()
+        refs.reimplements.refid = reimplements_elem.attrib['refid']
+        refs.reimplements.name = reimplements_elem.text if reimplements_elem.text else ''
+    else:
+        refs.reimplements = None
+
+    # Parse reimplementedby (can be multiple)
+    refs.reimplemented_by = []
+    for elem in element.findall('reimplementedby'):
+        if 'refid' in elem.attrib:
+            ref = Empty()
+            ref.refid = elem.attrib['refid']
+            ref.name = elem.text if elem.text else ''
+            refs.reimplemented_by.append(ref)
+
+    # Parse references (can be multiple)
+    refs.references = []
+    for elem in element.findall('references'):
+        if 'refid' in elem.attrib:
+            ref = Empty()
+            ref.refid = elem.attrib['refid']
+            ref.name = elem.text if elem.text else ''
+            if 'compoundref' in elem.attrib:
+                ref.compoundref = elem.attrib['compoundref']
+            if 'startline' in elem.attrib:
+                ref.startline = elem.attrib['startline']
+            if 'endline' in elem.attrib:
+                ref.endline = elem.attrib['endline']
+            refs.references.append(ref)
+
+    # Parse referencedby (can be multiple)
+    refs.referenced_by = []
+    for elem in element.findall('referencedby'):
+        if 'refid' in elem.attrib:
+            ref = Empty()
+            ref.refid = elem.attrib['refid']
+            ref.name = elem.text if elem.text else ''
+            if 'compoundref' in elem.attrib:
+                ref.compoundref = elem.attrib['compoundref']
+            if 'startline' in elem.attrib:
+                ref.startline = elem.attrib['startline']
+            if 'endline' in elem.attrib:
+                ref.endline = elem.attrib['endline']
+            refs.referenced_by.append(ref)
+
+    return refs
+
 def parse_enum(state: State, element: ET.Element):
     logging.debug(f"Parsing enum {element.find('name').text} in file {state.current}")
     if element.tag !='memberdef':
@@ -2359,6 +2452,13 @@ def parse_enum(state: State, element: ET.Element):
     if 'strong' in element.attrib:
         enum.is_strong = element.attrib['strong'] == 'yes'
     enum.values = []
+
+    # Parse reference information
+    refs = parse_references(element)
+    enum.reimplements = refs.reimplements
+    enum.reimplemented_by = refs.reimplemented_by
+    enum.references = refs.references
+    enum.referenced_by = refs.referenced_by
 
     enum.has_value_details = False
     enumvalue: ET.Element
@@ -2475,6 +2575,13 @@ def parse_typedef(state: State, element: ET.Element):
     typedef.description, typedef.description_markdown, templates, search_keywords, typedef.deprecated, typedef.since = parse_typedef_desc(state, element)
     typedef.is_protected = element.attrib['prot'] == 'protected'
     typedef.has_template_details, typedef.templates = parse_template_params(state, element.find('templateparamlist'), templates)
+
+    # Parse reference information
+    refs = parse_references(element)
+    typedef.reimplements = refs.reimplements
+    typedef.reimplemented_by = refs.reimplemented_by
+    typedef.references = refs.references
+    typedef.referenced_by = refs.referenced_by
 
     if typedef.base_url == state.current_compound_url and (typedef.description or typedef.has_template_details):
         typedef.has_details = True # has_details might already be True from above
@@ -2672,6 +2779,13 @@ def parse_func(state: State, element: ET.Element):
     # Some param description got unused
     if params: logging.warning("{}: function parameter description doesn't match parameter names: {}".format(state.current, repr(params)))
 
+    # Parse reference information
+    refs = parse_references(element)
+    func.reimplements = refs.reimplements
+    func.reimplemented_by = refs.reimplemented_by
+    func.references = refs.references
+    func.referenced_by = refs.referenced_by
+
     # If there's a detailed description or template, param, return value or
     # exception details, the function can have a detailed block
     #
@@ -2757,6 +2871,13 @@ def parse_var(state: State, element: ET.Element):
     var.description, var.description_markdown, templates, search_keywords, var.deprecated, var.since = parse_var_desc(state, element)
     var.has_template_details, var.templates = parse_template_params(state, element.find('templateparamlist'), templates)
 
+    # Parse reference information
+    refs = parse_references(element)
+    var.reimplements = refs.reimplements
+    var.reimplemented_by = refs.reimplemented_by
+    var.references = refs.references
+    var.referenced_by = refs.referenced_by
+
     if var.base_url == state.current_compound_url and (var.description or var.has_template_details):
         var.has_details = True # has_details might already be True from above
     if var.brief or var.has_details:
@@ -2804,6 +2925,13 @@ def parse_define(state: State, element: ET.Element):
 
     # Some param description got unused
     if params: logging.warning("{}: define parameter description doesn't match parameter names: {}".format(state.current, repr(params)))
+
+    # Parse reference information
+    refs = parse_references(element)
+    define.reimplements = refs.reimplements
+    define.reimplemented_by = refs.reimplemented_by
+    define.references = refs.references
+    define.referenced_by = refs.referenced_by
 
     if define.base_url == state.current_compound_url and (define.description or define.return_value):
         define.has_details = True # has_details might already be True from above
@@ -3082,13 +3210,6 @@ def extract_metadata(state: State, xml):
 
     state.compounds[compound.id] = compound
 
-    # json_output = os.path.join(
-    #     os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound.id + '_metadata.json'
-    # )
-    # with open(json_output, "w", encoding="utf8") as f:
-    #     logging.info("Writing {} metadata as json to {}".format(compound.id,os.path.abspath(json_output)))
-    #     json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
-
 
 def postprocess_state(state: State, debug_template=False):
     # Save parent for each child
@@ -3196,7 +3317,7 @@ def postprocess_state(state: State, debug_template=False):
     if debug_template:
         for compound_id, compound in state.compounds.items():
             json_output = os.path.join(
-                os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound_id + '_meta_postprocessed.json')
+                os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound_id + '_meta.json')
             with open(json_output, "w", encoding="utf8") as f:
                 logging.info("Writing compound {} as json".format(os.path.abspath(json_output)))
                 json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
@@ -4842,13 +4963,19 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             for i in index_pages:
                 file = '{}{}'.format(i, output_ext)
 
-                if i in parsed.__dict__["index"].__dict__.keys():
-                    if debug_template:
-                        json_output = os.path.join(html_output, i + ".json")
-                        cropped_index = {"index": {i: copy.deepcopy(parsed.__dict__["index"].__dict__[i])}}
-                        with open(json_output, "w", encoding="utf8") as f:
-                            logging.info("Writing cropped parsed {} json to {}".format(i, os.path.abspath(json_output)))
-                            json.dump(cropped_index, f, cls=MappingProxyEncoder, indent=2)
+                if debug_template:
+                    json_output = os.path.join(html_output, i + ".json")
+                    index_pages_mapping = {
+                        "pages": "pages",
+                        "files": "files",
+                        "namespaces": "symbols",
+                        "topics": "topics",
+                        "annotated": "symbols"
+                    }
+                    cropped_index = {"index": {i: copy.deepcopy(parsed.__dict__["index"].__dict__[index_pages_mapping[i]])}}
+                    with open(json_output, "w", encoding="utf8") as f:
+                        logging.info("Writing cropped parsed {} json to {}".format(i, os.path.abspath(json_output)))
+                        json.dump(cropped_index, f, cls=MappingProxyEncoder, indent=2)
 
                 template = env.get_template(i + template_ext)
                 logging.info("Rendering {} from {}".format(i, template))
@@ -4863,13 +4990,14 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 with open(output, 'wb') as f:
                     logging.info("Writing {} from {}".format(os.path.abspath(output), template))
                     f.write(rendered.encode('utf-8'))
-                    # Add back a trailing newline so we don't need to bother
-                    # with patching test files to include a trailing newline to
-                    # make Git happy. Can't use keep_trailing_newline because
-                    # that'd add it also for nested templates :( The rendered
-                    # file should never contain a trailing newline on its own.
-                    assert not rendered.endswith('\n')
-                    f.write(b'\n')
+                    if template_type == 'html':
+                        # Add back a trailing newline so we don't need to bother
+                        # with patching test files to include a trailing newline to
+                        # make Git happy. Can't use keep_trailing_newline because
+                        # that'd add it also for nested templates :( The rendered
+                        # file should never contain a trailing newline on its own.
+                        assert not rendered.endswith('\n')
+                        f.write(b'\n')
         else:
             parsed = parse_xml(state, file)
             if not parsed: continue
@@ -4899,13 +5027,14 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             with open(output, 'wb') as f:
                 logging.info("Writing {} from {}".format(os.path.abspath(output), template))
                 f.write(rendered.encode('utf-8'))
-                # Add back a trailing newline so we don't need to bother with
-                # patching test files to include a trailing newline to make Git
-                # happy. Can't use keep_trailing_newline because that'd add it
-                # also for nested templates :( The rendered file should never
-                # contain a trailing newline on its own.
-                assert not rendered.endswith('\n')
-                f.write(b'\n')
+                if template_type == 'html':
+                    # Add back a trailing newline so we don't need to bother with
+                    # patching test files to include a trailing newline to make Git
+                    # happy. Can't use keep_trailing_newline because that'd add it
+                    # also for nested templates :( The rendered file should never
+                    # contain a trailing newline on its own.
+                    assert not rendered.endswith('\n')
+                    f.write(b'\n')
 
     # Empty index page in case no mainpage documentation was provided so
     # there's at least some entrypoint. Doxygen version is not set in this
@@ -4933,13 +5062,14 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         with open(output, 'wb') as f:
             logging.info("Writing {} from {}".format(os.path.abspath(output), template))
             f.write(rendered.encode('utf-8'))
-            # Add back a trailing newline so we don't need to bother with
-            # patching test files to include a trailing newline to make Git
-            # happy. Can't use keep_trailing_newline because that'd add it
-            # also for nested templates :( The rendered file should never
-            # contain a trailing newline on its own.
-            assert not rendered.endswith('\n')
-            f.write(b'\n')
+            if template_type == 'html':
+                # Add back a trailing newline so we don't need to bother with
+                # patching test files to include a trailing newline to make Git
+                # happy. Can't use keep_trailing_newline because that'd add it
+                # also for nested templates :( The rendered file should never
+                # contain a trailing newline on its own.
+                assert not rendered.endswith('\n')
+                f.write(b'\n')
 
     if not state.config['SEARCH_DISABLED']:
         logging.debug("building search data for {} symbols".format(len(state.search)))
@@ -4954,7 +5084,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 f.write(base85encode_search_data(data))
 
         # OpenSearch metadata, in case we have the base URL
-        if state.config['SEARCH_BASE_URL']:
+        if state.config['SEARCH_BASE_URL'] and template_type == 'html':
             logging.info("Writing OpenSearch metadata file")
 
             template = env.get_template('opensearch.xml')
@@ -4965,13 +5095,14 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             with open(output, 'wb') as f:
                 logging.info("Writing {} from {}".format(os.path.abspath(output), template))
                 f.write(rendered.encode('utf-8'))
-                # Add back a trailing newline so we don't need to bother with
-                # patching test files to include a trailing newline to make Git
-                # happy. Can't use keep_trailing_newline because that'd add it
-                # also for nested templates :( The rendered file should never
-                # contain a trailing newline on its own.
-                assert not rendered.endswith('\n')
-                f.write(b'\n')
+                if template_type == 'html':
+                    # Add back a trailing newline so we don't need to bother with
+                    # patching test files to include a trailing newline to make Git
+                    # happy. Can't use keep_trailing_newline because that'd add it
+                    # also for nested templates :( The rendered file should never
+                    # contain a trailing newline on its own.
+                    assert not rendered.endswith('\n')
+                    f.write(b'\n')
 
     # Copy all referenced files
     for i in state.images + state.config['STYLESHEETS'] + state.config['EXTRA_FILES'] + ([state.doxyfile['PROJECT_LOGO']] if state.doxyfile['PROJECT_LOGO'] else []) + ([state.config['FAVICON'][0]] if state.config['FAVICON'] else []) + ([] if state.config['SEARCH_DISABLED'] else ['search.js']):
