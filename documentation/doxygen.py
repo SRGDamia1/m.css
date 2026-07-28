@@ -41,6 +41,7 @@
 import xml.etree.ElementTree as ET
 import argparse
 import copy
+import datetime
 import enum
 import sys
 import re
@@ -4884,6 +4885,8 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             template = env.get_template(parsed.compound.kind + template_ext)
             # Update output URL with correct extension
             output_url = parsed.compound.url.replace('.html', output_ext)
+            # Add template rendering timestamp
+            parsed.compound.render_time = datetime.datetime.now()
             logging.info("Rendering {} from {}".format(parsed.compound.name, template))
             rendered = template.render(compound=parsed.compound,
                 DOXYGEN_VERSION=parsed.version,
@@ -4916,6 +4919,8 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         compound.name = state.doxyfile['PROJECT_NAME']
         compound.description = ''
         compound.breadcrumb = [(state.doxyfile['PROJECT_NAME'], index_file)]
+        # Add template rendering timestamp
+        compound.render_time = datetime.datetime.now().isoformat()
         template = env.get_template('page' + template_ext)
         logging.info("Rendering {} from {}".format(compound.name, template))
         rendered = template.render(compound=compound,
