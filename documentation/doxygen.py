@@ -55,7 +55,7 @@ import subprocess
 import urllib.parse
 import logging
 import json
-from types import MappingProxyType, SimpleNamespace as Empty
+from types import MappingProxyType
 from typing import Tuple, Dict, Any, List
 
 from importlib.machinery import SourceFileLoader
@@ -74,16 +74,16 @@ import ansilexer
 
 
 class JSONDictEncoder(json.JSONEncoder):
-    def default(self, obj):
-        return obj.__dict__
+    def default(self, o):
+        return o.__dict__
 
 # from https://bugs.python.org/issue34858
 class MappingProxyEncoder(json.JSONEncoder):
-  def default(self, obj):
-    if isinstance(obj, MappingProxyType):
-      return obj.copy()
+  def default(self, o):
+    if isinstance(o, MappingProxyType):
+      return o.copy()
     # return json.JSONEncoder.default(self, obj)
-    return JSONDictEncoder.default(self, obj)
+    return JSONDictEncoder.default(self, o) # type: ignore
 
 
 class WrappedLineFormatter(HtmlFormatter):
@@ -215,26 +215,217 @@ slugify_hyphens_rx = re.compile(r"""[-\s]+""")
 
 class StateCompound:
     def __init__(self):
-        self.id: str
-        self.kind: str
-        self.name: str
-        self.url: str
-        self.brief: str
-        self.has_details: bool
-        self.deprecated: str
-        self.is_final: bool = None
-        self.children: List[str]
-        self.childrenClasses: List[str] # 'innerclass'
-        self.childrenNamespaces: List[str] # 'innernamespace'
-        self.childrenCompoundRefs: List[str] # 'derivedcompoundref'
-        self.parent: str = None
-        self.parentGroup: str = None
+        self.id: str = ""
+        self.kind: str = ""
+        self.name: str = ""
+        self.url: str = ""
+        self.brief: str = ""
+        self.brief_markdown: str = ""
+        self.has_details: bool = False
+        self.since: str | None = None
+        self.deprecated: str | None = None
+        self.is_final: bool | None = None
+        self.is_inline: bool | None = None
+        self.templates: list[ParameterInfo] | None = None
+        self.children: list[str] = []
+        self.childrenClasses: list[str] = []  # 'innerclass'
+        self.childrenNamespaces: list[str] = []  # 'innernamespace'
+        self.childrenCompoundRefs: list[str] = []  # 'derivedcompoundref'
+        self.parent: str | None = None
+        self.parentGroup: str | None = None
+self.markdown_anchor: str | None = None
+        self.markdown_url: str | None = None
+        self.markdown_folder: str | None = None
+        self.location: Location | None = None
+        self.leaf_name: str = ''
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
 
     def __repr__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
+
+
+class ParsedCompound(StateCompound):
+    """Fully parsed compound used as the template/rendering representation."""
+
+    def __init__(self):
+        super().__init__()
+        self.url_base: str = ""
+        self.include: str | None = None
+        self.has_template_details: bool = False
+        self.description: str = ""
+        self.description_markdown: str = ""
+        self.sections = []
+        self.footer_navigation = None
+        self.example_navigation = None
+        self.language: str | None = None
+        self.topics = []
+        self.dirs = []
+        self.files = []
+        self.namespaces = []
+        self.classes = []
+        self.base_classes = []
+        self.derived_classes = []
+        self.enums = []
+        self.typedefs = []
+        self.funcs = []
+        self.vars = []
+        self.defines = []
+        self.public_types = []
+        self.public_static_funcs = []
+        self.typeless_funcs = []
+        self.public_funcs = []
+        self.signals = []
+        self.public_slots = []
+        self.public_static_vars = []
+        self.public_vars = []
+        self.protected_types = []
+        self.protected_static_funcs = []
+        self.protected_funcs = []
+        self.protected_slots = []
+        self.protected_static_vars = []
+        self.protected_vars = []
+        self.private_funcs = []
+        self.private_slots = []
+        self.related = []
+        self.friend_funcs = []
+        self.groups = []
+        self.has_enum_details = False
+        self.has_typedef_details = False
+        self.has_func_details = False
+        self.has_var_details = False
+        self.has_define_details = False
+        self.breadcrumb = []
+        self.breadcrumbGroup = []
+
+
+class ExampleInfo:
+    """Minimal example entry read from index.xml."""
+
+    def __init__(self):
+        self.id: str = ""
+        self.url: str = ""
+        self.name: str = ""
+
+
+class CompoundFileEntry:
+    """File/directory entry embedded in a compound's file/dir lists."""
+
+    def __init__(self):
+        self.url: str = ""
+        self.name: str = ""
+        self.brief: str = ""
+        self.deprecated: str | None = None
+        self.since: str | None = None
+
+
+class NamespaceEntry(CompoundFileEntry):
+    """Namespace entry embedded in a compound."""
+
+    def __init__(self):
+        super().__init__()
+        self.is_inline: bool = False
+
+
+class ClassEntry(CompoundFileEntry):
+    """Class entry used for inner/base/derived class references."""
+
+    def __init__(self):
+        super().__init__()
+        self.kind: str = ""
+        self.templates: list[ParameterInfo] | None = None
+
+
+class BaseClassEntry(ClassEntry):
+    def __init__(self):
+        super().__init__()
+        self.is_protected: bool = False
+        self.is_virtual: bool = False
+
+
+class DerivedClassEntry(ClassEntry):
+    def __init__(self):
+        super().__init__()
+        self.is_virtual: bool = False
+        self.is_final: bool | None = None
+
+
+class TopicEntry(CompoundFileEntry):
+    """Topic/group entry embedded in a group compound."""
+
+
+class MemberGroup:
+    """A user-defined Doxygen member group."""
+
+    def __init__(self):
+        self.name: str = ""
+        self.id: str = ""
+        self.description: str = ""
+        self.description_markdown: str = ""
+        self.members = []
+
+
+class ParsedXml:
+    """Result of parsing one compound XML file."""
+
+    def __init__(self):
+        self.version: str = ""
+        self.compound: ParsedCompound | None = None
+
+
+class IndexEntry:
+    """Common representation of an entry from Doxygen's index.xml."""
+
+    def __init__(self):
+        self.id: str = ""
+        self.kind: str = ""
+        self.name: str = ""
+        self.url: str = ""
+        self.brief: str = ""
+        self.children = []
+        self.deprecated: str | None = None
+        self.since: str | None = None
+        self.has_nestable_children: bool = False
+
+
+class NamespaceIndexEntry(IndexEntry):
+    def __init__(self):
+        super().__init__()
+        self.is_inline: bool = False
+
+
+class ClassIndexEntry(IndexEntry):
+    def __init__(self):
+        super().__init__()
+        self.is_final: bool = False
+
+
+class ParsedIndex:
+    """Structured result of parse_index_xml()."""
+
+    def __init__(self):
+        self.version: str = ""
+        self.index = IndexCollections()
+
+
+class IndexCollections:
+    def __init__(self):
+        self.symbols = []
+        self.files = []
+        self.pages = []
+        self.topics = []
+
+
+class EmptyMainPage:
+    """Synthetic page used when Doxygen did not emit indexpage.xml."""
+
+    def __init__(self):
+        self.kind: str = 'page'
+        self.name: str = ""
+        self.description: str = ""
+        self.breadcrumb = []
+        self.render_time: str = ""
 
 
 class State:
@@ -252,14 +443,14 @@ class State:
         # below (i.e., per-entry includes are parsed only for namespaces or
         # topics, because for classes they are consistent and don't need to be
         # repeated).
-        self.current_kind = None
+        self.current_kind: str | None = None
         # If this is None (or becomes None), it means the compound is spread
         # over multiple files and thus every entry needs its own specific
         # include definition
-        self.current_include = None
+        self.current_include: str | None = None
         self.current_prefix = []
-        self.current_compound_url = None
-        self.current_definition_url_base = None
+        self.current_compound_url: str | None = None
+        self.current_definition_url_base: str | None = None
         self.parsing_toplevel_desc = False
 
     def __str__(self):
@@ -267,6 +458,210 @@ class State:
 
     def __repr__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
+
+
+class ParsedDescription:
+    def __init__(self):
+        self.html: str = ""  # called 'parsed' in original doxygen.py
+        self.markdown: str = ""
+        self.section: tuple[str, str, list] | None = None
+        self.templates = {}
+        self.params: dict[str, ParameterInfo] = {}  # name -> ParameterInfo
+        self.return_value: str | None = None
+        self.return_values: list[ParameterInfo] = []
+        self.exceptions: list[ParameterInfo] = []
+        self.search_keywords: list[tuple[str, str, int]] = []
+        self.search_enum_values_as_keywords = False
+        self.deprecated: str | None = None
+        self.since: str | None = None
+        self.language: str | None = None  # Track the language from programlisting blocks
+        # self.semantic_root: Node | None = None
+        self.xrefsects = []  # list of {"kind": str, "text": str}
+        self.write_paragraph_start_tag: bool = False
+        self.write_paragraph_close_tag: bool = False
+        self.is_reasonable_paragraph: bool = False
+        self.add_css_class: str | None = None
+        self.footer_navigation: bool = False
+        self.example_navigation: tuple[str, str] | None = None
+
+
+class ParameterInfo:
+    def __init__(self, name: str = ""):
+        self.name = name  # str
+        self.direction: str | None = None  # 'in', 'out', 'inout', or None
+        self.description: str = ""  # str
+        self.type: str = ""  # str
+        self.type_name: str = ""  # str
+        self.default: str | None = None  # str or None
+
+
+class Location():
+    def __init__(self):
+        self.file: str | None = None
+        self.line: int | None = None
+        self.column: int | None = None
+        self.bodyFile: str | None = None
+        self.bodyStart: int | None = None
+        self.bodyEnd: int | None = None
+
+
+class RefId():
+    def __init__(self):
+        self.refid: str | None = None
+        self.name: str | None = None
+        self.compoundref: str | None = None
+        self.startline: int | None = None
+        self.endline: int | None = None
+
+
+class References:
+    def __init__(self):
+        self.reimplements: RefId | None = None
+        self.reimplemented_by: list[RefId] = []
+        self.references: list[RefId] = []
+        self.referenced_by: list[RefId] = []
+
+
+class Member:
+    """Common state for all Doxygen member definitions."""
+
+    def __init__(self):
+        self.base_url: str = ""
+        self.id: str = ""
+        self.include: str | None = None
+        self.has_details: bool = False
+        self.location: Location | None = None
+
+        self.name: str = ""
+
+        self.brief: str = ""
+        self.brief_markdown: str = ""
+        self.description: str = ""
+        self.description_markdown: str = ""
+
+        self.deprecated: str | None = None
+        self.since: str | None = None
+
+        self.markdown_anchor: str = ""
+        self.markdown_url: str = ""
+        self.markdown_folder: str = ""
+
+        self.references = References()
+
+
+class TemplateMember(Member):
+    def __init__(self):
+        super().__init__()
+        self.has_template_details: bool = False
+        self.templates: list[ParameterInfo] = []
+
+
+class EnumValue:
+    def __init__(self):
+        self.id: str = ""
+        self.name: str = ""
+        self.initializer: str = ""
+
+        self.brief: str = ""
+        self.brief_markdown: str = ""
+        self.description: str = ""
+        self.description_markdown: str = ""
+
+        self.deprecated: str | None = None
+        self.since: str | None = None
+
+        self.markdown_anchor: str = ""
+        self.markdown_url: str = ""
+        self.markdown_folder: str = ""
+
+
+class EnumMember(Member):
+    def __init__(self):
+        super().__init__()
+        self.type: str = ""
+        self.is_protected: bool = False
+        self.is_strong: bool = False
+
+        self.values: list[EnumValue] = []
+        self.has_value_details: bool = False
+
+
+class TypedefMember(TemplateMember):
+    def __init__(self):
+        super().__init__()
+        self.type: str = ""
+        self.args: str = ""
+        self.is_using: bool = False
+        self.is_protected: bool = False
+
+
+class FunctionMember(TemplateMember):
+    def __init__(self):
+        super().__init__()
+
+        self.type: str = ""
+
+        self.params: list[ParameterInfo] = []
+        self.return_value: str | None = None
+        self.return_values: list[ParameterInfo] = []
+        self.exceptions: list[ParameterInfo] = []
+
+        self.has_param_details: bool = False
+
+        self.prefix: str = ""
+        self.suffix: str = ""
+
+        self.is_constexpr: bool = False
+        self.is_consteval: bool = False
+        self.is_explicit: bool = False
+        self.is_virtual: bool = False
+        self.is_static: bool = False
+        self.is_defaulted: bool = False
+        self.is_deleted: bool = False
+        self.is_pure_virtual: bool = False
+        self.is_final: bool = False
+        self.is_override: bool = False
+        self.is_noexcept: bool = False
+        self.is_conditional_noexcept: bool = False
+
+        self.is_protected: bool = False
+        self.is_private: bool = False
+        self.is_signal: bool = False
+        self.is_slot: bool = False
+
+
+class VariableMember(TemplateMember):
+    def __init__(self):
+        super().__init__()
+
+        self.type: str = ""
+
+        self.is_constexpr: bool = False
+        self.is_static: bool = False
+        self.is_protected: bool = False
+        self.is_private: bool = False
+
+
+class DefineMember(Member):
+    def __init__(self):
+        super().__init__()
+
+        self.initializer: str | None = None
+
+        self.params: list[tuple[str, str]] | None = None
+        self.return_value: str | None = None
+        self.has_param_details: bool = False
+
+
+class SearchResult:
+    def __init__(self):
+        self.flags = ResultFlag(0)
+        self.url: str = ""
+        self.prefix: list[str] = []
+        self.name: str = ""
+        self.keywords: list[tuple[str, str, int]] = []
+        self.params: list[str] | None = None
+        self.suffix: str = ""
 
 
 def slugify(text: str) -> str:
@@ -289,7 +684,7 @@ def add_wbr(text: str) -> str:
     else:
         return text
 
-def parse_ref(state: State, element: ET.Element, add_inline_css_class: str = None) -> str:
+def parse_ref(state: State, element: ET.Element, add_inline_css_class: str | None = None) -> str:
     id = element.attrib['refid']
 
     # this is a reference to a compound - ie, something with its own xml file
@@ -376,14 +771,14 @@ def make_include_strip_from_path(path: str, prefixes: List[str]) -> str:
     strip_candidates = list(filter(bool, map(lambda x: remove_path_prefix(path, x), prefixes)))
     return min(strip_candidates, key=len) if strip_candidates else path
 
-def make_include(state: State, file) -> Tuple[str, str]:
+def make_include(state: State, file) -> Tuple[str, str] | None:
     if file in state.includes and state.compounds[state.includes[file]].has_details:
         return (html.escape('<{}>'.format(make_include_strip_from_path(file, state.doxyfile['STRIP_FROM_INC_PATH']) if state.doxyfile['STRIP_FROM_INC_PATH'] is not None else file)), state.compounds[state.includes[file]].url)
     return None
 
 # Used only from a single place but put here to ensure it's kept consistent
 # with make_include() above, in particular the checks
-def make_class_include(state: State, file_id, name) -> Tuple[str, str]:
+def make_class_include(state: State, file_id, name) -> Tuple[str, str] | None:
     # state.includes is a map from a filename to file ID, and since we already
     # have a file ID we don't need to use it. But if it's empty, it means
     # includes are disabled globally, in which case we shouldn't return
@@ -392,7 +787,7 @@ def make_class_include(state: State, file_id, name) -> Tuple[str, str]:
         return (html.escape('<{}>'.format(name)), state.compounds[file_id].url)
     return None
 
-def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, str, Tuple[str, str], bool]:
+def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, str, Tuple[str, str] | None, bool]:
     # Returns URL base (usually saved to state.current_definition_url_base and
     # used by extract_id_hash() later), base URL (with file extension), and the
     # actual ID
@@ -404,7 +799,7 @@ def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, s
     include = None
     has_details = False
     if state.current_kind in ['namespace', 'group']:
-        location_attribs = element.find('location').attrib
+        location_attribs = element.find('location').attrib # type: ignore
         file = location_attribs['declfile'] if 'declfile' in location_attribs else location_attribs['file']
         include = make_include(state, file)
 
@@ -433,11 +828,11 @@ def parse_id_and_include(state: State, element: ET.Element) -> Tuple[str, str, s
     # would generate useless empty detailed sections so in that case it's not
     # set.
     if state.current_kind in ['class', 'struct', 'union']:
-        location_attribs = element.find('location').attrib
+        location_attribs = element.find('location').attrib # type: ignore
         file = location_attribs['declfile'] if 'declfile' in location_attribs else location_attribs['file']
         if state.current_include != file:
             include = make_include(state, file)
-            has_details = include and state.doxyfile['SHOW_INCLUDE_FILES']
+            has_details = include is not None and state.doxyfile['SHOW_INCLUDE_FILES']
 
     return id[:i], id[:i] + '.html', id[i+2:], include, has_details
 
@@ -447,7 +842,7 @@ def parse_location(element: ET.Element):
     if location_element is None:
         return None
 
-    location = Empty()
+    location = Location()
     location_attribs = location_element.attrib
 
     # Parse each location field, using None if not present
@@ -474,7 +869,7 @@ def extract_id_hash(state: State, element: ET.Element) -> str:
     # comes from parse_id()[0]. See the
     # contents_anchor_in_both_group_and_namespace test for a verification.
     id = element.attrib['id']
-    assert id.startswith(state.current_definition_url_base), "ID `%s` does not start with `%s`" % (id, state.current_definition_url_base)
+    assert state.current_definition_url_base is not None and id.startswith(state.current_definition_url_base), "ID `%s` does not start with `%s`" % (id, state.current_definition_url_base)
     return id[len(state.current_definition_url_base)+2:]
 
 and_re_src = re.compile(r'([^\s])&amp;&amp;([^\s])')
@@ -487,9 +882,9 @@ def fix_type_spacing(type: str) -> str:
         .replace(' &amp;', '&amp;')
         .replace(' *', '*'))
 
-def parse_type(state: State, type: ET.Element) -> str:
+def parse_type(state: State, type: ET.Element | None) -> str:
     # Constructors and typeless enums might not have it
-    if type is None: return None
+    if type is None: return ''
     out = html.escape(type.text) if type.text else ''
 
     i: ET.Element
@@ -512,10 +907,10 @@ def parse_type(state: State, type: ET.Element) -> str:
     # Remove spacing inside <> and before & and *
     return fix_type_spacing(out)
 
-def parse_type_md(state: State, type: ET.Element) -> str:
+def parse_type_md(state: State, type: ET.Element | None) -> str:
     """Generate markdown type information parallel to parse_type"""
     # Constructors and typeless enums might not have it
-    if type is None: return None
+    if type is None: return ''
     out = type.text if type.text else ''
 
     i: ET.Element
@@ -532,25 +927,14 @@ def parse_type_md(state: State, type: ET.Element) -> str:
 
     return out
 
-def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.Element = None, trim = True, add_css_class = None):
+def parse_desc_internal(state: State, element: ET.Element | None, immediate_parent: ET.Element | None = None, trim = True, add_css_class = None):
+out = ParsedDescription()
+    if element is None:
+        return out
+
     logging.debug(
         f"    Parsing internal description of {element.tag} in file {state.current}"
     )
-    out = Empty()
-    out.section = None
-    out.templates = {}
-    out.params = {}
-    out.return_value = None
-    out.return_values = []
-    out.exceptions = []
-    out.add_css_class = None
-    out.footer_navigation = False
-    out.example_navigation = None
-    out.search_keywords = []
-    out.search_enum_values_as_keywords = False
-    out.deprecated = None
-    out.since = None
-    out.language = None  # Track the language from programlisting blocks
 
     # DOXYGEN <PARA> PATCHING 1/4
     #
@@ -567,11 +951,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
     out.write_paragraph_close_tag = element.tag == 'para'
     out.is_reasonable_paragraph = element.tag == 'para'
 
-    out.parsed: str = ''
-    out.markdown: str = ''
-    if element.text:
+        if element.text:
         text_content = element.text.strip() if trim else element.text
-        out.parsed = html.escape(text_content)
+        out.html = html.escape(text_content)
         out.markdown = text_content
 
         # There's some inline text at the start, *do not* add any CSS class to
@@ -641,7 +1023,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 if trim:
                     tail = tail.strip()
                     tail_md = tail_md.strip()
-                out.parsed += tail
+                out.html += tail
                 out.markdown += tail_md
             continue
 
@@ -655,13 +1037,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         # autodetection needs it.
         if previous_section and (i.tag != 'simplesect' or i.attrib['kind'] == 'return'):
             assert not out.write_paragraph_close_tag
-            out.parsed = out.parsed.rstrip() + '</aside>'
+            out.html = out.html.rstrip() + '</aside>'
             out.markdown = out.markdown.rstrip() + '\n'
 
         # Decide if a formula / code snippet is a block or not
         # <formula> can be both, depending on what's inside
         if i.tag == 'formula':
-            if i.text.startswith('$') and i.text.endswith('$'):
+            if i.text is not None and i.text.startswith('$') and i.text.endswith('$'):
                 formula_block = False
             else:
                 formula_block = True
@@ -776,13 +1158,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
             if end_previous_paragraph:
                 out.is_reasonable_paragraph = False
-                out.parsed = out.parsed.rstrip()
-                if not out.parsed:
+                out.html = out.html.rstrip()
+                if not out.html:
                     out.write_paragraph_start_tag = False
                 elif immediate_parent is not None and immediate_parent.tag == 'listitem' and i.tag in ['itemizedlist', 'orderedlist']:
                     out.write_paragraph_start_tag = False
                 elif out.write_paragraph_close_tag:
-                    out.parsed += '</p>'
+                    out.html += '</p>'
                 out.write_paragraph_close_tag = False
 
             # There might be *inline* elements that need to start a *new*
@@ -795,7 +1177,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 # a paragraph because there's inline text after a block
                 # element and that is mutually exclusive.
                 assert not end_previous_paragraph
-                out.parsed += '<p>'
+                out.html += '<p>'
                 out.markdown += '\n'
                 out.write_paragraph_close_tag = True
 
@@ -816,13 +1198,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 # Top-level section has no ID or title
                 if not out.section: out.section = ('', '', [])
                 out.section = (out.section[0], out.section[1], out.section[2] + [parsed.section])
-                out.parsed += '<section id="{}">{}</section>'.format(extract_id_hash(state, i), parsed.parsed)
+                out.html += '<section id="{}">{}</section>'.format(extract_id_hash(state, i), parsed.html)
                 out.markdown += parsed.markdown
 
             # Render directly the contents otherwise, propagate parsed stuff up
             else:
                 merge_parsed_subsections(parsed)
-                out.parsed += parsed.parsed
+                out.html += parsed.html
                 out.markdown += parsed.markdown
 
             if parsed.search_keywords:
@@ -833,19 +1215,20 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             has_block_elements = True
 
             # Top-level description
+header_tag: str = ''
             if state.parsing_toplevel_desc:
                 if element.tag == 'sect1':
-                    tag = 'h2'
+header_tag = 'h2'
                 elif element.tag == 'sect2':
-                    tag = 'h3'
+header_tag = 'h3'
                 elif element.tag == 'sect3':
-                    tag = 'h4'
+header_tag = 'h4'
                 elif element.tag == 'sect4':
-                    tag = 'h5'
+header_tag = 'h5'
                 elif element.tag == 'sect5':
-                    tag = 'h6'
+header_tag = 'h6'
                 elif element.tag == 'sect6':
-                    tag = 'h6'
+header_tag = 'h6'
                     logging.warning("{}: more than five levels of sections in top level descriptions are not supported, stopping at <h6>".format(state.current))
                 elif not element.tag == 'simplesect': # pragma: no cover
                     assert False
@@ -855,13 +1238,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # it needs to be <h4> and below
             else:
                 if element.tag == 'sect1':
-                    tag = 'h4'
+header_tag = 'h4'
                 elif element.tag == 'sect2':
-                    tag = 'h5'
+header_tag = 'h5'
                 elif element.tag == 'sect3':
-                    tag = 'h6'
+header_tag = 'h6'
                 elif element.tag in ['sect4', 'sect5', 'sect6']:
-                    tag = 'h6'
+header_tag = 'h6'
                     logging.warning("{}: more than three levels of sections in member descriptions are not supported, stopping at <h6>".format(state.current))
                 elif not element.tag == 'simplesect': # pragma: no cover
                     assert False
@@ -869,23 +1252,23 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # simplesect titles are handled directly inside simplesect
             if not element.tag == 'simplesect':
                 id = extract_id_hash(state, element)
-                title = html.escape(i.text)
+                title = html.escape(i.text) if i.text is not None else ''
 
                 # Populate section info for top-level desc
                 if state.parsing_toplevel_desc:
                     assert not out.section
                     out.section = (id, title, [])
-                    # out.parsed += '<{0}><a href="#{1}">{2}</a></{0}>'.format(tag, id, title)
-                    out.parsed += '<{0}>{2}</{0}>'.format(tag, id, title)
+                    # out.html += '<{0}><a href="#{1}">{2}</a></{0}>'.format(header_tag, id, title)
+                    out.html += '<{0}>{2}</{0}>'.format(header_tag, id, title)
                     # Determine markdown heading level based on HTML tag
-                    md_level = int(tag[1])
+                    md_level = int(header_tag[1])
                     out.markdown += '\n\n' + ('#' * md_level) + ' ' + title + '\n'
 
                 # Otherwise add the ID directly to the heading
                 else:
-                    out.parsed += '<{0} id="{1}">{2}</{0}>'.format(tag, id, title)
+                    out.html += '<{0} id="{1}">{2}</{0}>'.format(header_tag, id, title)
                     # Determine markdown heading level based on HTML tag
-                    md_level = int(tag[1])
+                    md_level = int(header_tag[1])
                     out.markdown += '\n\n' + ('#' * md_level) + ' ' + title + '\n'
 
         # Apparently, in 1.8.18, <heading> is used for Markdown headers only if
@@ -900,7 +1283,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
             # Do not print anything if there are no contents
             if not i.text:
-                logging.warning("{}: a Markdown heading underline was apparently misparsed by Doxygen, prefix the headings with # instead".format(state.current))
+                logging.warning("{}: a Markdown heading underline was apparently mis-parsed by Doxygen, prefix the headings with # instead".format(state.current))
 
             else:
                 h_tag_level = int(i.attrib['level'])
@@ -924,16 +1307,16 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         logging.warning("{}: more than three levels of Markdown headings in member descriptions are not supported, stopping at <h6>".format(state.current))
 
                 heading_text = i.text
-                out.parsed += '<h{0}>{1}</h{0}>'.format(h_tag_level, html.escape(heading_text))
+                out.html += '<h{0}>{1}</h{0}>'.format(h_tag_level, html.escape(heading_text))
                 out.markdown += '\n\n' + ('#' * h_tag_level) + ' ' + heading_text + '\n'
 
         elif i.tag == 'parblock':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
             parblock_parsed = parse_desc_internal(state, i)
-            out.parsed += '<div{}>{}</div>'.format(
+            out.html += '<div{}>{}</div>'.format(
                 ' class="{}"'.format(add_css_class) if add_css_class else '',
-                parblock_parsed.parsed)
+                parblock_parsed.html)
             out.markdown += parblock_parsed.markdown
 
         elif i.tag == 'para':
@@ -954,20 +1337,20 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 immediate_parent=element if paragraph_count == 1 and not has_block_elements else None,
                 trim=False,
                 add_css_class=add_css_class)
-            parsed.parsed = parsed.parsed.strip()
+            parsed.html = parsed.html.strip()
             if not parsed.is_reasonable_paragraph:
                 has_block_elements = True
-            if parsed.parsed:
+            if parsed.html:
                 if parsed.write_paragraph_start_tag:
                     # If there is some inline content at the beginning, assume
                     # the CSS class was meant to be added to the paragraph
                     # itself, not into a nested (block) element.
-                    out.parsed += '<p{}>'.format(' class="{}"'.format(add_css_class) if add_css_class else '')
+                    out.html += '<p{}>'.format(' class="{}"'.format(add_css_class) if add_css_class else '')
                     out.markdown += '\n'
-                out.parsed += parsed.parsed
+                out.html += parsed.html
                 out.markdown += parsed.markdown
                 if parsed.write_paragraph_close_tag:
-                    out.parsed += '</p>'
+                    out.html += '</p>'
                     out.markdown += '\n'
 
             # Paragraphs can have nested parameter / return value / ...
@@ -997,7 +1380,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
             blockquote_parsed = parse_desc_internal(state, i)
-            out.parsed += '<blockquote>{}</blockquote>'.format(blockquote_parsed.parsed)
+            out.html += '<blockquote>{}</blockquote>'.format(blockquote_parsed.html)
             # Format markdown as blockquote (prefix with "> ")
             if blockquote_parsed.markdown:
                 out.markdown += '\n' + '\n'.join('> ' + line for line in blockquote_parsed.markdown.split('\n')) + '\n'
@@ -1005,9 +1388,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         elif i.tag in ['itemizedlist', 'orderedlist']:
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
-            tag = 'ul' if i.tag == 'itemizedlist' else 'ol'
+            li_tag = 'ul' if i.tag == 'itemizedlist' else 'ol'
             is_ordered = i.tag == 'orderedlist'
-            out.parsed += '<{}{}>'.format(tag,
+            out.html += '<{}{}>'.format(li_tag,
                 ' class="{}"'.format(add_css_class) if add_css_class else '')
 
             # Prepare for markdown list
@@ -1017,7 +1400,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             for li in i:
                 assert li.tag == 'listitem'
                 parsed = parse_desc_internal(state, li)
-                out.parsed += '<li>{}</li>'.format(parsed.parsed)
+                out.html += '<li>{}</li>'.format(parsed.html)
 
                 # Add markdown list item with proper nesting support
                 content = parsed.markdown.strip()
@@ -1045,15 +1428,15 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 if parsed.search_keywords:
                     out.search_keywords += parsed.search_keywords
 
-            out.parsed += '</{}>'.format(tag)
+            out.html += '</{}>'.format(li_tag)
             out.markdown += '\n'
 
         elif i.tag == 'table':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
-            out.parsed += '<table {}>'.format(
+            out.html += '<table {}>'.format(
                 'class="m-table ' + add_css_class + '"' if add_css_class else 'class="m-table m-fullwidth m-flat"')
-            # out.parsed += '<table class="m-table{}">'.format(
+            # out.html += '<table class="m-table{}">'.format(
             #     ' ' + add_css_class if add_css_class else '')
             thead_written = False
             inside_tbody = False
@@ -1066,7 +1449,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             row: ET.Element
             for row in i:
                 if row.tag == 'caption':
-                    out.parsed += '<caption>{}</caption>'.format(parse_inline_desc(state, row))
+                    out.html += '<caption>{}</caption>'.format(parse_inline_desc(state, row))
                     # Markdown tables don't have captions, skip in markdown
 
                 if row.tag == 'row':
@@ -1083,7 +1466,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         entry_parsed = parse_desc_internal(state, entry)
                         row_data += '<{0}{2}{3}{4}>{1}</{0}>'.format(
                             'th' if is_header else 'td',
-                            entry_parsed.parsed,
+                            entry_parsed.html,
                             rowspan, colspan, classes)
                         md_row_data.append(entry_parsed.markdown.replace('\n', ' ').strip())
 
@@ -1093,21 +1476,21 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     # not do anything special.
                     if is_header_row:
                         if not thead_written:
-                            out.parsed += '<thead>'
+                            out.html += '<thead>'
                             thead_written = True
                             md_has_header = True
                     else:
                         if thead_written and not inside_tbody:
-                            out.parsed += '</thead>'
+                            out.html += '</thead>'
                         if not inside_tbody:
-                            out.parsed += '<tbody>'
+                            out.html += '<tbody>'
                             inside_tbody = True
 
-                    out.parsed += '<tr>{}</tr>'.format(row_data)
+                    out.html += '<tr>{}</tr>'.format(row_data)
                     md_rows.append(md_row_data)
 
-            if inside_tbody: out.parsed += '</tbody>'
-            out.parsed += '</table>'
+            if inside_tbody: out.html += '</tbody>'
+            out.html += '</table>'
 
             # Format markdown table
             if md_rows:
@@ -1135,15 +1518,16 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 out.since = since[3:-4]
 
             else:
+# if a simple section isn't a "return" or "since" section, it has its own internal block elements to parse
                 has_block_elements = True
 
                 # There was a section open, but it differs from this one, close
                 # it
-                if previous_section and ((i.attrib['kind'] != 'par' and previous_section != i.attrib['kind']) or (i.attrib['kind'] == 'par' and i.find('title').text)):
-                    out.parsed = out.parsed.rstrip() + '</aside>'
+                if previous_section and ((i.attrib['kind'] != 'par' and previous_section != i.attrib['kind']) or (i.attrib['kind'] == 'par' and i.find('title').text)): # type: ignore
+                    out.html = out.html.rstrip() + '</aside>'
 
                 # Not continuing with a section from before, put a header in
-                if not previous_section or (i.attrib['kind'] != 'par' and previous_section != i.attrib['kind']) or (i.attrib['kind'] == 'par' and i.find('title').text):
+                if not previous_section or (i.attrib['kind'] != 'par' and previous_section != i.attrib['kind']) or (i.attrib['kind'] == 'par' and i.find('title').text): # type: ignore
                     # TODO: make it possible to override the class using @m_class,
                     # document this and document behavior of @par
 
@@ -1211,7 +1595,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                         heading = 'h4'
 
                     if title:
-                        out.parsed += '<aside class="{css_class}"><{heading}>{title}</{heading}>'.format(
+                        out.html += '<aside class="{css_class}"><{heading}>{title}</{heading}>'.format(
                             css_class=css_class,
                             heading=heading,
                             title=title)
@@ -1231,19 +1615,19 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                             out.markdown += '\n**' + title + '**\n'
 
                     else:
-                        out.parsed += '<aside class="{}">'.format(css_class)
+                        out.html += '<aside class="{}">'.format(css_class)
                         out.markdown += '\n'
 
                 # Parse the section contents and bubble important stuff up
                 parsed_desc = parse_desc_internal(state, i)
-                out.parsed += parsed_desc.parsed
+                out.html += parsed_desc.html
 
                 # For markdown, prefix parsed content with '> ' for GitHub alerts
                 if title and i.attrib['kind'] in ['note', 'remark', 'tip', 'important', 'warning', 'attention', 'caution']:
                     # Prefix each line with '> ' for blockquote formatting
                     if parsed_desc.markdown:
                         markdown_lines = parsed_desc.markdown.strip().split('\n')
-                        out.markdown += '\n'.join('> ' + line for line in markdown_lines) + '\n'
+                        out.markdown += '\n'.join('> ' + line.lstrip(':') for line in markdown_lines) + '\n'
                 else:
                     out.markdown += parsed_desc.markdown
 
@@ -1254,7 +1638,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
                 # There's something after, close it
                 if i.tail and i.tail.strip():
-                    out.parsed += '</aside>'
+                    out.html += '</aside>'
                     previous_section = None
 
                 # Otherwise put the responsibility on the next iteration, maybe
@@ -1271,8 +1655,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # describe some symbol, not on a page.)
             id = i.attrib['id']
             match = xref_id_rx.match(id)
-            file = match.group(1)
-            title = i.find('xreftitle').text
+            file = match.group(1) if match is not None else None
+            title = i.find('xreftitle').text # type: ignore
             if add_css_class:
                 css_class = add_css_class
                 heading = 'h3'
@@ -1281,7 +1665,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 css_class = 'm-note '
                 # If we have version info from a previous Since badge, use it
                 # instead of the title
-                if file.startswith('deprecated'):
+                if file is not None and file.startswith('deprecated'):
                     css_class += 'm-danger'
                     if out.since:
                         out.deprecated = out.since
@@ -1290,21 +1674,21 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     else:
                         out.deprecated = 'deprecated'
                         title = 'Deprecated'
-                elif file.startswith('bug'):
+                elif file is not None and file.startswith('bug'):
                     css_class += 'm-danger'
-                elif file.startswith('todo'):
+                elif file is not None and file.startswith('todo'):
                     css_class += 'm-dim'
                 else:
                     css_class += 'm-default'
-            out.parsed += '<aside class="{css_class}"><{heading}><a href="{file}.html#{anchor}" class="m-doc">{title}</a></{heading}>{description}</aside>'.format(
+            out.html += '<aside class="{css_class}"><{heading}><a href="{file}.html#{anchor}" class="m-doc">{title}</a></{heading}>{description}</aside>'.format(
                 css_class=css_class,
                 heading=heading,
                 file=file,
-                anchor=match.group(2),
+                anchor=match.group(2) if match is not None else '',
                 title=title,
                 description=parse_desc(state, i.find('xrefdescription')))
             # For markdown, just add a reference with the title
-            out.markdown += f'\n**{title}**: [{file}]({file}.html#{match.group(2)})\n'
+            out.markdown += f'\n**{title}**: [{file}]({file}.html#{match.group(2) if match is not None else ""})\n'
 
         elif i.tag == 'parameterlist':
             assert element.tag == 'para' # is inside a paragraph :/
@@ -1318,7 +1702,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
                 # This is only for PHP, ignore for now
                 param_names = param.find('parameternamelist')
-                assert param_names.find('parametertype') is None
+                assert param_names is not None and param_names.find('parametertype') is None
 
                 description = parse_desc(state, param.find('parameterdescription'))
 
@@ -1326,15 +1710,27 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 # three params sharing the same description)
                 for name in param_names.findall('parametername'):
                     if i.attrib['kind'] == 'param':
-                        out.params[name.text] = (description, name.attrib['direction'] if 'direction' in name.attrib else '')
+                        assert name.text is not None, "Parameter name is missing!"
+param_info = ParameterInfo(name=name.text)
+                        param_info.direction = name.attrib['direction'] if 'direction' in name.attrib else ''
+                        param_info.description = description
+                        out.params[name.text] = param_info
                     elif i.attrib['kind'] == 'retval':
-                        out.return_values += [(name.text, description)]
+assert name.text is not None
+                        ret_info = ParameterInfo(name.text)
+                        ret_info.description = description
+                        out.return_values += [ret_info]
                     elif i.attrib['kind'] == 'exception':
                         ref = name.find('ref')
                         if (ref != None):
-                            out.exceptions += [(parse_ref(state, ref), description)]
+                            ex_info = ParameterInfo(name=parse_ref(state, ref))
+                            ex_info.description = description
+                            out.exceptions += [ex_info]
                         else:
-                            out.exceptions += [(name.text, description)]
+assert name.text is not None, "Exception name is missing!"
+                            ex_info = ParameterInfo(name=name.text)
+                            ex_info.description = description
+                            out.exceptions += [ex_info]
                     else:
                         assert i.attrib['kind'] == 'templateparam'
                         out.templates[name.text] = description
@@ -1349,29 +1745,29 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # it was probably literal <dl> directly in the markup, used for
             # example for a footnote list. In that case use the provided class
             # instead of m-doc.
-            out.parsed += '<dl class="{}">'.format(add_css_class if add_css_class else 'm-doc')
+            out.html += '<dl class="{}">'.format(add_css_class if add_css_class else 'm-doc')
             out.markdown += '\n'
 
             for var in i:
                 if var.tag == 'varlistentry':
                     term_text = parse_type(state, var.find('term')).strip()
                     term_text_md = parse_type_md(state, var.find('term')).strip()
-                    out.parsed += '<dt>{}</dt>'.format(term_text)
+                    out.html += '<dt>{}</dt>'.format(term_text)
                     out.markdown += f'**{term_text_md}**\n'
                 else:
                     assert var.tag == 'listitem'
                     listitem_parsed = parse_desc_internal(state, var)
-                    out.parsed += '<dd>{}</dd>'.format(listitem_parsed.parsed)
+                    out.html += '<dd>{}</dd>'.format(listitem_parsed.html)
                     out.markdown += f': {listitem_parsed.markdown}\n'
 
-            out.parsed += '</dl>'
+            out.html += '</dl>'
             out.markdown += '\n'
 
         elif i.tag in ['verbatim', 'preformatted']:
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             has_block_elements = True
             verbatim_text = i.text or ''
-            out.parsed += '<pre>{}</pre>'.format(html.escape(verbatim_text))
+            out.html += '<pre>{}</pre>'.format(html.escape(verbatim_text))
             # Markdown code block with triple backticks
             out.markdown += f'\n```\n{verbatim_text}\n```\n'
 
@@ -1405,11 +1801,11 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
                 caption = i.text
                 if caption:
-                    out.parsed += '<figure class="m-figure{}"><img src="{}" alt="{}"{} /><figcaption>{}</figcaption></figure>'.format(
+                    out.html += '<figure class="m-figure{}"><img src="{}" alt="{}"{} /><figcaption>{}</figcaption></figure>'.format(
                         ' ' + add_css_class if add_css_class else '',
                         name, alt, sizespec, html.escape(caption))
                 else:
-                    out.parsed += '<img class="m-image{}" src="{}" alt="{}"{} />'.format(
+                    out.html += '<img class="m-image{}" src="{}" alt="{}"{} />'.format(
                         ' ' + add_css_class if add_css_class else '', name, alt, sizespec)
 
         elif i.tag in ['dot', 'dotfile']:
@@ -1446,13 +1842,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                 size = 'height: {};'.format(i.attrib['height'])
 
             if caption:
-                out.parsed += '<figure class="m-figure">{}<figcaption>{}</figcaption></figure>'.format(dot2svg.dot2svg(
+                out.html += '<figure class="m-figure">{}<figcaption>{}</figcaption></figure>'.format(dot2svg.dot2svg(
                     source, size=size,
                     attribs=' class="m-graph{}"'.format(' ' + add_css_class if add_css_class else '')),
                     caption)
                 out.markdown += f'\n[Graph]\n*{caption}*\n'
             else:
-                out.parsed += '<div class="m-graph{}">{}</div>'.format(
+                out.html += '<div class="m-graph{}">{}</div>'.format(
                     ' ' + add_css_class if add_css_class else '', dot2svg.dot2svg(source, size))
                 out.markdown += '\n[Graph]\n'
 
@@ -1460,7 +1856,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             assert element.tag == 'para' # is inside a paragraph :/
 
             has_block_elements = True
-            out.parsed += '<hr/>'
+            out.html += '<hr/>'
             out.markdown += '\n\n---\n\n'
 
         elif i.tag == 'htmlonly':
@@ -1471,7 +1867,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # a paragraph.
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
             if i.text:
-                out.parsed += i.text
+                out.html += i.text
                 # HTML-only content has no markdown equivalent, skip
 
         # Internal docs, parse only if these are enabled
@@ -1479,14 +1875,14 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             if state.doxyfile['INTERNAL_DOCS']:
                 parsed = parse_desc_internal(state, i)
                 merge_parsed_subsections(parsed)
-                out.parsed += parsed.parsed
+                out.html += parsed.html
                 out.markdown += parsed.markdown
 
         # Custom <div> with CSS classes (for making dim notes etc)
         elif i.tag == '{http://mcss.mosra.cz/doxygen/}div':
             has_block_elements = True
             div_parsed = parse_inline_desc_internal(state, i)
-            out.parsed += '<div class="{}">{}</div>'.format(i.attrib['{http://mcss.mosra.cz/doxygen/}class'], div_parsed.parsed.strip())
+            out.html += '<div class="{}">{}</div>'.format(i.attrib['{http://mcss.mosra.cz/doxygen/}class'], div_parsed.html.strip())
             out.markdown += div_parsed.markdown
 
         # Adding a custom CSS class to the immediately following block/inline
@@ -1498,8 +1894,8 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # intentional, block elements such as <mcss:div> have both the
             # leading and trailing spaces stripped always. Sane is done for
             # <mcss:span> below.
-            if out.parsed.endswith(' '):
-                out.parsed = out.parsed.rstrip() + ' '
+            if out.html.endswith(' '):
+                out.html = out.html.rstrip() + ' '
 
             # Bubble up in case we are alone in a paragraph, as that's meant to
             # affect the next paragraph content.
@@ -1557,12 +1953,12 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # there's already one, if there's an opening brace before or if
             # <para> patching started a new paragraph right before.
             if not code_block:
-                if out.parsed and not out.parsed[-1].isspace() and not out.parsed[-1] in '([{' and not out.parsed.endswith('<p>'):
-                    out.parsed += ' '
+                if out.html and not out.html[-1].isspace() and not out.html[-1] in '([{' and not out.html.endswith('<p>'):
+                    out.html += ' '
 
-            # Hammer unhighlighted code out of the block
+            # Hammer un-highlighted code out of the block
             # TODO: preserve links
-            code = ''
+            code: str = ''
             codeline: ET.Element
             for codeline in i:
                 assert codeline.tag == 'codeline'
@@ -1579,7 +1975,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                                 code += chr(int(token.attrib['value']))
                             else:
                                 code += ' '
-                        elif token.tag == 'ref':
+                        elif token.tag == 'ref' and token.text is not None:
                             # Ignoring <ref> until a robust solution is found
                             # (i.e., also ignoring false positives)
                             code += token.text
@@ -1689,7 +2085,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             filter = state.config['M_CODE_FILTERS_POST'].get(lexer.name)
             if filter: highlighted = filter(highlighted)
 
-            out.parsed += '<{0} class="{1}{2}">{3}</{0}>'.format(
+            out.html += '<{0} class="{1}{2}">{3}</{0}>'.format(
                 # 'pre' if code_block else 'code',
                 'div' if code_block else 'code',
                 class_,
@@ -1699,7 +2095,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # Markdown code block
             if code_block:
                 # Determine language for markdown fence
-                lang = ''
+                lang: str = ''
                 if isinstance(lexer, CppLexer) or isinstance(lexer, ArduinoLexer):
                     lang = 'cpp'
                 elif isinstance(lexer, BashSessionLexer):
@@ -1725,7 +2121,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # Fallback rendering as code requested
             if state.config['M_MATH_RENDER_AS_CODE']:
                 logging.debug("{}: rendering formula as code: {}".format(state.current, i.text))
-                out.parsed += '<{0} class="m-code m-math{1}{2}">{3}</{0}>'.format(
+                out.html += '<{0} class="m-code m-math{1}{2}">{3}</{0}>'.format(
                     'pre' if formula_block else 'code',
                     ' ' + add_css_class if formula_block and add_css_class else '',
                     # TODO try w/ this removed
@@ -1738,7 +2134,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     out.markdown += f'${i.text}$'
             elif state.doxyfile['USE_MATHJAX']:
                 logging.debug("{}: leaving formula as un-formatted code for MathJax: {}".format(state.current, i.text))
-                out.parsed += '<{0} class="m-code m-math{1}{2}">{3}</{0}>'.format(
+                out.html += '<{0} class="m-code m-math{1}{2}">{3}</{0}>'.format(
                     'p',
                     ' ' + add_css_class if formula_block and add_css_class else '',
                     # TODO try w/ this removed
@@ -1757,7 +2153,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
                 if formula_block:
                     has_block_elements = True
-                    out.parsed += '<div class="m-math{}">{}</div>'.format(
+                    out.html += '<div class="m-math{}">{}</div>'.format(
                         ' ' + add_css_class if add_css_class else '',
                         latex2svgextra.patch(i.text, svg, None, ''))
                     out.markdown += f'\n$$\n{i.text}\n$$\n'
@@ -1767,13 +2163,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     # line the text is. Scaling it back to 12pt font, scaled by
                     # 125% as set above in the config.
                     attribs = ' class="m-math{}"'.format(' ' + add_inline_css_class if add_inline_css_class else '')
-                    out.parsed += latex2svgextra.patch(i.text, svg, depth, attribs)
+                    out.html += latex2svgextra.patch(i.text, svg, depth, attribs)
                     out.markdown += f'${i.text}$'
 
         # Inline elements
         elif i.tag == 'linebreak':
             # Strip all whitespace before the linebreak, as it is of no use
-            out.parsed = out.parsed.rstrip() + '<br />'
+            out.html = out.html.rstrip() + '<br />'
             out.markdown = out.markdown.rstrip() + '  \n'  # Markdown linebreak is two spaces + newline
 
         elif i.tag == 'anchor':
@@ -1784,6 +2180,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             if id[:2] == '_1':
                 id = id[2:]
             else:
+assert state.current_definition_url_base is not None
                 if id.startswith(state.current_definition_url_base):
                     id = id[len(state.current_definition_url_base)+2:]
                 else:  # handle botched anchors
@@ -1792,13 +2189,13 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                     if last_1 != -1:
                         id = state.current_definition_url_base[last_1+2:]
 
-            out.parsed += '<a name="{}"></a>'.format(id)
+            out.html += '<a name="{}"></a>'.format(id)
             # Anchors don't have markdown equivalent, skip
 
         elif i.tag == 'computeroutput':
             content = parse_inline_desc(state, i).strip()
             if content:
-                out.parsed += '<code>{}</code>'.format(content)
+                out.html += '<code>{}</code>'.format(content)
                 out.markdown += f'`{content}`'
 
         elif i.tag in ['emphasis', 'bold', 'small', 'superscript', 'subscript', 'strike', 's', 'del']:
@@ -1820,10 +2217,10 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                           'del': ('~~', '~~')}
 
             content_parsed = parse_inline_desc_internal(state, i)
-            content = content_parsed.parsed.strip()
+            content = content_parsed.html.strip()
             content_md = content_parsed.markdown.strip()
             if content:
-                out.parsed += '<{0}{1}>{2}</{0}>'.format(
+                out.html += '<{0}{1}>{2}</{0}>'.format(
                     mapping[i.tag],
                     ' class="{}"'.format(add_inline_css_class) if add_inline_css_class else '',
                     content)
@@ -1832,17 +2229,17 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
 
         elif i.tag == 'ref':
             ref_html = parse_ref(state, i, add_inline_css_class)
-            out.parsed += ref_html
+            out.html += ref_html
             # Generate markdown reference using parallel function
             ref_md = parse_ref_md(state, i)
             out.markdown += ref_md
 
         elif i.tag == 'ulink':
             link_parsed = parse_inline_desc_internal(state, i)
-            out.parsed += '<a href="{}"{}>{}</a>'.format(
+            out.html += '<a href="{}"{}>{}</a>'.format(
                 html.escape(i.attrib['url']),
                 ' class="{}"'.format(add_inline_css_class) if add_inline_css_class else '',
-                add_wbr(link_parsed.parsed.strip()))
+                add_wbr(link_parsed.html.strip()))
             # Markdown link
             out.markdown += f'[{link_parsed.markdown.strip()}]({i.attrib["url"]})'
 
@@ -1857,18 +2254,18 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # intentional, block elements such as <mcss:div> have both the
             # leading and trailing spaces stripped always. Sane is done for
             # <mcss:class> above.
-            if out.parsed.endswith(' '):
-                out.parsed = out.parsed.rstrip() + ' '
+            if out.html.endswith(' '):
+                out.html = out.html.rstrip() + ' '
 
             content = parse_inline_desc(state, i).strip()
             if '{http://mcss.mosra.cz/doxygen/}class' in i.attrib:
-                out.parsed += '<span class="{}">{}</span>'.format(i.attrib['{http://mcss.mosra.cz/doxygen/}class'], content)
+                out.html += '<span class="{}">{}</span>'.format(i.attrib['{http://mcss.mosra.cz/doxygen/}class'], content)
             else:
-                out.parsed += '<span>{}</span>'.format(content)
+                out.html += '<span>{}</span>'.format(content)
 
             out.markdown += content
 
-        # I'm hijacking the inner page to create page heirarchy without adding text to the pages
+        # I'm hijacking the inner page to create page hierarchy without adding text to the pages
         # When the @subpage command is used on a page, it inserts a link on the original page
         # The @ingroup command doesn't work properly for pages parsed by m.css.
         # So I'm adding an xml-only tag to the page for the m.css metadata reader to grab
@@ -2129,7 +2526,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
                        'tm': 'trade'}
             try:
                 entity = mapping[i.tag]
-                out.parsed += '&{};'.format(entity)
+                out.html += '&{};'.format(entity)
                 # For markdown, output the actual character or approximation
                 # Most entities have Unicode equivalents
                 out.markdown += '&{};'.format(entity)  # Keep entity in markdown too
@@ -2163,12 +2560,12 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
         # PARAGRAPH after they end. So I do it myself and give a hint to the
         # caller that they should close the <p> again.
         if element.tag == 'para' and not out.write_paragraph_close_tag and i.tail and i.tail.strip():
-            out.parsed += '<p>'
+            out.html += '<p>'
             out.write_paragraph_close_tag = True
             # There is usually some whitespace in between, get rid of it as
             # this is a start of a new paragraph. Stripping of the whole thing
             # is done by the caller.
-            out.parsed += html.escape(i.tail.lstrip())
+            out.html += html.escape(i.tail.lstrip())
             out.markdown += i.tail.lstrip()
 
         # Otherwise strip if requested by the caller, if this is right after a
@@ -2178,9 +2575,9 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             tail: str = html.escape(i.tail)
             if trim:
                 tail = tail.strip()
-            elif out.parsed.endswith('<br />') or i.tag in ['{http://mcss.mosra.cz/doxygen/}div', '{http://mcss.mosra.cz/doxygen/}class']:
+            elif out.html.endswith('<br />') or i.tag in ['{http://mcss.mosra.cz/doxygen/}div', '{http://mcss.mosra.cz/doxygen/}class']:
                 tail = tail.lstrip()
-            out.parsed += tail
+            out.html += tail
             out.markdown += tail
 
         # Remember the previous element. Needed by Doxygen 1.9
@@ -2191,7 +2588,7 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
     # there was nothing after that would mess with us.
     if previous_section:
         assert not out.write_paragraph_close_tag
-        out.parsed = out.parsed.rstrip() + '</aside>'
+        out.html = out.html.rstrip() + '</aside>'
         out.markdown = out.markdown.rstrip() + '\n'
 
     # Brief description always needs to be single paragraph because we're
@@ -2205,23 +2602,23 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # TODO: remove along with the related test cases once 1.8.14
             # support can be dropped
             if has_block_elements:
-                logging.warning("{}: JAVADOC_AUTOBRIEF / QT_AUTOBRIEF produced a brief description with block elements. That's not supported, ignoring the whole contents of {}".format(state.current, out.parsed))
-                out.parsed = ''
+                logging.warning("{}: JAVADOC_AUTOBRIEF / QT_AUTOBRIEF produced a brief description with block elements. That's not supported, ignoring the whole contents of {}".format(state.current, out.html))
+                out.html = ''
 
             # See the contents_autobrief_multiline test for details. This also
-            # blows up on 1.8.14 when \defgroup is followed by multiple lines
+            # blows up on 1.8.14 when \dextrous is followed by multiple lines
             # of text.
             elif paragraph_count > 1:
-                logging.warning("{}: JAVADOC_AUTOBRIEF / QT_AUTOBRIEF produced a multi-line brief description. That's not supported, using just the first paragraph of {}".format(state.current, out.parsed))
+                logging.warning("{}: JAVADOC_AUTOBRIEF / QT_AUTOBRIEF produced a multi-line brief description. That's not supported, using just the first paragraph of {}".format(state.current, out.html))
 
-                end = out.parsed.find('</p>')
-                assert out.parsed.startswith('<p>') and end != -1
-                out.parsed = out.parsed[3:end]
+                end = out.html.find('</p>')
+                assert out.html.startswith('<p>') and end != -1
+                out.html = out.html[3:end]
                 # does not need to be added to markdown, as it is already stripped by the caller
 
             elif paragraph_count == 1:
-                assert out.parsed.startswith('<p>') and out.parsed.endswith('</p>')
-                out.parsed = out.parsed[3:-4]
+                assert out.html.startswith('<p>') and out.html.endswith('</p>')
+                out.html = out.html[3:-4]
                 # does not need to be added to markdown, as it is already stripped by the caller
 
         # Sane behavior otherwise. Well, no. I give up.
@@ -2239,19 +2636,19 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
             # https://github.com/doxygen/doxygen/issues/10902 or something
             # else in some earlier version.
             if has_block_elements or paragraph_count > 1:
-                logging.warning("{}: ignoring brief description containing multiple paragraphs. Please modify your markup to remove any block elements from the following: {}".format(state.current, out.parsed))
-                out.parsed = ''
+                logging.warning("{}: ignoring brief description containing multiple paragraphs. Please modify your markup to remove any block elements from the following: {}".format(state.current, out.html))
+                out.html = ''
             elif paragraph_count == 1:
-                assert out.parsed.startswith('<p>') and out.parsed.endswith('</p>')
-                out.parsed = out.parsed[3:-4]
+                assert out.html.startswith('<p>') and out.html.endswith('</p>')
+                out.html = out.html[3:-4]
                 # does not need to be added to markdown, as it is already stripped by the caller
 
     # Strip superfluous <p> for simple elements (list items, parameter and
     # return value description, table cells), but only if there is just a
     # single paragraph
-    elif (element.tag in ['listitem', 'parameterdescription', 'entry'] or (element.tag == 'simplesect' and element.attrib['kind'] == 'return')) and not has_block_elements and paragraph_count == 1 and out.parsed:
-        assert out.parsed.startswith('<p>') and out.parsed.endswith('</p>')
-        out.parsed = out.parsed[3:-4]
+    elif (element.tag in ['listitem', 'parameterdescription', 'entry'] or (element.tag == 'simplesect' and element.attrib['kind'] == 'return')) and not has_block_elements and paragraph_count == 1 and out.html:
+        assert out.html.startswith('<p>') and out.html.endswith('</p>')
+        out.html = out.html[3:-4]
 
     # Trim trailing whitespace from markdown before returning
     out.markdown = out.markdown.rstrip()
@@ -2259,16 +2656,16 @@ def parse_desc_internal(state: State, element: ET.Element, immediate_parent: ET.
     return out
 
 
-def parse_desc(state: State, element: ET.Element) -> str:
+def parse_desc(state: State, element: ET.Element | None) -> str:
     if element is None: return ''
 
     # Verify that we didn't ignore any important info by accident
     parsed = parse_desc_internal(state, element)
     assert not parsed.templates and not parsed.params and not parsed.return_value and not parsed.return_values
     assert not parsed.section # might be problematic
-    return parsed.parsed
+    return parsed.html
 
-def parse_desc_with_markdown(state: State, element: ET.Element) -> Tuple[str, str]:
+def parse_desc_with_markdown(state: State, element: ET.Element | None) -> Tuple[str, str]:
     """Parse description and return both HTML and markdown."""
     if element is None: return '', ''
 
@@ -2277,79 +2674,79 @@ def parse_desc_with_markdown(state: State, element: ET.Element) -> Tuple[str, st
     assert not parsed.templates and not parsed.params and not parsed.return_value and not parsed.return_values
     assert not parsed.section # might be problematic
     # Trim trailing whitespace from markdown before returning
-    return parsed.parsed, parsed.markdown.rstrip()
+    return parsed.html, parsed.markdown.rstrip()
 
-def parse_desc_keywords(state: State, element: ET.Element) -> Tuple[str, List[Tuple[str, str, int]], bool]:
-    if element is None: return ''
+def parse_desc_keywords(state: State, element: ET.Element | None):
+    if element is None: return '', [], False
 
     # Verify that we didn't ignore any important info by accident
     parsed = parse_desc_internal(state, element)
     assert not parsed.templates and not parsed.params and not parsed.return_value and not parsed.return_values and not parsed.exceptions
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.search_keywords, parsed.search_enum_values_as_keywords
+    return parsed.html, parsed.search_keywords, parsed.search_enum_values_as_keywords
 
-def parse_enum_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Tuple[str, str, int]], bool, bool]:
+def parse_enum_desc(state: State, element: ET.Element):
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
     inbody = parse_desc_internal(state, element.find('inbodydescription'))
-    parsed.parsed += inbody.parsed
+    parsed.html += inbody.html
     parsed.markdown += inbody.markdown
     if parsed.templates or parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @tparam / @param / @return / @retval / @exception found in enum description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.markdown, parsed.search_keywords, parsed.search_enum_values_as_keywords, parsed.deprecated, parsed.since
+    return parsed.html, parsed.markdown, parsed.search_keywords, parsed.search_enum_values_as_keywords, parsed.deprecated, parsed.since
 
-def parse_enum_value_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Tuple[str, str, int]], bool]:
+def parse_enum_value_desc(state: State, element: ET.Element):
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
     if parsed.templates or parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @tparam / @param / @return / @retval / @exception found in enum value description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.markdown, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.html, parsed.markdown, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_var_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], List[Tuple[str, str, int]], bool]:
+def parse_var_desc(state: State, element: ET.Element):
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
     inbody = parse_desc_internal(state, element.find('inbodydescription'))
-    parsed.parsed += inbody.parsed
+    parsed.html += inbody.html
     parsed.markdown += inbody.markdown
     if parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @param / @return / @retval / @exception found in variable description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.markdown, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.html, parsed.markdown, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_toplevel_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], str, Any, Any, List[Tuple[str, str, int]], bool, str]:
+def parse_toplevel_desc(state: State, element: ET.Element):
     state.parsing_toplevel_desc = True
     parsed = parse_desc_internal(state, element)
     state.parsing_toplevel_desc = False
     if parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @param / @return / @retval / @exception found in top-level description, ignoring".format(state.current))
-    return parsed.parsed, parsed.markdown, parsed.templates, parsed.section[2] if parsed.section else '', parsed.footer_navigation, parsed.example_navigation, parsed.search_keywords, parsed.deprecated, parsed.since, parsed.language
+    return parsed.html, parsed.markdown, parsed.templates, parsed.section[2] if parsed.section else '', parsed.footer_navigation, parsed.example_navigation, parsed.search_keywords, parsed.deprecated, parsed.since, parsed.language
 
-def parse_typedef_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], List[Tuple[str, str, int]], bool]:
+def parse_typedef_desc(state: State, element: ET.Element):
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
     inbody = parse_desc_internal(state, element.find('inbodydescription'))
-    parsed.parsed += inbody.parsed
+    parsed.html += inbody.html
     parsed.markdown += inbody.markdown
     if parsed.params or parsed.return_value or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @param / @return / @retval / @exception found in typedef description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.markdown, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.html, parsed.markdown, parsed.templates, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_func_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], List[Any], str, List[Any], List[Any], List[Tuple[str, str, int]], bool]:
+def parse_func_desc(state: State, element: ET.Element):
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
     inbody = parse_desc_internal(state, element.find('inbodydescription'))
-    parsed.parsed += inbody.parsed
+    parsed.html += inbody.html
     parsed.markdown += inbody.markdown
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.markdown, parsed.templates, parsed.params, parsed.return_value, parsed.return_values, parsed.exceptions, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.html, parsed.markdown, parsed.templates, parsed.params, parsed.return_value, parsed.return_values, parsed.exceptions, parsed.search_keywords, parsed.deprecated, parsed.since
 
-def parse_define_desc(state: State, element: ET.Element) -> Tuple[str, str, List[Any], str, List[Tuple[str, str, int]], bool]:
+def parse_define_desc(state: State, element: ET.Element):
     parsed = parse_desc_internal(state, element.find('detaileddescription'))
     inbody = parse_desc_internal(state, element.find('inbodydescription'))
-    parsed.parsed += inbody.parsed
+    parsed.html += inbody.html
     parsed.markdown += inbody.markdown
     if parsed.templates or parsed.return_values or parsed.exceptions:
         logging.warning("{}: unexpected @tparam / @retval / @exception found in macro description, ignoring".format(state.current))
     assert not parsed.section # might be problematic
-    return parsed.parsed, parsed.markdown, parsed.params, parsed.return_value, parsed.search_keywords, parsed.deprecated, parsed.since
+    return parsed.html, parsed.markdown, parsed.params, parsed.return_value, parsed.search_keywords, parsed.deprecated, parsed.since
 
 def parse_inline_desc(state: State, element: ET.Element) -> str:
     if element is None: return ''
@@ -2358,14 +2755,12 @@ def parse_inline_desc(state: State, element: ET.Element) -> str:
     parsed = parse_desc_internal(state, element, trim=False)
     assert not parsed.templates and not parsed.params and not parsed.return_value and not parsed.return_values and not parsed.exceptions
     assert not parsed.section
-    return parsed.parsed
+    return parsed.html
 
 def parse_inline_desc_internal(state: State, element: ET.Element):
     """Parse inline description and return the full object with both parsed and markdown."""
     if element is None:
-        out = Empty()
-        out.parsed = ''
-        out.markdown = ''
+        out = ParsedDescription()
         return out
 
     # Verify that we didn't ignore any important info by accident
@@ -2374,16 +2769,18 @@ def parse_inline_desc_internal(state: State, element: ET.Element):
     assert not parsed.section
     return parsed
 
-def parse_references(element: ET.Element):
+def parse_references(element: ET.Element | None):
     """Parse reimplements, reimplementedby, references, and referencedby elements from memberdef."""
-    refs = Empty()
+    refs = References()
+if element is None:
+        return refs
 
     # Parse reimplements (single element)
     reimplements_elem = element.find('reimplements')
     if reimplements_elem is not None and 'refid' in reimplements_elem.attrib:
-        refs.reimplements = Empty()
+        refs.reimplements = RefId()
         refs.reimplements.refid = reimplements_elem.attrib['refid']
-        refs.reimplements.name = reimplements_elem.text if reimplements_elem.text else ''
+        refs.reimplements.name = reimplements_elem.text or ''
     else:
         refs.reimplements = None
 
@@ -2391,55 +2788,55 @@ def parse_references(element: ET.Element):
     refs.reimplemented_by = []
     for elem in element.findall('reimplementedby'):
         if 'refid' in elem.attrib:
-            ref = Empty()
+            ref = RefId()
             ref.refid = elem.attrib['refid']
-            ref.name = elem.text if elem.text else ''
+            ref.name = elem.text or ''
             refs.reimplemented_by.append(ref)
 
     # Parse references (can be multiple)
     refs.references = []
     for elem in element.findall('references'):
         if 'refid' in elem.attrib:
-            ref = Empty()
+            ref = RefId()
             ref.refid = elem.attrib['refid']
-            ref.name = elem.text if elem.text else ''
+            ref.name = elem.text or ''
             if 'compoundref' in elem.attrib:
                 ref.compoundref = elem.attrib['compoundref']
             if 'startline' in elem.attrib:
-                ref.startline = elem.attrib['startline']
+                ref.startline = int(elem.attrib['startline'])
             if 'endline' in elem.attrib:
-                ref.endline = elem.attrib['endline']
+                ref.endline = int(elem.attrib['endline'])
             refs.references.append(ref)
 
     # Parse referencedby (can be multiple)
     refs.referenced_by = []
     for elem in element.findall('referencedby'):
         if 'refid' in elem.attrib:
-            ref = Empty()
+            ref = RefId()
             ref.refid = elem.attrib['refid']
-            ref.name = elem.text if elem.text else ''
+            ref.name = elem.text or ''
             if 'compoundref' in elem.attrib:
                 ref.compoundref = elem.attrib['compoundref']
             if 'startline' in elem.attrib:
-                ref.startline = elem.attrib['startline']
+                ref.startline = int(elem.attrib['startline'])
             if 'endline' in elem.attrib:
-                ref.endline = elem.attrib['endline']
+                ref.endline = int(elem.attrib['endline'])
             refs.referenced_by.append(ref)
 
     return refs
 
 def parse_enum(state: State, element: ET.Element):
-    logging.debug(f"Parsing enum {element.find('name').text} in file {state.current}")
+    logging.debug(f"Parsing enum {element.find('name').text} in file {state.current}") # type: ignore
     if element.tag !='memberdef':
-        logging.warning(f"Ignoring enum {element.find('name').text} in {state.current} because it is not a memberdef")
+        logging.warning(f"Ignoring enum {element.find('name').text} in {state.current} because it is not a memberdef") # type: ignore
         return
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'enum'
 
-    enum = Empty()
+    enum = EnumMember()
     state.current_definition_url_base, enum.base_url, enum.id, enum.include, enum.has_details = parse_id_and_include(state, element)
     enum.location = parse_location(element)
     enum.type = parse_type(state, element.find('type'))
-    enum.name = element.find('name').text
+    enum.name = element.find('name').text # type: ignore
     # Doxygen < 1.9.7 puts a generated name into the XML, starting with @,
     # newer versions strip those away, leading to an empty name
     # https://github.com/doxygen/doxygen/commit/a18e4c76ed6415893800c7d77a2f798614fb638b
@@ -2454,27 +2851,23 @@ def parse_enum(state: State, element: ET.Element):
     enum.values = []
 
     # Parse reference information
-    refs = parse_references(element)
-    enum.reimplements = refs.reimplements
-    enum.reimplemented_by = refs.reimplemented_by
-    enum.references = refs.references
-    enum.referenced_by = refs.referenced_by
+    enum.references = parse_references(element)
 
     enum.has_value_details = False
     enumvalue: ET.Element
     for enumvalue in element.findall('enumvalue'):
-        value = Empty()
+        value = EnumValue()
         # The base_url might be different than state.current_compound.url, but
         # should be the same as enum.base_url
         value.id = extract_id_hash(state, enumvalue)
-        value.name = enumvalue.find('name').text
+        value.name = enumvalue.find('name').text # type: ignore
         # There can be an implicit initializer for enum value
         value.initializer = html.escape(enumvalue.findtext('initializer', ''))
         value.brief, value.brief_markdown = parse_desc_with_markdown(state, enumvalue.find('briefdescription'))
         value.description, value.description_markdown, value_search_keywords, value.deprecated, value.since = parse_enum_value_desc(state, enumvalue)
         if value.brief or value.description:
             if enum.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
-                result = Empty()
+                result = SearchResult()
                 result.flags = ResultFlag.from_type(ResultFlag.DEPRECATED if value.deprecated else ResultFlag(0), EntryType.ENUM_VALUE)
                 result.url = enum.base_url + '#' + value.id
                 result.prefix = state.current_prefix + [enum.name]
@@ -2498,7 +2891,7 @@ def parse_enum(state: State, element: ET.Element):
         enum.has_details = True # has_details might already be True from above
     if enum.brief or enum.has_details or enum.has_value_details:
         if enum.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
-            result = Empty()
+            result = SearchResult()
             result.flags = ResultFlag.from_type(ResultFlag.DEPRECATED if enum.deprecated else ResultFlag(0), EntryType.ENUM)
             result.url = enum.base_url + '#' + enum.id
             result.prefix = state.current_prefix
@@ -2508,7 +2901,7 @@ def parse_enum(state: State, element: ET.Element):
         return enum
     return None
 
-def parse_template_params(state: State, element: ET.Element, description):
+def parse_template_params(state: State, element: ET.Element | None, description) -> tuple[bool, list[ParameterInfo] | None]:
     if element is None: return False, None
     assert element.tag == 'templateparamlist'
 
@@ -2518,10 +2911,11 @@ def parse_template_params(state: State, element: ET.Element, description):
     for i in element:
         assert i.tag == 'param'
 
-        template = Empty()
+        template = ParameterInfo()
         template.type = parse_type(state, i.find('type'))
         declname = i.find('declname')
         if declname is not None:
+assert declname.text is not None
             # declname or decltype?!
             template.name = declname.text
         # Doxygen sometimes puts both in type, extract that, but only in case
@@ -2557,38 +2951,34 @@ def parse_template_params(state: State, element: ET.Element, description):
 
 def parse_typedef(state: State, element: ET.Element):
     logging.debug(
-        f"Parsing typedef {element.find('name').text} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}"
+        f"Parsing typedef {element.find('name').text} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}" # type: ignore
     )
     if element.tag !='memberdef':
-        logging.warning(f"Ignoring typedef {element.find('name').text} in {state.current} because it is not a memberdef")
+        logging.warning(f"Ignoring typedef {element.find('name').text} in {state.current} because it is not a memberdef") # type: ignore
         return
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'typedef'
 
-    typedef = Empty()
+    typedef = TypedefMember()
     state.current_definition_url_base, typedef.base_url, typedef.id, typedef.include, typedef.has_details = parse_id_and_include(state, element)
     typedef.location = parse_location(element)
     typedef.is_using = element.findtext('definition', '').startswith('using')
     typedef.type = parse_type(state, element.find('type'))
     typedef.args = parse_type(state, element.find('argsstring'))
-    typedef.name = element.find('name').text
+    typedef.name = element.find('name').text # type: ignore
     typedef.brief, typedef.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     typedef.description, typedef.description_markdown, templates, search_keywords, typedef.deprecated, typedef.since = parse_typedef_desc(state, element)
     typedef.is_protected = element.attrib['prot'] == 'protected'
     typedef.has_template_details, typedef.templates = parse_template_params(state, element.find('templateparamlist'), templates)
 
     # Parse reference information
-    refs = parse_references(element)
-    typedef.reimplements = refs.reimplements
-    typedef.reimplemented_by = refs.reimplemented_by
-    typedef.references = refs.references
-    typedef.referenced_by = refs.referenced_by
+    typedef.references = parse_references(element)
 
     if typedef.base_url == state.current_compound_url and (typedef.description or typedef.has_template_details):
         typedef.has_details = True # has_details might already be True from above
     if typedef.brief or typedef.has_details:
         # Avoid duplicates in search
         if typedef.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
-            result = Empty()
+            result = SearchResult()
             result.flags = ResultFlag.from_type(ResultFlag.DEPRECATED if typedef.deprecated else ResultFlag(0), EntryType.TYPEDEF)
             result.url = typedef.base_url + '#' + typedef.id
             result.prefix = state.current_prefix
@@ -2600,11 +2990,11 @@ def parse_typedef(state: State, element: ET.Element):
 
 def parse_func(state: State, element: ET.Element):
     logging.debug(
-        f"Parsing function {fix_type_spacing(html.escape(element.find('name').text))} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}"
+        f"Parsing function {fix_type_spacing(html.escape(element.find('name').text))} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}" # type: ignore
     )
     assert element.tag == 'memberdef' and element.attrib['kind'] in ['function', 'friend', 'signal', 'slot']
 
-    func = Empty()
+    func = FunctionMember()
     state.current_definition_url_base, func.base_url, func.id, func.include, func.has_details = parse_id_and_include(state, element)
     func.location = parse_location(element)
     func.type = parse_type(state, element.find('type'))
@@ -2743,8 +3133,8 @@ def parse_func(state: State, element: ET.Element):
     func.params = []
     for p in element.findall('param'):
         name = p.find('declname')
-        param = Empty()
-        param.name = name.text if name is not None else ''
+        param = ParameterInfo('')
+        param.name = name.text if name is not None and name.text is not None else ''
         param_type = p.find('type')
         if param_type is None:
             logging.warning("{}: parameter {} of function {} has no type, ignoring the whole function as it's suspected to be a mishandled macro call".format(state.current, param.name, func.name))
@@ -2754,7 +3144,8 @@ def parse_func(state: State, element: ET.Element):
         # Recombine parameter name and array information back
         array = p.find('array')
         if array is not None:
-            if name is not None:
+assert array.text is not None
+            if name is not None and name.text is not None:
                 if param.type.endswith(')'):
                     param.type_name = param.type[:-1] + name.text + ')' + array.text
                 else:
@@ -2762,7 +3153,7 @@ def parse_func(state: State, element: ET.Element):
             else:
                 param.type_name = param.type + array.text
             param.type += array.text
-        elif name is not None:
+        elif name is not None and name.text is not None:
             param.type_name = param.type + ' ' + name.text
         else:
             param.type_name = param.type
@@ -2780,11 +3171,7 @@ def parse_func(state: State, element: ET.Element):
     if params: logging.warning("{}: function parameter description doesn't match parameter names: {}".format(state.current, repr(params)))
 
     # Parse reference information
-    refs = parse_references(element)
-    func.reimplements = refs.reimplements
-    func.reimplemented_by = refs.reimplemented_by
-    func.references = refs.references
-    func.referenced_by = refs.referenced_by
+    func.references = parse_references(element)
 
     # If there's a detailed description or template, param, return value or
     # exception details, the function can have a detailed block
@@ -2811,7 +3198,7 @@ def parse_func(state: State, element: ET.Element):
         # search. Again, the compound URL check means the search entry is not
         # duplicated for functions referenced from file docs.
         if (func.brief or func.has_details) and not state.config['SEARCH_DISABLED']:
-            result = Empty()
+            result = SearchResult()
             result.flags = ResultFlag.from_type((ResultFlag.DEPRECATED if func.deprecated else ResultFlag(0))|(ResultFlag.DELETED if func.is_deleted else ResultFlag(0)), EntryType.FUNC)
             result.url = func.base_url + '#' + func.id
             result.prefix = state.current_prefix
@@ -2843,7 +3230,7 @@ def parse_var(state: State, element: ET.Element):
     )
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'variable'
 
-    var = Empty()
+    var = VariableMember()
     state.current_definition_url_base, var.base_url, var.id, var.include, var.has_details = parse_id_and_include(state, element)
     var.location = parse_location(element)
     var.type = parse_type(state, element.find('type'))
@@ -2872,18 +3259,14 @@ def parse_var(state: State, element: ET.Element):
     var.has_template_details, var.templates = parse_template_params(state, element.find('templateparamlist'), templates)
 
     # Parse reference information
-    refs = parse_references(element)
-    var.reimplements = refs.reimplements
-    var.reimplemented_by = refs.reimplemented_by
-    var.references = refs.references
-    var.referenced_by = refs.referenced_by
+    var.references = parse_references(element)
 
     if var.base_url == state.current_compound_url and (var.description or var.has_template_details):
         var.has_details = True # has_details might already be True from above
     if var.brief or var.has_details:
         # Avoid duplicates in search
         if var.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
-            result = Empty()
+            result = SearchResult()
             result.flags = ResultFlag.from_type(ResultFlag.DEPRECATED if var.deprecated else ResultFlag(0), EntryType.VAR)
             result.url = var.base_url + '#' + var.id
             result.prefix = state.current_prefix
@@ -2902,7 +3285,7 @@ def parse_define(state: State, element: ET.Element):
         return
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'define'
 
-    define = Empty()
+    define = DefineMember()
     state.current_definition_url_base, define.base_url, define.id, define.include, define.has_details = parse_id_and_include(state, element)
     define.location = parse_location(element)
     define.name = element.find('name').text
@@ -2927,18 +3310,14 @@ def parse_define(state: State, element: ET.Element):
     if params: logging.warning("{}: define parameter description doesn't match parameter names: {}".format(state.current, repr(params)))
 
     # Parse reference information
-    refs = parse_references(element)
-    define.reimplements = refs.reimplements
-    define.reimplemented_by = refs.reimplemented_by
-    define.references = refs.references
-    define.referenced_by = refs.referenced_by
+    define.references = parse_references(element)
 
     if define.base_url == state.current_compound_url and (define.description or define.return_value):
         define.has_details = True # has_details might already be True from above
     if define.brief or define.has_details:
         # Avoid duplicates in search
         if define.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
-            result = Empty()
+            result = SearchResult()
             result.flags = ResultFlag.from_type(ResultFlag.DEPRECATED if define.deprecated else ResultFlag(0), EntryType.DEFINE)
             result.url = define.base_url + '#' + define.id
             result.prefix = []
@@ -2980,12 +3359,12 @@ def is_a_stupid_empty_markdown_page(compounddef: ET.Element):
     # (which means there's no explicit title). We *do* want to preserve empty
     # pages with custom titles.
     is_stupid = (
-        compounddef.find("compoundname").text.startswith("md_")
-        and compounddef.find("compoundname").text.endswith(
-            compounddef.find("title").text
+        compounddef.find("compoundname").text.startswith("md_") # type: ignore
+        and compounddef.find("compoundname").text.endswith( # type: ignore
+            compounddef.find("title").text # type: ignore
         )
-            and len(compounddef.find("briefdescription")) == 0
-            and len(compounddef.find("detaileddescription")) == 0
+            and len(compounddef.find("briefdescription")) == 0 # type: ignore
+            and len(compounddef.find("detaileddescription")) == 0 # type: ignore
         )
     logging.debug(
         f"{compounddef.attrib['id']} {'is a stupid markdown page' if is_stupid else 'seems to usable markdown'}"
@@ -3017,10 +3396,10 @@ def extract_metadata(state: State, xml):
     if state.current == 'index.xml':
         for i in root:
             if i.attrib['kind'] == 'example':
-                compound = Empty()
+                compound = ExampleInfo()
                 compound.id = i.attrib['refid']
                 compound.url = compound.id + '.html'
-                compound.name = i.find('name').text
+                compound.name = i.find('name').text # type: ignore
                 state.examples += [compound]
         return
 
@@ -3063,7 +3442,7 @@ def extract_metadata(state: State, xml):
     # is for groups. In some cases, such as anonymous namespaces in Doxygen
     # 1.9.7+, <compoundname> is empty. Corresponding test case is in
     # test_compound.Ignored. https://github.com/doxygen/doxygen/commit/a18e4c76ed6415893800c7d77a2f798614fb638b
-    compound.name = html.escape(compounddef.find('title').text if compound.kind in ['page', 'group'] and compounddef.findtext('title') else compounddef.findtext('compoundname'))
+    compound.name = html.escape(compounddef.find('title').text if compound.kind in ['page', 'group'] and compounddef.findtext('title') else compounddef.findtext('compoundname')) # type: ignore
     # Compound URL is ID, except for index page, where it is named "indexpage"
     # and so I have to override it back to "index". Can't use <compoundname>
     # for pages because that doesn't reflect CASE_SENSE_NAMES. THANKS DOXYGEN.
@@ -3472,7 +3851,7 @@ def parse_xml(state: State, xml: str):
         logging.debug("{}: neither brief nor detailed description present, skipping".format(state.current))
         return None
 
-    compound = Empty()
+    compound = ParsedCompound()
     compound.kind = compounddef.attrib['kind']
     compound.id = compounddef.attrib['id']
     compound.location = parse_location(compounddef)
@@ -3705,7 +4084,7 @@ def parse_xml(state: State, xml: str):
             if id in state.compounds and state.compounds[id].has_details:
                 file = state.compounds[id]
 
-                f = Empty()
+                f = CompoundFileEntry()
                 f.url = file.url
                 f.name = file.leaf_name
                 f.brief = file.brief
@@ -3727,7 +4106,7 @@ def parse_xml(state: State, xml: str):
                 symbol = state.compounds[id]
 
                 if compounddef_child.tag == 'innernamespace':
-                    namespace = Empty()
+                    namespace = NamespaceEntry()
                     namespace.url = symbol.url
                     # Use the full name if this is a file or group (where the
                     # hierarchy isn't implicit like with namespace or class)
@@ -3755,7 +4134,7 @@ def parse_xml(state: State, xml: str):
                 else:
                     assert compounddef_child.tag == 'innerclass'
 
-                    class_ = Empty()
+                    class_ = ClassEntry()
                     class_.kind = symbol.kind
                     class_.url = symbol.url
                     # Use the full name if this is a file or group (where the
@@ -3799,7 +4178,7 @@ def parse_xml(state: State, xml: str):
                         if symbol_name.startswith(parent_name):
                             symbol_name = symbol_name[len(parent_name):]
 
-                    class_ = Empty()
+                    class_ = BaseClassEntry()
                     class_.kind = symbol.kind
                     class_.url = symbol.url
                     class_.name = symbol_name
@@ -3823,7 +4202,7 @@ def parse_xml(state: State, xml: str):
                 if not compounddef_child.attrib['prot'] == 'private' and id in state.compounds and state.compounds[id].has_details:
                     symbol = state.compounds[id]
 
-                    class_ = Empty()
+                    class_ = DerivedClassEntry()
                     class_.kind = symbol.kind
                     class_.url = symbol.url
                     # Use only the leaf name if the derived class has the same
@@ -3845,7 +4224,7 @@ def parse_xml(state: State, xml: str):
             assert compound.kind == 'group'
 
             group = state.compounds[compounddef_child.attrib['refid']]
-            g = Empty()
+            g = TopicEntry()
             g.url = group.url
             g.name = group.leaf_name
             g.brief = group.brief
@@ -4179,7 +4558,7 @@ def parse_xml(state: State, xml: str):
                     if header is None:
                         logging.error("{}: member groups without @name are not supported, ignoring".format(state.current))
                     else:
-                        group = Empty()
+                        group = MemberGroup()
                         group.name = header.text
                         group.id = slugify(group.name)
                         group.description, group.description_markdown = parse_desc_with_markdown(state, compounddef_child.find('description'))
@@ -4361,7 +4740,7 @@ def parse_xml(state: State, xml: str):
         else:
             assert False  # pragma: no cover
 
-        result = Empty()
+        result = SearchResult()
         result.flags = ResultFlag.from_type(ResultFlag.DEPRECATED if compound.deprecated else ResultFlag(0), kind)
         result.url = compound.url
         result.prefix = state.current_prefix[:-1]
@@ -4369,7 +4748,7 @@ def parse_xml(state: State, xml: str):
         result.keywords = search_keywords
         state.search += [result]
 
-    parsed = Empty()
+    parsed = ParsedXml()
     parsed.version = root.attrib['version']
     parsed.compound = compound
     return parsed
@@ -4403,7 +4782,7 @@ def parse_index_xml(state: State, xml):
     for i in root:
         assert i.tag == 'compound'
 
-        entry = Empty()
+        entry = NamespaceIndexEntry()
         entry.id = i.attrib['refid']
 
         # Ignore unknown / undocumented compounds
@@ -4476,9 +4855,9 @@ def parse_index_xml(state: State, xml):
 
     # Structure containing top-level symbols, files and pages, nestable items
     # (namespaces, directories) first
-    parsed = Empty()
+    parsed = ParsedIndex()
     parsed.version = root.attrib['version']
-    parsed.index = Empty()
+    parsed.index = IndexCollections()
     parsed.index.symbols = top_level_namespaces + top_level_classes
     parsed.index.files = top_level_dirs + top_level_files
     parsed.index.pages = top_level_pages
@@ -4960,6 +5339,12 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         elif os.path.basename(file) == 'index.xml':
             parsed = parse_index_xml(state, file)
 
+            if debug_template:
+                json_output = os.path.join(html_output, 'index' + ".json")
+                with open(json_output, "w", encoding="utf8") as f:
+                    logging.info("Writing full parsed index json to {}".format(os.path.abspath(json_output)))
+                    json.dump(parsed, f, cls=MappingProxyEncoder, indent=2)
+
             for i in index_pages:
                 file = '{}{}'.format(i, output_ext)
 
@@ -5043,7 +5428,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         index_file = 'index' + output_ext
         logging.info("Writing {} for an empty mainpage".format(index_file))
 
-        compound = Empty()
+        compound = EmptyMainPage()
         compound.kind = 'page'
         compound.name = state.doxyfile['PROJECT_NAME']
         compound.description = ''
