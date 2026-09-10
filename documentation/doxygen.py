@@ -530,7 +530,8 @@ class ReferenceLink:
 
     def __init__(self):
         self.url: str = "" # the format text to format with the extension, use .url.format(extension)
-        self.link_text: str = ""
+        self.link_text_html: str = ""
+        self.link_text_md: str = ""
         self.css_class: str = "m-doc"
 
 
@@ -844,7 +845,8 @@ def parse_reference(state: State, element: ET.Element) -> ReferenceLink:
 
     # Parse the link content once; the result contains both representations.
     link_text = parse_inline_desc_internal(state, element)
-    ref.link_text = link_text.html.strip() # TODO!!
+    ref.link_text_md = link_text.html.strip()
+    ref.link_text_html = link_text.markdown.strip()
     return ref
 
 
@@ -852,12 +854,12 @@ def render_reference_html(reference: ReferenceLink, add_inline_css_class: str | 
     """Render a parsed reference as HTML"""
     class_ = add_inline_css_class if add_inline_css_class else reference.css_class
     return '<a href="{}" class="{}">{}</a>'.format(
-        reference.url.format('html'), class_, add_wbr(reference.link_text))
+        reference.url.format('html'), class_, add_wbr(reference.link_text_html))
 
 
 def render_reference_markdown(reference: ReferenceLink) -> str:
     """Render a parsed reference as Markdown"""
-    return '[{}]({})'.format(reference.link_text, reference.url.format('md'))
+    return '[{}]({})'.format(reference.link_text_md, reference.url.format('md'))
 
 # Returns a shortened path if the prefix matches
 def remove_path_prefix(path: str, prefix: str) -> str:
