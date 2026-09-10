@@ -233,7 +233,7 @@ class StateCompound:
         self.childrenCompoundRefs: list[str] = []  # 'derivedcompoundref'
         self.parent: str | None = None
         self.parentGroup: str | None = None
-self.markdown_anchor: str | None = None
+        self.markdown_anchor: str | None = None
         self.markdown_url: str | None = None
         self.markdown_folder: str | None = None
         self.location: Location | None = None
@@ -928,7 +928,7 @@ def parse_type_md(state: State, type: ET.Element | None) -> str:
     return out
 
 def parse_desc_internal(state: State, element: ET.Element | None, immediate_parent: ET.Element | None = None, trim = True, add_css_class = None):
-out = ParsedDescription()
+    out = ParsedDescription()
     if element is None:
         return out
 
@@ -951,7 +951,7 @@ out = ParsedDescription()
     out.write_paragraph_close_tag = element.tag == 'para'
     out.is_reasonable_paragraph = element.tag == 'para'
 
-        if element.text:
+    if element.text:
         text_content = element.text.strip() if trim else element.text
         out.html = html.escape(text_content)
         out.markdown = text_content
@@ -1215,20 +1215,20 @@ out = ParsedDescription()
             has_block_elements = True
 
             # Top-level description
-header_tag: str = ''
+            header_tag: str = ''
             if state.parsing_toplevel_desc:
                 if element.tag == 'sect1':
-header_tag = 'h2'
+                    header_tag = 'h2'
                 elif element.tag == 'sect2':
-header_tag = 'h3'
+                    header_tag = 'h3'
                 elif element.tag == 'sect3':
-header_tag = 'h4'
+                    header_tag = 'h4'
                 elif element.tag == 'sect4':
-header_tag = 'h5'
+                    header_tag = 'h5'
                 elif element.tag == 'sect5':
-header_tag = 'h6'
+                    header_tag = 'h6'
                 elif element.tag == 'sect6':
-header_tag = 'h6'
+                    header_tag = 'h6'
                     logging.warning("{}: more than five levels of sections in top level descriptions are not supported, stopping at <h6>".format(state.current))
                 elif not element.tag == 'simplesect': # pragma: no cover
                     assert False
@@ -1238,13 +1238,13 @@ header_tag = 'h6'
             # it needs to be <h4> and below
             else:
                 if element.tag == 'sect1':
-header_tag = 'h4'
+                    header_tag = 'h4'
                 elif element.tag == 'sect2':
-header_tag = 'h5'
+                    header_tag = 'h5'
                 elif element.tag == 'sect3':
-header_tag = 'h6'
+                    header_tag = 'h6'
                 elif element.tag in ['sect4', 'sect5', 'sect6']:
-header_tag = 'h6'
+                    header_tag = 'h6'
                     logging.warning("{}: more than three levels of sections in member descriptions are not supported, stopping at <h6>".format(state.current))
                 elif not element.tag == 'simplesect': # pragma: no cover
                     assert False
@@ -1518,7 +1518,7 @@ header_tag = 'h6'
                 out.since = since[3:-4]
 
             else:
-# if a simple section isn't a "return" or "since" section, it has its own internal block elements to parse
+                # if a simple section isn't a "return" or "since" section, it has its own internal block elements to parse
                 has_block_elements = True
 
                 # There was a section open, but it differs from this one, close
@@ -1711,23 +1711,23 @@ header_tag = 'h6'
                 for name in param_names.findall('parametername'):
                     if i.attrib['kind'] == 'param':
                         assert name.text is not None, "Parameter name is missing!"
-param_info = ParameterInfo(name=name.text)
+                        param_info = ParameterInfo(name=name.text)
                         param_info.direction = name.attrib['direction'] if 'direction' in name.attrib else ''
                         param_info.description = description
                         out.params[name.text] = param_info
                     elif i.attrib['kind'] == 'retval':
-assert name.text is not None
+                        assert name.text is not None
                         ret_info = ParameterInfo(name.text)
                         ret_info.description = description
                         out.return_values += [ret_info]
                     elif i.attrib['kind'] == 'exception':
                         ref = name.find('ref')
                         if (ref != None):
-                            ex_info = ParameterInfo(name=parse_ref(state, ref))
+                            ex_info = ParameterInfo(name=render_reference_html(parse_reference(state, ref)))
                             ex_info.description = description
                             out.exceptions += [ex_info]
                         else:
-assert name.text is not None, "Exception name is missing!"
+                            assert name.text is not None, "Exception name is missing!"
                             ex_info = ParameterInfo(name=name.text)
                             ex_info.description = description
                             out.exceptions += [ex_info]
@@ -2772,7 +2772,7 @@ def parse_inline_desc_internal(state: State, element: ET.Element):
 def parse_references(element: ET.Element | None):
     """Parse reimplements, reimplementedby, references, and referencedby elements from memberdef."""
     refs = References()
-if element is None:
+    if element is None:
         return refs
 
     # Parse reimplements (single element)
@@ -3144,7 +3144,7 @@ def parse_func(state: State, element: ET.Element):
         # Recombine parameter name and array information back
         array = p.find('array')
         if array is not None:
-assert array.text is not None
+            assert array.text is not None
             if name is not None and name.text is not None:
                 if param.type.endswith(')'):
                     param.type_name = param.type[:-1] + name.text + ')' + array.text
