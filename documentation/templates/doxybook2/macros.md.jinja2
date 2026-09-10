@@ -43,7 +43,7 @@ template <{% for param in item.templates -%}
 
 {%- macro table_entry_function(child) -%}
 | {{template_params(child)}}{% if child.is_virtual %}virtual {% endif -%}
-{%- if child.type is defined %}{{child.type}} {% endif -%}
+{%- if child.type_markdown is defined %}{{child.type}} {% endif -%}
 | {{ function_with_params(child) }}{% if child.is_const %} const{% endif -%}
 {% if child.is_override %} override{% endif -%}
 {% if child.is_defaulted %} = default{% endif -%}
@@ -53,7 +53,7 @@ template <{% for param in item.templates -%}
 {%- endmacro -%}
 
 {%- macro table_entry_enum(child) -%}
-| {{template_params(child)}}{{child.kind}}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if child.type is defined %} {{child.type}} {% endif -%}
+| {{template_params(child)}}{{child.kind}}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if child.type_markdown is defined %} {{child.type}} {% endif -%}
 | {{ linked_name(child) }}{% if child.kind == "enum" and child.values -%} { {% for enumvalue in child.values -%}
 {{enumvalue.name}}{% if enumvalue.initializer is defined %} {{enumvalue.initializer}}{% endif -%}
 {% if not loop.is_last %}, {% endif %}{% endfor -%}
@@ -62,13 +62,13 @@ template <{% for param in item.templates -%}
 {%- endmacro -%}
 
 {%- macro table_entry_var(child) -%}
-| {% if child.type is defined %}{{child.type}} {% endif -%}
+| {% if child.type_markdown is defined %}{{child.type}} {% endif -%}
 | {{ table_val_name_brief(child) }} |
 {%- endmacro -%}
 
 {%- macro table_entry_friend(child) -%}
-| {% if child.type is defined %}{{child.type}} {% endif -%}
-| {{ linked_name(child) }}{% if child.type != "class" and child.type != "struct" -%}
+| {% if child.type_markdown is defined %}{{child.type}} {% endif -%}
+| {{ linked_name(child) }}{% if child.type_markdown != "class" and child.type_markdown != "struct" -%}
 ({% if macros.exists(child.params) == "true" -%}
 {%- for param in child.params -%}
 {{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif -%}

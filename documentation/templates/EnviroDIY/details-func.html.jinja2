@@ -7,19 +7,19 @@
               <div class="m-doc-template">
                 {% if compound.templates != None %}
                 {% set j = joiner(', ') %}
-                template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-dim">{{ t.type }}</span> {% if t.name %}<span class="m-param">{{ t.name }}</span>{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
+                template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-dim">{{ t.type_html }}</span> {% if t.name %}<span class="m-param">{{ t.name }}</span>{% else %}_{{ loop.index }}{% endif %}{% endfor %}&gt;
                 {% endif %}
                 {% if func.templates != None %}
                 {% set j = joiner(', ') %}
-                template&lt;{% for t in func.templates %}{{ j() }}<span class="m-dim">{{ t.type }}</span> {% if t.name %} <span class="m-param">{{ t.name }}</span>{% endif %}{% if t.default %} = {{ t.default }}{% endif %}{% endfor %}&gt;
+                template&lt;{% for t in func.templates %}{{ j() }}<span class="m-dim">{{ t.type_html }}</span> {% if t.name %} <span class="m-param">{{ t.name }}</span>{% endif %}{% if t.default %} = {{ t.default }}{% endif %}{% endfor %}&gt;
                 {% endif %}
               </div>
               {% endif %}
               {% set j = joiner(',\n              ') %}
-              <span class="m-doc-wrap-bumper">{{ func.prefix }}<span class="m-dim">{% if func.type == 'void' %}void {% elif func.type
-                  %}{{ func.type }} {% endif %} {{ prefix }}</span></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a
+              <span class="m-doc-wrap-bumper">{{ func.prefix }}<span class="m-dim">{% if func.type_html == 'void' %}void {% elif func.type_html
+                  %}{{ func.type_html }} {% endif %} {{ prefix }}</span></span><span class="m-doc-wrap"><span class="m-doc-wrap-bumper"><a
                     href="#{{ func.id }}" class="m-doc-self">{{ func.name }}</a>(</span><span class="m-doc-wrap">{% for param in
-                  func.params %}{{ j() }}<span class="m-dim">{{ param.type }}</span>{% if param.type != 'void' %} {% endif %}<span
+                  func.params %}{{ j() }}<span class="m-dim">{{ param.type_html }}</span>{% if param.type_html != 'void' %} {% endif %}<span
                     class="m-param">{{ param.name }}</span>{% if param.default %}<span class="m-dim"> = {{ param.default }}</span>{%
                   endif %}{% endfor %}){{ func.suffix }}{% if func.is_explicit %} <span class="m-label m-info">explicit</span> {%
                   endif %}{% if func.is_final %} <span class="m-label m-warning">final</span>{% elif func.is_override %} <span
@@ -80,7 +80,7 @@
               {{ '<thead>' if func.return_values or func.exceptions else '<tfoot>' }}
                 <tr>
                   <th{% if not func.has_template_details and not func.has_param_details %} style="width: 1%"{% endif %}>Returns</th>
-                  <td><span class="m-dim">{{ func.type }}</span> {{ func.return_value }}</td>
+                  <td><span class="m-dim">{{ func.type_html }}</span> {{ func.return_value }}</td>
                 </tr>
               {{ '</thead>' if func.return_values or func.exceptions else '</tfoot>' }}
               {% elif func.return_values %}

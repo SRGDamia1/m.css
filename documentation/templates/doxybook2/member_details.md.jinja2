@@ -12,7 +12,7 @@ template <{% for param in compound.templates %}{{param.type}} {{param.name}}{% i
 {% if compound.is_explicit %}explicit {% endif -%}
 {% if compound.is_virtual %}virtual {% endif -%}
 
-{% if compound.type is defined %}{{compound.type}} {% endif %}{{compound.name}}{% if macros.exists(compound.params) == "true" -%}
+{% if compound.type_markdown is defined %}{{compound.type}} {% endif %}{{compound.name}}{% if macros.exists(compound.params) == "true" -%}
 (
 {%- for param in compound.params %}{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif -%}
 {% if not loop.is_last %}, {% endif %}
@@ -39,7 +39,7 @@ template <{% for param in compound.templates %}{{param.type}} {{param.name}}{% i
 
 ```{{compound.language if compound.language is defined else "cpp"}}
 {% if compound.is_static %}static {% endif -%}
-{% if compound.type is defined %}{{compound.type}} {% endif -%}{{compound.name}}{% if compound.initializer is defined %} {{compound.initializer}}{% endif %};
+{% if compound.type_markdown is defined %}{{compound.type}} {% endif -%}{{compound.name}}{% if compound.initializer is defined %} {{compound.initializer}}{% endif %};
 ```{% endif -%}
 
 {%- if compound.kind == "typedef" %}
@@ -62,14 +62,14 @@ template <{% for param in compound.templates %}{{param.type}} {{param.name}}{% i
 {%- if compound.kind == "friend" %}
 
 ```{{compound.language if compound.language is defined else "cpp"}}
-friend {% if compound.type is defined %}{{compound.type}} {% endif -%}
+friend {% if compound.type_markdown is defined %}{{compound.type}} {% endif -%}
 {{compound.name}}{% if compound.params is defined %}{% endif -%}
 {%- if macros.exists(compound.params) == "true" -%}
 (
 {%- for param in compound.params %}{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif -%}
 {% if not loop.is_last %}, {% endif -%}
 {%- endfor -%}
-){% elif compound.type != "class" -%}
+){% elif compound.type_markdown != "class" -%}
 (){% endif %};
 ```{% endif -%}
 

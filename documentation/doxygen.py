@@ -493,7 +493,9 @@ class ParameterInfo:
         self.name = name  # str
         self.direction: str | None = None  # 'in', 'out', 'inout', or None
         self.description: str = ""  # str
-        self.type: ParsedLinkable = ParsedLinkable()
+        self.parsed_type: ParsedLinkable = ParsedLinkable()
+        self.type_html: str = ''
+        self.type_markdown: str = ''
         self.type_name: str = ""  # str
         self.default: str | None = None  # str or None
 
@@ -531,7 +533,7 @@ class ReferenceLink:
     def __init__(self):
         self.url: str = "" # the format text to format with the extension, use .url.format(extension)
         self.link_text_html: str = ""
-        self.link_text_md: str = ""
+        self.link_text_markdown: str = ""
         self.css_class: str = "m-doc"
 
 
@@ -613,7 +615,9 @@ class EnumValue:
 class EnumMember(Member):
     def __init__(self):
         super().__init__()
-        self.type: ParsedLinkable = ParsedLinkable()
+        self.parsed_type: ParsedLinkable = ParsedLinkable()
+        self.type_html: str = ''
+        self.type_markdown: str = ''
         self.is_protected: bool = False
         self.is_strong: bool = False
 
@@ -624,8 +628,12 @@ class EnumMember(Member):
 class TypedefMember(TemplateMember):
     def __init__(self):
         super().__init__()
-        self.type: ParsedLinkable = ParsedLinkable()
-        self.args: ParsedLinkable = ParsedLinkable()
+        self.parsed_type: ParsedLinkable = ParsedLinkable()
+        self.type_html: str = ''
+        self.type_markdown: str = ''
+        self.parsed_args: ParsedLinkable = ParsedLinkable()
+        self.args_html: str = ''
+        self.args_markdown: str = ''
         self.is_using: bool = False
         self.is_protected: bool = False
 
@@ -634,7 +642,9 @@ class FunctionMember(TemplateMember):
     def __init__(self):
         super().__init__()
 
-        self.type: ParsedLinkable = ParsedLinkable()
+        self.parsed_type: ParsedLinkable = ParsedLinkable()
+        self.type_html: str = ''
+        self.type_markdown: str = ''
 
         self.params: list[ParameterInfo] = []
         self.return_value: str | None = None
@@ -669,7 +679,9 @@ class VariableMember(TemplateMember):
     def __init__(self):
         super().__init__()
 
-        self.type: ParsedLinkable = ParsedLinkable()
+        self.parsed_type: ParsedLinkable = ParsedLinkable()
+        self.type_html: str = ''
+        self.type_markdown: str = ''
 
         self.is_constexpr: bool = False
         self.is_static: bool = False
@@ -845,8 +857,8 @@ def parse_reference(state: State, element: ET.Element) -> ReferenceLink:
 
     # Parse the link content once; the result contains both representations.
     link_text = parse_inline_desc_internal(state, element)
-    ref.link_text_md = link_text.html.strip()
-    ref.link_text_html = link_text.markdown.strip()
+    ref.link_text_html = link_text.html.strip()
+    ref.link_text_markdown = link_text.markdown.strip()
     return ref
 
 
@@ -859,7 +871,7 @@ def render_reference_html(reference: ReferenceLink, add_inline_css_class: str | 
 
 def render_reference_markdown(reference: ReferenceLink) -> str:
     """Render a parsed reference as Markdown"""
-    return '[{}]({})'.format(reference.link_text_md, reference.url.format('md'))
+    return '[{}]({})'.format(reference.link_text_markdown, reference.url.format('md'))
 
 # Returns a shortened path if the prefix matches
 def remove_path_prefix(path: str, prefix: str) -> str:
@@ -2955,8 +2967,10 @@ def parse_enum(state: State, element: ET.Element):
     enum = EnumMember()
     state.current_definition_url_base, enum.base_url, enum.id, enum.include, enum.has_details = parse_id_and_include(state, element)
     enum.location = parse_location(element)
-    enum.type = parse_linkable(state, element.find('type'))
     enum.name = element.find('name').text # type: ignore
+    enum.parsed_type = parse_linkable(state, element.find('type'))
+    enum.type_html = render_linkable_html(enum.parsed_type)
+    enum.type_markdown = render_linkable_markdown(enum.parsed_type)
     # Doxygen < 1.9.7 puts a generated name into the XML, starting with @,
     # newer versions strip those away, leading to an empty name
     # https://github.com/doxygen/doxygen/commit/a18e4c76ed6415893800c7d77a2f798614fb638b
@@ -3042,7 +3056,7 @@ def parse_template_params(state: State, element: ET.Element | None, description)
         assert i.tag == 'param'
 
         template = ParameterInfo()
-        template.type = parse_linkable(state, i.find('type'))
+        template.parsed_type = parse_linkable(state, i.find('type'))
         declname = i.find('declname')
         if declname is not None:
             assert declname.text is not None
@@ -3053,20 +3067,24 @@ def parse_template_params(state: State, element: ET.Element | None, description)
         # FooBar<T, U> types). Using rpartition() to split on the last found
         # space, but in case of nothing found, rpartition() puts the full
         # string into [2] instead of [0], so we have to account for that.
-        elif render_linkable_html(template.type)[-1].isalnum():
-            parts = render_linkable_html(template.type).rpartition(' ')
+        elif render_linkable_html(template.parsed_type)[-1].isalnum():
+            parts = render_linkable_html(template.parsed_type).rpartition(' ')
             if parts[1]:
                 t_type = ParsedLinkable()
                 t_type.parts.append(TextLink(parts[0]))
-                template.type = t_type
+                template.parsed_type = t_type
                 template.name = parts[2]
             else:
                 t_type = ParsedLinkable()
                 t_type.parts.append(TextLink(parts[2]))
-                template.type = t_type
+                template.parsed_type = t_type
                 template.name = ''
         else:
             template.name = ''
+
+        template.type_html = render_linkable_html(template.parsed_type)
+        template.type_markdown = render_linkable_markdown(template.parsed_type)
+
         default = i.find('defval')
         template.default = render_linkable_html(parse_linkable(state, default)) if default is not None else ''
         if template.name in description:
@@ -3096,9 +3114,13 @@ def parse_typedef(state: State, element: ET.Element):
     state.current_definition_url_base, typedef.base_url, typedef.id, typedef.include, typedef.has_details = parse_id_and_include(state, element)
     typedef.location = parse_location(element)
     typedef.is_using = element.findtext('definition', '').startswith('using')
-    typedef.type = parse_linkable(state, element.find('type'))
-    typedef.args = parse_linkable(state, element.find('argsstring'))
     typedef.name = element.find('name').text # type: ignore
+    typedef.parsed_type = parse_linkable(state, element.find('type'))
+    typedef.parsed_args = parse_linkable(state, element.find('argsstring'))
+    typedef.type_html = render_linkable_html(typedef.parsed_type)
+    typedef.type_markdown = render_linkable_markdown(typedef.parsed_type)
+    typedef.args_html = render_linkable_html(typedef.parsed_args)
+    typedef.args_markdown = render_linkable_markdown(typedef.parsed_args)
     typedef.brief, typedef.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     typedef.description, typedef.description_markdown, templates, search_keywords, typedef.deprecated, typedef.since = parse_typedef_desc(state, element)
     typedef.is_protected = element.attrib['prot'] == 'protected'
@@ -3136,8 +3158,8 @@ def parse_func(state: State, element: ET.Element):
     func = FunctionMember()
     state.current_definition_url_base, func.base_url, func.id, func.include, func.has_details = parse_id_and_include(state, element)
     func.location = parse_location(element)
-    func.type = parse_linkable(state, element.find('type'))
     func.name = fix_type_spacing(html.escape(element.find('name').text)) # type: ignore
+    func.parsed_type = parse_linkable(state, element.find('type'))
     func.brief, func.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     func.description, func.description_markdown, templates, params, func.return_value, func.return_values, func.exceptions, search_keywords, func.deprecated, func.since = parse_func_desc(state, element)
 
@@ -3169,22 +3191,22 @@ def parse_func(state: State, element: ET.Element):
     while matched_bad_keyword:
         matched_bad_keyword = False
         for kw in exposed_attribute_keywords + ignored_attribute_keywords:
-            if func.type.text == kw: # constructors
-                func.type = ParsedLinkable()
-            elif func.type.text.startswith(kw + ' '):
+            if func.parsed_type.text == kw: # constructors
+                func.parsed_type = ParsedLinkable()
+            elif func.parsed_type.text.startswith(kw + ' '):
                 f_type = ParsedLinkable()
-                f_type.parts = [TextLink(func.type.text[len(kw):].strip())]
-                f_type.text = func.type.text[len(kw):].strip()
-                func.type = f_type
-            elif func.type.text.endswith(' ' + kw):
+                f_type.parts = [TextLink(func.parsed_type.text[len(kw):].strip())]
+                f_type.text = func.parsed_type.text[len(kw):].strip()
+                func.parsed_type = f_type
+            elif func.parsed_type.text.endswith(' ' + kw):
                 # Uncovered; since 1.8.16 the keyword/type ordering (with
                 # decltype(auto), see the cpp_function_attributes test for a
                 # repro case) has not been a problem, but this handling is left
                 # as a future-proofing mechanism.
                 f_type = ParsedLinkable()
-                f_type.parts = [TextLink(func.type.text[:len(kw)].strip())]
-                f_type.text = func.type.text[:len(kw)].strip()
-                func.type = f_type
+                f_type.parts = [TextLink(func.parsed_type.text[:len(kw)].strip())]
+                f_type.text = func.parsed_type.text[:len(kw)].strip()
+                func.parsed_type = f_type
             else:
                 continue
             matched_bad_keyword = True
@@ -3265,6 +3287,9 @@ def parse_func(state: State, element: ET.Element):
     else:
         func.suffix = ''
     if func.suffix: func.suffix = ' ' + func.suffix
+    func.type_html = render_linkable_html(func.parsed_type)
+    func.type_markdown = render_linkable_markdown(func.parsed_type)
+
     # Protected / private makes no sense for friend functions
     if element.attrib['kind'] != 'friend':
         func.is_protected = element.attrib['prot'] == 'protected'
@@ -3284,28 +3309,36 @@ def parse_func(state: State, element: ET.Element):
         if param_type is None:
             logging.warning("{}: parameter {} of function {} has no type, ignoring the whole function as it's suspected to be a mishandled macro call".format(state.current, param.name, func.name))
             return None
-        param.type = parse_linkable(state, param_type)
+        param.parsed_type = parse_linkable(state, param_type)
 
         # Recombine parameter name and array information back
         array = p.find('array')
         if array is not None:
             assert array.text is not None
             if name is not None and name.text is not None:
-                if param.type.text.endswith(')'):
-                    param.type_name = param.type.text[:-1] + name.text + ')' + array.text
+                if param.parsed_type.text.endswith(')'):
+                    param.type_name = param.parsed_type.text[:-1] + name.text + ')' + array.text
                 else:
-                    param.type_name = param.type.text + ' ' + name.text + array.text
+                    param.type_name = param.parsed_type.text + ' ' + name.text + array.text
             else:
-                param.type_name = param.type.text + array.text
-            param.type.text += array.text
+                param.type_name = param.parsed_type.text + array.text
+            param.parsed_type.text += array.text
         elif name is not None and name.text is not None:
-            param.type_name = param.type.text + ' ' + name.text
+            param.type_name = param.parsed_type.text + ' ' + name.text
         else:
-            param.type_name = param.type.text
+            param.type_name = param.parsed_type.text
 
+        param.type_html = render_linkable_html(param.parsed_type)
+        param.type_markdown = render_linkable_markdown(param.parsed_type)
         param.default = render_linkable_html(parse_linkable(state, p.find('defval')))
         if param.name in params:
-            param = params[param.name]
+            documented_param = params[param.name]
+            documented_param.parsed_type = param.parsed_type
+            documented_param.type_html = param.type_html
+            documented_param.type_markdown = param.type_markdown
+            documented_param.type_name = param.type_name
+            documented_param.default = param.default
+            param = documented_param
             del params[param.name]
             func.has_param_details = True
         else:
@@ -3354,19 +3387,19 @@ def parse_func(state: State, element: ET.Element):
             result.prefix = state.current_prefix
             result.name = func.name
             result.keywords = search_keywords
-            result.params = [param.type.text for param in func.params]
+            result.params = [param.parsed_type.text for param in func.params]
             result.suffix = func.suffix
             state.search += [result]
 
     # Fix up duplicated return types within the return description
-    if (func.type is not None and len(func.type.text) > 0) and (
+    if (func.parsed_type is not None and len(func.parsed_type.text) > 0) and (
         func.return_value is not None and len(func.return_value) > 0
     ):
-        if func.return_value.startswith(func.type.text):
-            func.return_value = func.return_value.replace(func.type.text, "", 1).lstrip()
-        elif func.return_value.startswith(f"<em>{func.type}</em>"):
+        if func.return_value.startswith(func.type_html):
+            func.return_value = func.return_value.replace(func.type_html, "", 1).lstrip()
+        elif func.return_value.startswith(f"<em>{func.type_html}</em>"):
             func.return_value = func.return_value.replace(
-                f"<em>{func.type}</em>", "", 1
+                f"<em>{func.type_html}</em>", "", 1
             ).lstrip()
 
     # Return the function only if it has some documentation. Testing just for
@@ -3383,12 +3416,12 @@ def parse_var(state: State, element: ET.Element):
     var = VariableMember()
     state.current_definition_url_base, var.base_url, var.id, var.include, var.has_details = parse_id_and_include(state, element)
     var.location = parse_location(element)
-    var.type = parse_linkable(state, element.find('type'))
-    if var.type.text.startswith('constexpr'):
+    var.parsed_type = parse_linkable(state, element.find('type'))
+    if var.parsed_type.text.startswith('constexpr'):
         v_type = ParsedLinkable()
-        v_type.parts = [TextLink(var.type.text[10:].strip())]
-        v_type.text = var.type.text[10:].strip()
-        var.type = v_type
+        v_type.parts = [TextLink(var.parsed_type.text[10:].strip())]
+        v_type.text = var.parsed_type.text[10:].strip()
+        var.parsed_type = v_type
         var.is_constexpr = True
     else:
         var.is_constexpr = False
@@ -3396,11 +3429,11 @@ def parse_var(state: State, element: ET.Element):
     # `static constexpr` it doesn't. In both cases the static="yes" is put
     # there correctly. Same case is for functions, although there it's further
     # complicated with other possible keyword combinations. Fixed in 1.11.
-    if var.type.text.startswith('static'):
+    if var.parsed_type.text.startswith('static'):
         v_type = ParsedLinkable()
-        v_type.parts = [TextLink(var.type.text[7:].strip())]
-        v_type.text = var.type.text[7:].strip()
-        var.type = v_type
+        v_type.parts = [TextLink(var.parsed_type.text[7:].strip())]
+        v_type.text = var.parsed_type.text[7:].strip()
+        var.parsed_type = v_type
     # Constexpr can be also an attribute, merge with that. Until
     # https://github.com/doxygen/doxygen/commit/b51d6d2dd2cb6a4945a3775a649e7eca8e120515
     # (1.11) it seems it was present both in the signature and in the attribs.
@@ -3410,6 +3443,8 @@ def parse_var(state: State, element: ET.Element):
     var.is_protected = element.attrib['prot'] == 'protected'
     var.is_private = element.attrib['prot'] == 'private'
     var.name = element.find('name').text # type: ignore
+    var.type_html = render_linkable_html(var.parsed_type)
+    var.type_markdown = render_linkable_markdown(var.parsed_type)
     var.brief, var.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     var.description, var.description_markdown, templates, search_keywords, var.deprecated, var.since = parse_var_desc(state, element)
     var.has_template_details, var.templates = parse_template_params(state, element.find('templateparamlist'), templates)
@@ -4497,7 +4532,7 @@ def parse_xml(state: State, xml: str):
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
-                        if func.type:
+                        if func.parsed_type.text:
                             compound.public_funcs += [func]
                         else:
                             compound.typeless_funcs += [func]
@@ -4554,7 +4589,7 @@ def parse_xml(state: State, xml: str):
                 for memberdef in compounddef_child:
                     func = parse_func(state, memberdef)
                     if func:
-                        if func.type:
+                        if func.parsed_type.text:
                             compound.protected_funcs += [func]
                         else:
                             compound.typeless_funcs += [func]

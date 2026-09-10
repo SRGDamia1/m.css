@@ -13,7 +13,7 @@
 
 ```{{compound.language if compound.language is defined else "cpp"}}
 {% if compound.has_template_details %}
-template <{% for param in compound.templates %}{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif %}{% if not loop.is_last %},{% endif %}{% endfor %}>{% endif %}
+template <{% for param in compound.templates %}{{param.type_markdown}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif %}{% if not loop.is_last %},{% endif %}{% endfor %}>{% endif %}
 {{compound.kind}} {{compound.name}};
 ```
 
