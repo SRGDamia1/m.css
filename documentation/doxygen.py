@@ -490,7 +490,7 @@ class ParameterInfo:
         self.name = name  # str
         self.direction: str | None = None  # 'in', 'out', 'inout', or None
         self.description: str = ""  # str
-        self.type: str = ""  # str
+        self.type: ParsedLinkable = ParsedLinkable()
         self.type_name: str = ""  # str
         self.default: str | None = None  # str or None
 
@@ -520,6 +520,36 @@ class References:
         self.reimplemented_by: list[RefId] = []
         self.references: list[RefId] = []
         self.referenced_by: list[RefId] = []
+
+
+class ReferenceLink:
+    """Parsed Doxygen reference with everything needed for HTML and Markdown rendering."""
+
+    def __init__(self):
+        self.url: str = "" # the format text to format with the extension, use .url.format(extension)
+        self.link_text: str = ""
+        self.css_class: str = "m-doc"
+
+
+class AnchorLink:
+    """An anchor occurring inside a Doxygen type element."""
+
+    def __init__(self, name: str = ""):
+        self.name = name
+
+
+class TextLink:
+    """Text occurring inside a Doxygen type element."""
+
+    def __init__(self, text: str = ""):
+        self.text = text
+
+
+class ParsedLinkable:
+    """Parsed Doxygen type with enough information for HTML and Markdown rendering."""
+
+    def __init__(self):
+        self.parts: list[ReferenceLink | AnchorLink | TextLink] = []
 
 
 class Member:
@@ -578,7 +608,7 @@ class EnumValue:
 class EnumMember(Member):
     def __init__(self):
         super().__init__()
-        self.type: str = ""
+        self.type: ParsedLinkable = ParsedLinkable()
         self.is_protected: bool = False
         self.is_strong: bool = False
 
@@ -589,8 +619,8 @@ class EnumMember(Member):
 class TypedefMember(TemplateMember):
     def __init__(self):
         super().__init__()
-        self.type: str = ""
-        self.args: str = ""
+        self.type: ParsedLinkable = ParsedLinkable()
+        self.args: ParsedLinkable = ParsedLinkable()
         self.is_using: bool = False
         self.is_protected: bool = False
 
@@ -599,7 +629,7 @@ class FunctionMember(TemplateMember):
     def __init__(self):
         super().__init__()
 
-        self.type: str = ""
+        self.type: ParsedLinkable = ParsedLinkable()
 
         self.params: list[ParameterInfo] = []
         self.return_value: str | None = None
@@ -634,7 +664,7 @@ class VariableMember(TemplateMember):
     def __init__(self):
         super().__init__()
 
-        self.type: str = ""
+        self.type: ParsedLinkable = ParsedLinkable()
 
         self.is_constexpr: bool = False
         self.is_static: bool = False
@@ -668,6 +698,89 @@ def slugify(text: str) -> str:
     # Maybe some Unicode normalization would be nice here?
     return slugify_hyphens_rx.sub('-', slugify_nonalnum_rx.sub('', text.lower()).strip())
 
+def safe_anchor_id(text: str, replace_underscores: bool = False) -> str:
+    """
+    Create a safe anchor ID from text, similar to doxybook2's Utils::safeAnchorId.
+    Converts to lowercase, removes ::, replaces spaces with hyphens,
+    and optionally replaces underscores with hyphens.
+    """
+    result = text.lower()
+    result = result.replace('::', '')
+    result = result.replace(' ', '-')
+    if replace_underscores:
+        result = result.replace('_', '-')
+    return result
+
+def strip_anchor(text: str) -> str:
+    """
+    Strip anchor part from a refid, similar to doxybook2's Utils::stripAnchor.
+    Removes everything from # onwards.
+    """
+    hash_pos = text.find('#')
+    if hash_pos != -1:
+        return text[:hash_pos]
+    return text
+
+def markdown_anchor_maker(kind: str, name: str, replace_underscores: bool = False) -> str:
+    """
+    Create markdown anchor for a member, similar to doxybook2's anchorMaker.
+    For structured items (classes, namespaces, etc.) returns empty string.
+    For members returns #<kind>-<safe-name>.
+    """
+    # Structured kinds that don't get anchors (they have their own pages)
+    structured_kinds = ['struct', 'class', 'namespace', 'group', 'dir', 'file', 'page', 'interface', 'example', 'union']
+
+    if kind not in structured_kinds:
+        return '#' + kind.lower() + '-' + safe_anchor_id(name, replace_underscores)
+
+    return ''
+
+def markdown_folder_maker(kind: str | None, base_url: str = '', use_folders: bool = False) -> str:
+    """
+    Create markdown folder path, similar to doxybook2's urlFolderMaker.
+    Returns base_url + folder_name + '/' if use_folders is True, otherwise just base_url.
+    """
+    if not use_folders or kind is None:
+        return base_url
+
+    # Map kinds to folder names (simplified - can be extended based on config)
+    folder_map = {
+        'namespace': 'namespaces',
+        'class': 'classes',
+        'struct': 'classes',
+        'union': 'classes',
+        'file': 'files',
+        'dir': 'dirs',
+        'group': 'modules',
+        'page': 'pages',
+    }
+
+    folder = folder_map.get(kind, '')
+    if folder:
+        return base_url + folder + '/'
+    return base_url
+
+def markdown_url_maker(kind: str, refid: str, name: str, parent_url: str | None = None,
+                       base_url: str = '', use_folders: bool = False,
+                       replace_underscores: bool = False, link_suffix: str = '.md') -> str:
+    """
+    Create markdown URL for a member, similar to doxybook2's urlMaker.
+    """
+    # Structured kinds get their own pages
+    structured_kinds = ['struct', 'class', 'namespace', 'group', 'dir', 'file', 'page', 'interface', 'example', 'union']
+
+    if kind in structured_kinds:
+        folder = markdown_folder_maker(kind, base_url, use_folders)
+        stripped_refid = strip_anchor(refid)
+        return folder + stripped_refid + link_suffix + markdown_anchor_maker(kind, name, replace_underscores)
+
+    # For members, use parent URL
+    if parent_url:
+        anchor = markdown_anchor_maker(kind, name, replace_underscores)
+        return parent_url + anchor
+
+    return ''
+
 def add_wbr(text: str) -> str:
     # Stuff contains HTML code, do not touch!
     if '<' in text: return text
@@ -684,24 +797,30 @@ def add_wbr(text: str) -> str:
     else:
         return text
 
-def parse_ref(state: State, element: ET.Element, add_inline_css_class: str | None = None) -> str:
+def parse_reference(state: State, element: ET.Element) -> ReferenceLink:
+    """Parse a Doxygen ``<ref>`` into a presentation-independent reference."""
+    ref = ReferenceLink()
     id = element.attrib['refid']
+
 
     # this is a reference to a compound - ie, something with its own xml file
     if element.attrib['kindref'] == 'compound':
         # TODO Unlike below, where the filename is dropped if it matches the
         # current compound URL, here I don't really know what to do because
         # <a> with empty href="" gets treated as a non-link by browsers.
-        url = id + '.html'
+        url = id + '.{}'
     # a reference to a member - ie, something inside another compound's xml file
     elif element.attrib['kindref'] == 'member':
         i = id.rindex('_1')
-        url = id[:i] + '.html'
+        url = id[:i] + '.{}'
+
         # There's no point in including the filename itself if linking to an
         # anchor on the same page.
         if url == state.current_compound_url:
             url = ''
-        url += '#' + id[i+2:]
+
+        anchor = '#' + id[i+2:]
+        url += anchor
     else: # pragma: no cover
         logging.critical("{}: unknown <ref> kind {}".format(state.current, element.attrib['kindref']))
         assert False
@@ -715,49 +834,26 @@ def parse_ref(state: State, element: ET.Element, add_inline_css_class: str | Non
         else: # pragma: no cover
             logging.critical("{}: tagfile {} not specified in Doxyfile".format(state.current, element.attrib['external']))
             assert False
-        class_ = 'm-doc-external'
-    else:
-        class_ = 'm-doc'
-    if add_inline_css_class: # Overrides the default set above
-        class_ = add_inline_css_class
+        ref.css_class = 'm-doc-external'
 
-    return '<a href="{}" class="{}">{}</a>'.format(url, class_, add_wbr(parse_inline_desc(state, element).strip()))
+    ref.url = url
 
-def parse_ref_md(state: State, element: ET.Element) -> str:
-    """Generate a markdown reference link parallel to parse_ref"""
-    id = element.attrib['refid']
+    # Parse the link content once; the result contains both representations.
+    link_text = parse_inline_desc_internal(state, element)
+    ref.link_text = link_text.html.strip() # TODO!!
+    return ref
 
-    # this is a reference to a compound - ie, something with its own xml file
-    if element.attrib['kindref'] == 'compound':
-        url = id + '.md'
-    # a reference to a member - ie, something inside another compound's xml file
-    elif element.attrib['kindref'] == 'member':
-        i = id.rindex('_1')
-        url = id[:i] + '.md'
-        # There's no point in including the filename itself if linking to an
-        # anchor on the same page.
-        if url == state.current_compound_url:
-            url = ''
-        url += '#' + id[i+2:]
-    else: # pragma: no cover
-        logging.critical("{}: unknown <ref> kind {}".format(state.current, element.attrib['kindref']))
-        assert False
 
-    if 'external' in element.attrib:
-        for i in state.doxyfile['TAGFILES']:
-            name, _, baseurl = i.partition('=')
-            if os.path.basename(name) == os.path.basename(element.attrib['external']):
-                url = os.path.join(baseurl, url)
-                break
-        else: # pragma: no cover
-            logging.critical("{}: tagfile {} not specified in Doxyfile".format(state.current, element.attrib['external']))
-            assert False
+def render_reference_html(reference: ReferenceLink, add_inline_css_class: str | None = None) -> str:
+    """Render a parsed reference as HTML"""
+    class_ = add_inline_css_class if add_inline_css_class else reference.css_class
+    return '<a href="{}" class="{}">{}</a>'.format(
+        reference.url.format('html'), class_, add_wbr(reference.link_text))
 
-    # Get the link text from the element content
-    link_text = parse_inline_desc_internal(state, element).markdown.strip()
 
-    # Return markdown link format
-    return '[{}]({})'.format(link_text, url)
+def render_reference_markdown(reference: ReferenceLink) -> str:
+    """Render a parsed reference as Markdown"""
+    return '[{}]({})'.format(reference.link_text, reference.url.format('md'))
 
 # Returns a shortened path if the prefix matches
 def remove_path_prefix(path: str, prefix: str) -> str:
@@ -882,48 +978,62 @@ def fix_type_spacing(type: str) -> str:
         .replace(' &amp;', '&amp;')
         .replace(' *', '*'))
 
-def parse_type(state: State, type: ET.Element | None) -> str:
-    # Constructors and typeless enums might not have it
-    if type is None: return ''
-    out = html.escape(type.text) if type.text else ''
+def parse_linkable(state: State, type: ET.Element | None) -> ParsedLinkable:
+    """
+    Parse a Doxygen ``<type>`` into a reference, anchor, or raw text.
+    """
+    out = ParsedLinkable()
+
+    # Constructors and typeless enums might not have it.
+    if type is None:
+        return out
+
+    if type.text:
+        out.parts.append(TextLink(type.text))
 
     i: ET.Element
     for i in type:
         if i.tag == 'ref':
-            out += parse_ref(state, i)
+            out.parts.append(parse_reference(state, i))
         elif i.tag == 'anchor':
             # Anchor, used by <= 1.8.14 for deprecated/todo lists. Its base_url
             # is always equal to base_url of the page. In 1.8.15 the anchor is
-            # in the description, making the anchor look extra awful:
-            # https://github.com/doxygen/doxygen/pull/6587
-            # TODO: this should get reverted and fixed properly so the
-            # one-on-one case works as it should
-            out += '<a name="{}"></a>'.format(extract_id_hash(state, i))
+            # in the description, making the anchor look extra awful.
+            out.parts.append(AnchorLink(extract_id_hash(state, i)))
         else: # pragma: no cover
             logging.warning("{}: ignoring {} in <type>".format(state.current, i.tag))
 
-        if i.tail: out += html.escape(i.tail)
+        if i.tail:
+            out.parts.append(TextLink(i.tail))
+
+    return out
+
+
+def render_linkable_html(parsed: ParsedLinkable) -> str:
+    """Render a parsed Doxygen ``<type>`` as HTML, matching parse_linkable output."""
+    out = ''
+    for part in parsed.parts:
+        if isinstance(part, TextLink):
+            out += html.escape(part.text)
+        elif isinstance(part, ReferenceLink):
+            out += render_reference_html(part)
+        elif isinstance(part, AnchorLink):
+            out += '<a name="{}"></a>'.format(part.name)
 
     # Remove spacing inside <> and before & and *
     return fix_type_spacing(out)
 
-def parse_type_md(state: State, type: ET.Element | None) -> str:
-    """Generate markdown type information parallel to parse_type"""
-    # Constructors and typeless enums might not have it
-    if type is None: return ''
-    out = type.text if type.text else ''
 
-    i: ET.Element
-    for i in type:
-        if i.tag == 'ref':
-            out += parse_ref_md(state, i)
-        elif i.tag == 'anchor':
-            # Anchors don't have markdown equivalent, skip
-            pass
-        else: # pragma: no cover
-            logging.warning("{}: ignoring {} in <type>".format(state.current, i.tag))
-
-        if i.tail: out += i.tail
+def render_linkable_markdown(parsed: ParsedLinkable) -> str:
+    """Render a parsed Doxygen ``<type>`` as Markdown, matching parse_linkable_md output."""
+    out = ''
+    for part in parsed.parts:
+        if isinstance(part, TextLink):
+            out += part.text
+        elif isinstance(part, ReferenceLink):
+            out += render_reference_markdown(part)
+        elif isinstance(part, AnchorLink):
+            out += '<a id="{}"></a>'.format(part.name)
 
     return out
 
@@ -1750,8 +1860,9 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
 
             for var in i:
                 if var.tag == 'varlistentry':
-                    term_text = parse_type(state, var.find('term')).strip()
-                    term_text_md = parse_type_md(state, var.find('term')).strip()
+                    term_parsed = parse_linkable(state, var.find('term'))
+                    term_text = render_linkable_html(term_parsed).strip()
+                    term_text_md = render_linkable_markdown(term_parsed).strip()
                     out.html += '<dt>{}</dt>'.format(term_text)
                     out.markdown += f'**{term_text_md}**\n'
                 else:
@@ -2180,7 +2291,7 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
             if id[:2] == '_1':
                 id = id[2:]
             else:
-assert state.current_definition_url_base is not None
+                assert state.current_definition_url_base is not None
                 if id.startswith(state.current_definition_url_base):
                     id = id[len(state.current_definition_url_base)+2:]
                 else:  # handle botched anchors
@@ -2228,11 +2339,9 @@ assert state.current_definition_url_base is not None
                 out.markdown += f'{md_pre}{content_md}{md_post}'
 
         elif i.tag == 'ref':
-            ref_html = parse_ref(state, i, add_inline_css_class)
-            out.html += ref_html
-            # Generate markdown reference using parallel function
-            ref_md = parse_ref_md(state, i)
-            out.markdown += ref_md
+            reference = parse_reference(state, i)
+            out.html += render_reference_html(reference, add_inline_css_class)
+            out.markdown += render_reference_markdown(reference)
 
         elif i.tag == 'ulink':
             link_parsed = parse_inline_desc_internal(state, i)
@@ -2835,7 +2944,7 @@ def parse_enum(state: State, element: ET.Element):
     enum = EnumMember()
     state.current_definition_url_base, enum.base_url, enum.id, enum.include, enum.has_details = parse_id_and_include(state, element)
     enum.location = parse_location(element)
-    enum.type = parse_type(state, element.find('type'))
+    enum.type = parse_linkable(state, element.find('type'))
     enum.name = element.find('name').text # type: ignore
     # Doxygen < 1.9.7 puts a generated name into the XML, starting with @,
     # newer versions strip those away, leading to an empty name
@@ -2853,6 +2962,11 @@ def parse_enum(state: State, element: ET.Element):
     # Parse reference information
     enum.references = parse_references(element)
 
+    # Add markdown URL/anchor/folder generation for enum
+    enum.markdown_anchor = markdown_anchor_maker('enum', enum.name)
+    enum.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
+    enum.markdown_url = enum.base_url.replace('.html', '.md') + enum.markdown_anchor
+
     enum.has_value_details = False
     enumvalue: ET.Element
     for enumvalue in element.findall('enumvalue'):
@@ -2865,6 +2979,11 @@ def parse_enum(state: State, element: ET.Element):
         value.initializer = html.escape(enumvalue.findtext('initializer', ''))
         value.brief, value.brief_markdown = parse_desc_with_markdown(state, enumvalue.find('briefdescription'))
         value.description, value.description_markdown, value_search_keywords, value.deprecated, value.since = parse_enum_value_desc(state, enumvalue)
+
+        # Add markdown URL/anchor/folder generation for enum value
+        value.markdown_anchor = markdown_anchor_maker('enumvalue', value.name)
+        value.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
+        value.markdown_url = enum.base_url.replace('.html', '.md') + value.markdown_anchor
         if value.brief or value.description:
             if enum.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
                 result = SearchResult()
@@ -2901,8 +3020,8 @@ def parse_enum(state: State, element: ET.Element):
         return enum
     return None
 
-def parse_template_params(state: State, element: ET.Element | None, description) -> tuple[bool, list[ParameterInfo] | None]:
-    if element is None: return False, None
+def parse_template_params(state: State, element: ET.Element | None, description) -> tuple[bool, list[ParameterInfo]]:
+    if element is None: return False, []
     assert element.tag == 'templateparamlist'
 
     has_template_details = False
@@ -2912,10 +3031,10 @@ def parse_template_params(state: State, element: ET.Element | None, description)
         assert i.tag == 'param'
 
         template = ParameterInfo()
-        template.type = parse_type(state, i.find('type'))
+        template.type = parse_linkable(state, i.find('type'))
         declname = i.find('declname')
         if declname is not None:
-assert declname.text is not None
+            assert declname.text is not None
             # declname or decltype?!
             template.name = declname.text
         # Doxygen sometimes puts both in type, extract that, but only in case
@@ -2923,18 +3042,22 @@ assert declname.text is not None
         # FooBar<T, U> types). Using rpartition() to split on the last found
         # space, but in case of nothing found, rpartition() puts the full
         # string into [2] instead of [0], so we have to account for that.
-        elif template.type[-1].isalnum():
-            parts = template.type.rpartition(' ')
+        elif render_linkable_html(template.type)[-1].isalnum():
+            parts = render_linkable_html(template.type).rpartition(' ')
             if parts[1]:
-                template.type = parts[0]
+                t_type = ParsedLinkable()
+                t_type.parts.append(TextLink(parts[0]))
+                template.type = t_type
                 template.name = parts[2]
             else:
-                template.type = parts[2]
+                t_type = ParsedLinkable()
+                t_type.parts.append(TextLink(parts[2]))
+                template.type = t_type
                 template.name = ''
         else:
             template.name = ''
         default = i.find('defval')
-        template.default = parse_type(state, default) if default is not None else ''
+        template.default = render_linkable_html(parse_linkable(state, default)) if default is not None else ''
         if template.name in description:
             template.description = description[template.name]
             del description[template.name]
@@ -2962,8 +3085,8 @@ def parse_typedef(state: State, element: ET.Element):
     state.current_definition_url_base, typedef.base_url, typedef.id, typedef.include, typedef.has_details = parse_id_and_include(state, element)
     typedef.location = parse_location(element)
     typedef.is_using = element.findtext('definition', '').startswith('using')
-    typedef.type = parse_type(state, element.find('type'))
-    typedef.args = parse_type(state, element.find('argsstring'))
+    typedef.type = parse_linkable(state, element.find('type'))
+    typedef.args = parse_linkable(state, element.find('argsstring'))
     typedef.name = element.find('name').text # type: ignore
     typedef.brief, typedef.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     typedef.description, typedef.description_markdown, templates, search_keywords, typedef.deprecated, typedef.since = parse_typedef_desc(state, element)
@@ -2972,6 +3095,11 @@ def parse_typedef(state: State, element: ET.Element):
 
     # Parse reference information
     typedef.references = parse_references(element)
+
+    # Add markdown URL/anchor/folder generation for typedef
+    typedef.markdown_anchor = markdown_anchor_maker('typedef', typedef.name)
+    typedef.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
+    typedef.markdown_url = typedef.base_url.replace('.html', '.md') + typedef.markdown_anchor
 
     if typedef.base_url == state.current_compound_url and (typedef.description or typedef.has_template_details):
         typedef.has_details = True # has_details might already be True from above
@@ -2997,7 +3125,7 @@ def parse_func(state: State, element: ET.Element):
     func = FunctionMember()
     state.current_definition_url_base, func.base_url, func.id, func.include, func.has_details = parse_id_and_include(state, element)
     func.location = parse_location(element)
-    func.type = parse_type(state, element.find('type'))
+    func.type = parse_linkable(state, element.find('type'))
     func.name = fix_type_spacing(html.escape(element.find('name').text))
     func.brief, func.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     func.description, func.description_markdown, templates, params, func.return_value, func.return_values, func.exceptions, search_keywords, func.deprecated, func.since = parse_func_desc(state, element)
@@ -3139,7 +3267,7 @@ def parse_func(state: State, element: ET.Element):
         if param_type is None:
             logging.warning("{}: parameter {} of function {} has no type, ignoring the whole function as it's suspected to be a mishandled macro call".format(state.current, param.name, func.name))
             return None
-        param.type = parse_type(state, param_type)
+        param.type = parse_linkable(state, param_type)
 
         # Recombine parameter name and array information back
         array = p.find('array')
@@ -3158,7 +3286,7 @@ def parse_func(state: State, element: ET.Element):
         else:
             param.type_name = param.type
 
-        param.default = parse_type(state, p.find('defval'))
+        param.default = render_linkable_html(parse_linkable(state, p.find('defval')))
         if param.name in params:
             param.description, param.direction = params[param.name]
             del params[param.name]
@@ -3172,6 +3300,11 @@ def parse_func(state: State, element: ET.Element):
 
     # Parse reference information
     func.references = parse_references(element)
+
+    # Add markdown URL/anchor/folder generation for function
+    func.markdown_anchor = markdown_anchor_maker('function', func.name)
+    func.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
+    func.markdown_url = func.base_url.replace('.html', '.md') + func.markdown_anchor
 
     # If there's a detailed description or template, param, return value or
     # exception details, the function can have a detailed block
@@ -3233,7 +3366,7 @@ def parse_var(state: State, element: ET.Element):
     var = VariableMember()
     state.current_definition_url_base, var.base_url, var.id, var.include, var.has_details = parse_id_and_include(state, element)
     var.location = parse_location(element)
-    var.type = parse_type(state, element.find('type'))
+    var.type = parse_linkable(state, element.find('type'))
     if var.type.startswith('constexpr'):
         var.type = var.type[10:]
         var.is_constexpr = True
@@ -3260,6 +3393,11 @@ def parse_var(state: State, element: ET.Element):
 
     # Parse reference information
     var.references = parse_references(element)
+
+    # Add markdown URL/anchor/folder generation for variable
+    var.markdown_anchor = markdown_anchor_maker('variable', var.name)
+    var.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
+    var.markdown_url = var.base_url.replace('.html', '.md') + var.markdown_anchor
 
     if var.base_url == state.current_compound_url and (var.description or var.has_template_details):
         var.has_details = True # has_details might already be True from above
@@ -3311,6 +3449,11 @@ def parse_define(state: State, element: ET.Element):
 
     # Parse reference information
     define.references = parse_references(element)
+
+    # Add markdown URL/anchor/folder generation for define
+    define.markdown_anchor = markdown_anchor_maker('define', define.name)
+    define.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
+    define.markdown_url = define.base_url.replace('.html', '.md') + define.markdown_anchor
 
     if define.base_url == state.current_compound_url and (define.description or define.return_value):
         define.has_details = True # has_details might already be True from above
@@ -3448,6 +3591,12 @@ def extract_metadata(state: State, xml):
     # for pages because that doesn't reflect CASE_SENSE_NAMES. THANKS DOXYGEN.
     # This is similar to compound.url_base handling in parse_xml() below.
     compound.url = 'index.html' if compound.kind == 'page' and compound.id == 'indexpage' else compound.id + '.html'
+
+    # Add markdown URL/anchor/folder generation for compound
+    compound.markdown_anchor = markdown_anchor_maker(compound.kind, compound.name)
+    compound.markdown_folder = markdown_folder_maker(compound.kind, use_folders=False)
+    compound.markdown_url = compound.url.replace('.html', '.md')
+
     compound.brief, compound.brief_markdown = parse_desc_with_markdown(state, compounddef.find('briefdescription'))
     # Groups are explicitly created so they *have details*, other
     # things need to have at least some documentation. Pages are treated as
