@@ -13,8 +13,7 @@ template <{% for param in compound.templates %}{{param.type}} {{param.name}}{% i
 {% if compound.is_virtual %}virtual {% endif -%}
 
 {% if compound.type_markdown is defined %}{{compound.type}} {% endif %}{{compound.name}}{% if macros.exists(compound.params) == "true" -%}
-(
-{%- for param in compound.params %}{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif -%}
+({% for param in compound.params %}{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif -%}
 {% if not loop.is_last %}, {% endif %}
 {%- endfor -%}
 ){% else -%}
