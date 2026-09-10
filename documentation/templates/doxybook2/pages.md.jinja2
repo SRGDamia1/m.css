@@ -1,0 +1,9 @@
+---
+title: Pages
+summary: Page Index
+{%- include "meta.md.jinja2" -%}
+---
+
+{% with children=index.pages %}{% include "index.md.jinja2" %}{% endwith %}
+
+{%- include "footer.md.jinja2" -%}

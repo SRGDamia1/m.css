@@ -1,0 +1,9 @@
+---
+title: Namespaces
+summary: Namespace Index
+{%- include "meta.md.jinja2" -%}
+---
+
+{% with children=index.namespaces|selectattr('kind', 'equalto', 'namespace') %}{% include "index.md.jinja2" %}{% endwith %}
+
+{%- include "footer.md.jinja2" -%}

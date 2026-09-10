@@ -1,0 +1,87 @@
+{%- macro render_if_exits(value) -%}
+{%- if value is defined and value is not none and value != '' and value|length > 0 -%}
+{{value}}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro exists(value) -%}
+{%- if value is not defined or value is none or value == '' -%}
+false
+{%- elif value is string or value is number -%}
+true
+{%- elif value is sequence and not (value is string or value is mapping) -%}
+{%- if value|length > 0 -%}true{%- else -%}false{%- endif -%}
+{%- elif value is mapping -%}
+{%- if value|length > 0 -%}true{%- else -%}false{%- endif -%}
+{%- else -%}
+true
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro template_params(item) -%}
+{%- if item.templates -%}
+template <{% for param in item.templates -%}
+{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif -%}
+{% if not loop.is_last %},{% endif -%}
+{% endfor %}\> <br>{% endif -%}
+{%- endmacro -%}
+
+{%- macro function_with_params(child) -%}
+**{{ linked_name(child) }}**({% for param in child.params -%}
+{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif -%}
+{% if not loop.is_last %}, {% endif -%}
+{% endfor %})
+{%- endmacro -%}
+
+{%- macro linked_name(child) -%}
+{% if child.markdown_url is defined %}[{{child.name}}]({{child.markdown_url}}){% else %}{{child.name}}{% endif %}
+{%- endmacro -%}
+
+{%- macro table_val_name_brief(child) -%}
+**{{ linked_name(child) }}** {% if child.brief is defined %}<br>{{child.brief}}{% endif %}
+{%- endmacro -%}
+
+{%- macro table_entry_function(child) -%}
+| {{template_params(child)}}{% if child.is_virtual %}virtual {% endif -%}
+{%- if child.type is defined %}{{child.type}} {% endif -%}
+| {{ function_with_params(child) }}{% if child.is_const %} const{% endif -%}
+{% if child.is_override %} override{% endif -%}
+{% if child.is_defaulted %} = default{% endif -%}
+{% if child.is_deleted %} = delete{% endif -%}
+{% if child.is_pure_virtual %} = 0{% endif -%}
+{% if child.brief is defined %}<br>{{child.brief}}{% endif %} |
+{%- endmacro -%}
+
+{%- macro table_entry_enum(child) -%}
+| {{template_params(child)}}{{child.kind}}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if child.type is defined %} {{child.type}} {% endif -%}
+| {{ linked_name(child) }}{% if child.kind == "enum" and child.values -%} { {% for enumvalue in child.values -%}
+{{enumvalue.name}}{% if enumvalue.initializer is defined %} {{enumvalue.initializer}}{% endif -%}
+{% if not loop.is_last %}, {% endif %}{% endfor -%}
+ }{% endif -%}
+{% if child.brief is defined %}<br>{{child.brief}}{% endif %} |
+{%- endmacro -%}
+
+{%- macro table_entry_var(child) -%}
+| {% if child.type is defined %}{{child.type}} {% endif -%}
+| {{ table_val_name_brief(child) }} |
+{%- endmacro -%}
+
+{%- macro table_entry_friend(child) -%}
+| {% if child.type is defined %}{{child.type}} {% endif -%}
+| {{ linked_name(child) }}{% if child.type != "class" and child.type != "struct" -%}
+({% if macros.exists(child.params) == "true" -%}
+{%- for param in child.params -%}
+{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif -%}
+{% if not loop.is_last %}, {% endif -%}
+{%- endfor -%}
+{% endif %}){% if child.is_const %} const{% endif -%}
+{% endif %}{% if child.brief is defined %}<br>{{child.brief}}{% endif %} |
+{%- endmacro -%}
+
+{%- macro table_entry_class(child) -%}
+| {{child.kind}} | {{ table_val_name_brief(child) }} |
+{%- endmacro -%}
+
+{%- macro table_entry_simple(child) -%}
+| {{ table_val_name_brief(child) }} | |
+{%- endmacro -%}

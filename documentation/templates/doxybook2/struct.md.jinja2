@@ -1,0 +1,46 @@
+{%- import "macros.md.jinja2" as macros -%}
+{%- include "header.md.jinja2" -%}
+
+{%- include "breadcrumbs.md.jinja2" -%}
+
+{{macros.render_if_exits(compound.brief_markdown)}}
+{{macros.render_if_exits(compound.description_markdown)}}
+{% if has_typedef_details or has_enum_details or has_func_details or has_var_details %}[Member Details](#member-details){% endif %}
+
+{% if has_typedef_details or has_enum_details or has_func_details or has_var_details %}
+
+## Member Details
+
+```{{compound.language if compound.language is defined else "cpp"}}
+{% if compound.has_template_details %}
+template <{% for param in compound.templates %}{{param.type}} {{param.name}}{% if param.default is defined %} = {{param.default}}{% endif %}{% if not loop.is_last %},
+{% endif %}{% endfor %}>{% endif %}
+{{compound.kind}} {{compound.name}};
+```
+
+{% include "details.md.jinja2" %}{% endif -%}
+
+{%- if compound.include is defined -%}
+`#include {{compound.include[0]|replace("&lt;", "<")|replace("&gt;", ">")}}`
+
+{%- endif -%}
+
+{%- if macros.exists(compound.base_classes) == "true" %}Inherits from {% for child in compound.base_classes %}{{ macros.linked_name(child) }}{% if not loop.is_last %}, {% endif %}{% endfor %}
+
+{%- endif -%}
+{%- if macros.exists(compound.derived_classes) == "true" %}Inherited by {% for child in compound.derived_classes %}{{ macros.linked_name(child) }}{% if not loop.is_last %}, {% endif %}{% endfor %}
+
+{%- endif -%}
+
+{%- include "class_members_tables.md.jinja2" -%}
+
+{% if hasAdditionalMembers %}
+
+## Additional inherited members
+
+{%- include "class_members_inherited_tables.md.jinja2" -%}
+{%- endif -%}
+
+{%- include "class_members_details.md.jinja2" -%}
+
+{%- include "footer.md.jinja2" -%}

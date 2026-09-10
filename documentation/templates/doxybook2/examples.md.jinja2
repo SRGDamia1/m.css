@@ -1,0 +1,9 @@
+---
+title: Examples
+summary: Example Index
+{%- include "meta.md.jinja2" -%}
+---
+
+{% with children=index.examples %}{% include "index.md.jinja2" %}{% endwith %}
+
+{%- include "footer.md.jinja2" -%}

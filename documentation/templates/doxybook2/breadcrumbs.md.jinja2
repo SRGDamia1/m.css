@@ -1,0 +1,6 @@
+{%- if compound.breadcrumb is defined -%}
+**Module:** {%- for module in compound.breadcrumb %}
+ **[{{module[0]}}]({{module[1]}})**{% if not loop.is_last %} **/** {% endif -%}
+{%- endfor -%}
+
+{%- endif -%}

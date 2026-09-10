@@ -1,0 +1,33 @@
+{%- import "macros.md.jinja2" as macros -%}
+---
+{%- if title is defined -%}
+title: {{title}}
+{%- elif name is defined -%}
+title: {{name}}
+{%- elif compound.title is defined -%}
+title: {{compound.title}}
+{%- elif compound.name is defined -%}
+title: {{compound.name}}
+{%- endif -%}
+{%- if compound.summary is defined -%}
+summary: {{compound.summary}}
+{%- endif -%}
+{%- include "meta.md.jinja2" -%}
+---
+
+{%- if title is defined -%}
+
+# {{title}}
+{%- elif name is defined -%}
+
+# {{name}}
+{%- elif compound.title is defined -%}
+
+# {{compound.title}}
+{%- elif macros.exists(compound.kind) == "true" and compound.kind != "page" and compound.kind != "module" -%}
+
+# {{compound.name}} ({{compound.kind}})
+{%- elif macros.exists(compound.name) == "true" -%}
+
+# {{compound.name}}
+{%- endif -%}

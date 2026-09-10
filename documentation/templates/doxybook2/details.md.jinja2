@@ -1,0 +1,141 @@
+{%- import "macros.md.jinja2" as macros -%}
+{{macros.render_if_exits(compound.description_markdown)}}
+
+{%- if macros.exists(compound.params) == "true" and compound.has_param_details -%}
+**Parameters**:
+{% for param in compound.params %}  * **{{param.name}}** {{param.description}}
+{%- endfor -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.return_values) == "true" -%}
+**Returns**:
+{% for param in compound.return_values %}  * **{{param[0]}}** {{param[1]}}
+{%- endfor -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.exceptions) == "true" -%}
+**Exceptions**:
+{% for param in compound.exceptions %}  * **{{param[0]}}** {{param[1]}}
+{%- endfor -%}
+{%- endif -%}
+
+{%- if compound.has_template_details -%}
+**Template Parameters**:
+{% for param in compound.templates %}  * **{{param.name}}** {{param.description}}
+{%- endfor -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.deprecated) == "true" -%}
+**Deprecated**:
+{{macros.render_if_exits(compound.deprecated)}}
+{%- endif -%}
+
+{%- if macros.exists(compound.return_value) == "true" -%}
+**Return**: {{macros.render_if_exits(compound.return_value)}}
+{%- endif -%}
+
+{%- if macros.exists(compound.authors) == "true" -%}
+**Author**:
+{% if compound.authors|length == 1 %}{{compound.authors[0]}}{% else %}
+{% for item in compound.authors %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.version) == "true" -%}
+**Version**:
+{% if compound.version|length == 1 %}{{compound.version[0]}}{% else %}
+{% for item in compound.version %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.since) == "true" -%}
+**Since**:
+{% if compound.since|length == 1 %}{{compound.since[0]}}{% else %}
+{% for item in compound.since %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.date) == "true" -%}
+**Date**:
+{% if compound.date|length == 1 %}{{compound.date[0]}}{% else %}
+{% for item in compound.date %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.note) == "true" -%}
+**Note**:
+{% if compound.note|length == 1 %}{{compound.note[0]}}{% else %}
+{% for item in compound.note %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.bugs) == "true" -%}
+**Bug**:
+{% if compound.bugs|length == 1 %}{{compound.bugs[0]}}{% else %}
+{% for item in compound.bugs %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.tests) == "true" -%}
+**Test**:
+{% if compound.tests|length == 1 %}{{compound.tests[0]}}{% else %}
+{% for item in compound.tests %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.todos) == "true" -%}
+**Todo**:
+{% if compound.todos|length == 1 %}{{compound.todos[0]}}{% else %}
+{% for item in compound.todos %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.pre) == "true" -%}
+**Precondition**:
+{% if compound.pre|length == 1 %}{{compound.pre[0]}}{% else %}
+{% for item in compound.pre %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.post) == "true" -%}
+**Postcondition**:
+{% if compound.post|length == 1 %}{{compound.post[0]}}{% else %}
+{% for item in compound.post %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.copyright) == "true" -%}
+**Copyright**:
+{% if compound.copyright|length == 1 %}{{compound.copyright[0]}}{% else %}
+{% for item in compound.copyright %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.invariant) == "true" -%}
+**Invariant**:
+{% if compound.invariant|length == 1 %}{{compound.invariant[0]}}{% else %}
+{% for item in compound.invariant %}  * {{item}}{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.par) == "true" -%}
+{% for item in compound.par %}{{item}}
+{%- endfor -%}
+{%- endif -%}
+{%- if macros.exists(compound.rcs) == "true" -%}
+{% for item in compound.rcs %}{{item}}
+{%- endfor -%}
+{%- endif -%}
+
+{%- if macros.exists(compound.reimplements) == "true" -%}
+**Reimplements**: [{{compound.reimplements.fullname}}]({{compound.reimplements.markdown_url}})
+{%- endif -%}
+
+{%- if macros.exists(compound.reimplemented_by) == "true" -%}
+**Reimplemented by**:
+{% for impl in compound.reimplemented_by %}[{{impl.fullname}}]({{impl.markdown_url}}){% if not loop.is_last %}, {% endif %}{% endfor %}
+{%- endif -%}
+
+{%- if macros.exists(compound.inbody) == "true" -%}
+{{macros.render_if_exits(compound.inbody)}}
+{%- endif -%}

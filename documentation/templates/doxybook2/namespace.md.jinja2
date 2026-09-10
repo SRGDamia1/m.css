@@ -1,0 +1,20 @@
+{%- import "macros.md.jinja2" as macros -%}
+{%- include "header.md.jinja2" -%}
+
+{%- include "breadcrumbs.md.jinja2" -%}
+
+{{macros.render_if_exits(compound.brief_markdown)}}
+{{macros.render_if_exits(compound.description_markdown)}}
+{% if has_typedef_details or has_enum_details or has_func_details or has_var_details or has_define_details %}[Member Details](#member-details){% endif %}
+
+{%- include "nonclass_members_tables.md.jinja2" -%}
+
+{% if has_typedef_details or has_enum_details or has_func_details or has_var_details or has_define_details %}
+
+## Member Details
+
+{% include "details.md.jinja2" %}{% endif -%}
+
+{%- include "nonclass_members_details.md.jinja2" -%}
+
+{%- include "footer.md.jinja2" -%}

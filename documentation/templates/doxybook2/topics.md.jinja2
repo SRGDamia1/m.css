@@ -1,0 +1,9 @@
+---
+title: Modules
+summary: Module Index
+{%- include "meta.md.jinja2" -%}
+---
+
+{% with children=index.topics %}{% include "index.md.jinja2" %}{% endwith %}
+
+{%- include "footer.md.jinja2" -%}

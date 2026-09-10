@@ -1,0 +1,47 @@
+{%- import "macros.md.jinja2" as macros -%}
+{% if (macros.exists(compound.typedefs) == "true") or (macros.exists(compound.enums) == "true") %}
+
+## Types Documentation
+
+{% for child in compound.typedefs %}
+
+### {{child.kind}} {{child.name}}
+
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{%- endfor -%}
+{% for child in compound.enums %}
+
+### {{child.kind}} {{child.name}}
+
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor %}{% endif %}
+{% if macros.exists(compound.funcs) == "true" %}
+
+## Functions Documentation
+
+{% for child in compound.funcs %}
+
+### {{child.kind}} {{child.name}}
+
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor %}{% endif %}
+{% if macros.exists(compound.vars) == "true" %}
+
+## Attributes Documentation
+
+{% for child in compound.vars %}
+
+### {{child.kind}} {{child.name}}
+
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor %}{% endif %}
+{% if macros.exists(compound.defines) == "true" %}
+
+## Macros Documentation
+
+{% for child in compound.defines %}
+
+### {{child.kind}} {{child.name}}
+
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor %}{% endif %}
