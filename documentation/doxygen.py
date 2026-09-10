@@ -238,6 +238,8 @@ class StateCompound:
         self.markdown_folder: str | None = None
         self.location: Location | None = None
         self.leaf_name: str = ''
+        self.prefix_wbr: str = ''
+        self.render_time: datetime.datetime
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
@@ -252,12 +254,12 @@ class ParsedCompound(StateCompound):
     def __init__(self):
         super().__init__()
         self.url_base: str = ""
-        self.include: str | None = None
+        self.include: tuple[str, str] | None = None
         self.has_template_details: bool = False
         self.description: str = ""
         self.description_markdown: str = ""
         self.sections = []
-        self.footer_navigation = None
+        self.footer_navigation: tuple | None = None
         self.example_navigation = None
         self.language: str | None = None
         self.topics = []
@@ -392,7 +394,8 @@ class IndexEntry:
 class NamespaceIndexEntry(IndexEntry):
     def __init__(self):
         super().__init__()
-        self.is_inline: bool = False
+        self.is_final: bool | None = False
+        self.is_inline: bool | None = False
 
 
 class ClassIndexEntry(IndexEntry):
@@ -550,6 +553,7 @@ class ParsedLinkable:
 
     def __init__(self):
         self.parts: list[ReferenceLink | AnchorLink | TextLink] = []
+        self.text:str = ''
 
 
 class Member:
@@ -558,7 +562,7 @@ class Member:
     def __init__(self):
         self.base_url: str = ""
         self.id: str = ""
-        self.include: str | None = None
+        self.include: tuple[str, str] | None = None
         self.has_details: bool = False
         self.location: Location | None = None
 
@@ -678,7 +682,7 @@ class DefineMember(Member):
 
         self.initializer: str | None = None
 
-        self.params: list[tuple[str, str]] | None = None
+        self.params: list[ParameterInfo] | None = None
         self.return_value: str | None = None
         self.has_param_details: bool = False
 
@@ -990,6 +994,7 @@ def parse_linkable(state: State, type: ET.Element | None) -> ParsedLinkable:
 
     if type.text:
         out.parts.append(TextLink(type.text))
+        out.text += type.text
 
     i: ET.Element
     for i in type:
@@ -1637,6 +1642,7 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                     out.html = out.html.rstrip() + '</aside>'
 
                 # Not continuing with a section from before, put a header in
+                alert_type: str | None = None
                 if not previous_section or (i.attrib['kind'] != 'par' and previous_section != i.attrib['kind']) or (i.attrib['kind'] == 'par' and i.find('title').text): # type: ignore
                     # TODO: make it possible to override the class using @m_class,
                     # document this and document behavior of @par
@@ -1711,16 +1717,17 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                             title=title)
 
                         # GitHub-style alert formatting for markdown
-                        if i.attrib['kind'] == 'note':
-                            out.markdown += '\n\n> [!NOTE]\n'
-                        elif i.attrib['kind'] in ['remark', 'tip']:
-                            out.markdown += '\n\n> [!TIP]\n'
-                        elif i.attrib['kind'] == 'important':
-                            out.markdown += '\n\n> [!IMPORTANT]\n'
-                        elif i.attrib['kind'] == 'warning':
-                            out.markdown += '\n\n> [!WARNING]\n'
-                        elif i.attrib['kind'] in ['attention', 'caution']:
-                            out.markdown += '\n\n> [!CAUTION]\n'
+                        alert_type = {
+                            'note': 'NOTE',
+                            'remark': 'TIP',
+                            'tip': 'TIP',
+                            'important': 'IMPORTANT',
+                            'warning': 'WARNING',
+                            'attention': 'CAUTION',
+                            'caution': 'CAUTION',
+                        }.get(i.attrib['kind'])
+                        if alert_type:
+                            out.markdown += f'\n\n> [!{alert_type}]\n'
                         else:
                             out.markdown += '\n**' + title + '**\n'
 
@@ -1732,14 +1739,16 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                 parsed_desc = parse_desc_internal(state, i)
                 out.html += parsed_desc.html
 
-                # For markdown, prefix parsed content with '> ' for GitHub alerts
-                if title and i.attrib['kind'] in ['note', 'remark', 'tip', 'important', 'warning', 'attention', 'caution']:
-                    # Prefix each line with '> ' for blockquote formatting
-                    if parsed_desc.markdown:
-                        markdown_lines = parsed_desc.markdown.strip().split('\n')
-                        out.markdown += '\n'.join('> ' + line.lstrip(':') for line in markdown_lines) + '\n'
+                # For GitHub flavored markdown, after we've set up an alert, we need to prefix the parsed content inside the alert with '> '
+                if alert_type:
+                    markdown = parsed_desc.markdown.strip('\n')
+                    if markdown:
+                        out.markdown += '\n'.join(
+                            '> ' + line for line in markdown.split('\n')
+                        ) + '\n'
                 else:
                     out.markdown += parsed_desc.markdown
+
 
                 if parsed_desc.search_keywords:
                     out.search_keywords += parsed_desc.search_keywords
@@ -3126,7 +3135,7 @@ def parse_func(state: State, element: ET.Element):
     state.current_definition_url_base, func.base_url, func.id, func.include, func.has_details = parse_id_and_include(state, element)
     func.location = parse_location(element)
     func.type = parse_linkable(state, element.find('type'))
-    func.name = fix_type_spacing(html.escape(element.find('name').text))
+    func.name = fix_type_spacing(html.escape(element.find('name').text)) # type: ignore
     func.brief, func.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     func.description, func.description_markdown, templates, params, func.return_value, func.return_values, func.exceptions, search_keywords, func.deprecated, func.since = parse_func_desc(state, element)
 
@@ -3158,16 +3167,22 @@ def parse_func(state: State, element: ET.Element):
     while matched_bad_keyword:
         matched_bad_keyword = False
         for kw in exposed_attribute_keywords + ignored_attribute_keywords:
-            if func.type == kw: # constructors
-                func.type = ''
-            elif func.type.startswith(kw + ' '):
-                func.type = func.type[len(kw):].strip()
-            elif func.type.endswith(' ' + kw):
+            if func.type.text == kw: # constructors
+                func.type = ParsedLinkable()
+            elif func.type.text.startswith(kw + ' '):
+                f_type = ParsedLinkable()
+                f_type.parts = [TextLink(func.type.text[len(kw):].strip())]
+                f_type.text = func.type.text[len(kw):].strip()
+                func.type = f_type
+            elif func.type.text.endswith(' ' + kw):
                 # Uncovered; since 1.8.16 the keyword/type ordering (with
                 # decltype(auto), see the cpp_function_attributes test for a
                 # repro case) has not been a problem, but this handling is left
                 # as a future-proofing mechanism.
-                func.type = func.type[:len(kw)].strip()
+                f_type = ParsedLinkable()
+                f_type.parts = [TextLink(func.type.text[:len(kw)].strip())]
+                f_type.text = func.type.text[:len(kw)].strip()
+                func.type = f_type
             else:
                 continue
             matched_bad_keyword = True
@@ -3192,7 +3207,7 @@ def parse_func(state: State, element: ET.Element):
         func.prefix += 'static '
     # Extract additional C++11 stuff from the signature. Order matters, going
     # from the keywords that can be rightmost to the leftmost.
-    signature: str = element.find('argsstring').text
+    signature: str = element.find('argsstring').text # type: ignore
     if signature is not None and signature.endswith('=default'):
         signature = signature[:-8]
         func.is_defaulted = True
@@ -3274,21 +3289,21 @@ def parse_func(state: State, element: ET.Element):
         if array is not None:
             assert array.text is not None
             if name is not None and name.text is not None:
-                if param.type.endswith(')'):
-                    param.type_name = param.type[:-1] + name.text + ')' + array.text
+                if param.type.text.endswith(')'):
+                    param.type_name = param.type.text[:-1] + name.text + ')' + array.text
                 else:
-                    param.type_name = param.type + ' ' + name.text + array.text
+                    param.type_name = param.type.text + ' ' + name.text + array.text
             else:
-                param.type_name = param.type + array.text
-            param.type += array.text
+                param.type_name = param.type.text + array.text
+            param.type.text += array.text
         elif name is not None and name.text is not None:
-            param.type_name = param.type + ' ' + name.text
+            param.type_name = param.type.text + ' ' + name.text
         else:
-            param.type_name = param.type
+            param.type_name = param.type.text
 
         param.default = render_linkable_html(parse_linkable(state, p.find('defval')))
         if param.name in params:
-            param.description, param.direction = params[param.name]
+            param = params[param.name]
             del params[param.name]
             func.has_param_details = True
         else:
@@ -3337,16 +3352,16 @@ def parse_func(state: State, element: ET.Element):
             result.prefix = state.current_prefix
             result.name = func.name
             result.keywords = search_keywords
-            result.params = [param.type for param in func.params]
+            result.params = [param.type.text for param in func.params]
             result.suffix = func.suffix
             state.search += [result]
 
     # Fix up duplicated return types within the return description
-    if (func.type is not None and len(func.type) > 0) and (
+    if (func.type is not None and len(func.type.text) > 0) and (
         func.return_value is not None and len(func.return_value) > 0
     ):
-        if func.return_value.startswith(func.type):
-            func.return_value = func.return_value.replace(func.type, "", 1).lstrip()
+        if func.return_value.startswith(func.type.text):
+            func.return_value = func.return_value.replace(func.type.text, "", 1).lstrip()
         elif func.return_value.startswith(f"<em>{func.type}</em>"):
             func.return_value = func.return_value.replace(
                 f"<em>{func.type}</em>", "", 1
@@ -3359,7 +3374,7 @@ def parse_func(state: State, element: ET.Element):
 
 def parse_var(state: State, element: ET.Element):
     logging.debug(
-        f"Parsing variable {fix_type_spacing(html.escape(element.find('name').text))} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}"
+        f"Parsing variable {fix_type_spacing(html.escape(element.find('name').text))} of kind {element.attrib['kind']} with tag {element.tag} in file {state.current}" # type: ignore
     )
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'variable'
 
@@ -3367,8 +3382,11 @@ def parse_var(state: State, element: ET.Element):
     state.current_definition_url_base, var.base_url, var.id, var.include, var.has_details = parse_id_and_include(state, element)
     var.location = parse_location(element)
     var.type = parse_linkable(state, element.find('type'))
-    if var.type.startswith('constexpr'):
-        var.type = var.type[10:]
+    if var.type.text.startswith('constexpr'):
+        v_type = ParsedLinkable()
+        v_type.parts = [TextLink(var.type.text[10:].strip())]
+        v_type.text = var.type.text[10:].strip()
+        var.type = v_type
         var.is_constexpr = True
     else:
         var.is_constexpr = False
@@ -3376,8 +3394,11 @@ def parse_var(state: State, element: ET.Element):
     # `static constexpr` it doesn't. In both cases the static="yes" is put
     # there correctly. Same case is for functions, although there it's further
     # complicated with other possible keyword combinations. Fixed in 1.11.
-    if var.type.startswith('static'):
-        var.type = var.type[7:]
+    if var.type.text.startswith('static'):
+        v_type = ParsedLinkable()
+        v_type.parts = [TextLink(var.type.text[7:].strip())]
+        v_type.text = var.type.text[7:].strip()
+        var.type = v_type
     # Constexpr can be also an attribute, merge with that. Until
     # https://github.com/doxygen/doxygen/commit/b51d6d2dd2cb6a4945a3775a649e7eca8e120515
     # (1.11) it seems it was present both in the signature and in the attribs.
@@ -3386,7 +3407,7 @@ def parse_var(state: State, element: ET.Element):
     var.is_static = element.attrib['static'] == 'yes'
     var.is_protected = element.attrib['prot'] == 'protected'
     var.is_private = element.attrib['prot'] == 'private'
-    var.name = element.find('name').text
+    var.name = element.find('name').text # type: ignore
     var.brief, var.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     var.description, var.description_markdown, templates, search_keywords, var.deprecated, var.since = parse_var_desc(state, element)
     var.has_template_details, var.templates = parse_template_params(state, element.find('templateparamlist'), templates)
@@ -3416,18 +3437,18 @@ def parse_var(state: State, element: ET.Element):
 
 def parse_define(state: State, element: ET.Element):
     logging.debug(
-        f"Parsing define {element.find('name').text} with tag {element.tag} in file {state.current}"
+        f"Parsing define {element.find('name').text} with tag {element.tag} in file {state.current}" # type: ignore
     )
     if element.tag !='memberdef':
-        logging.warning(f"Ignoring define {element.find('name').text} in {state.current} because it is not a memberdef")
+        logging.warning(f"Ignoring define {element.find('name').text} in {state.current} because it is not a memberdef") # type: ignore
         return
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'define'
 
     define = DefineMember()
     state.current_definition_url_base, define.base_url, define.id, define.include, define.has_details = parse_id_and_include(state, element)
     define.location = parse_location(element)
-    define.name = element.find('name').text
-    define.initializer = element.find('initializer').text if element.find('initializer') is not None else None
+    define.name = element.find('name').text # type: ignore
+    define.initializer = element.find('initializer').text if element.find('initializer') is not None else None # type: ignore
     define.brief, define.brief_markdown = parse_desc_with_markdown(state, element.find('briefdescription'))
     define.description, define.description_markdown, params, define.return_value, search_keywords, define.deprecated, define.since = parse_define_desc(state, element)
     define.has_param_details = False
@@ -3437,12 +3458,14 @@ def parse_define(state: State, element: ET.Element):
         name = p.find('defname')
         if name is not None:
             if name.text in params:
-                description, _ = params[name.text]
+                d_param = params[name.text]
                 del params[name.text]
                 define.has_param_details = True
             else:
                 description = ''
-            define.params += [(name.text, description)]
+                d_param = ParameterInfo(name.text if name.text is not None else '')
+                d_param.description = description
+            define.params += [d_param]
 
     # Some param description got unused
     if params: logging.warning("{}: define parameter description doesn't match parameter names: {}".format(state.current, repr(params)))
@@ -3466,7 +3489,7 @@ def parse_define(state: State, element: ET.Element):
             result.prefix = []
             result.name = define.name
             result.keywords = search_keywords
-            result.params = None if define.params is None else [param[0] for param in define.params]
+            result.params = None if define.params is None else [param.name for param in define.params]
             state.search += [result]
         return define
     return None
@@ -3480,7 +3503,7 @@ def _document_all_stuff(compounddef: ET.Element):
         # have to check that `detaileddescription` actually has any children.
         # Checking against None is not enough as it could be present but be
         # empty.
-        if not len(brief) and not len(i.find('detaileddescription')):
+        if not len(brief) and not len(i.find('detaileddescription')): # type: ignore
             # Add an empty <span> to the paragraph so it doesn't look empty.
             # Can't use strong/emphasis, as those are collapsed if empty as
             # well; on the other hand it's very unlikely that someone would
@@ -3488,6 +3511,7 @@ def _document_all_stuff(compounddef: ET.Element):
             dim = ET.Element('{http://mcss.mosra.cz/doxygen/}span')
             para = ET.Element('para')
             para.append(dim)
+            assert brief is not None
             brief.append(para)
 
 
@@ -3605,7 +3629,7 @@ def extract_metadata(state: State, xml):
     # ElementTree deprecated the __bool__ conversion of Element, so I now have
     # to check that `detaileddescription` actually has any children. Checking
     # against None is not enough as it could be present but be empty.
-    compound.has_details = compound.kind == 'group' or len(compound.brief) > 0 or len(compounddef.find('detaileddescription')) or (compound.kind == 'page' and not is_a_stupid_empty_markdown_page(compounddef))
+    compound.has_details = compound.kind == 'group' or len(compound.brief) > 0 or len(compounddef.find('detaileddescription')) or (compound.kind == 'page' and not is_a_stupid_empty_markdown_page(compounddef)) # type: ignore
     compound.children = []
     compound.childrenClasses = []
     compound.childrenNamespaces = []
@@ -4451,14 +4475,14 @@ def parse_xml(state: State, xml: str):
             elif compounddef_child.attrib['kind'] == 'public-type':  # public-type section
                 for memberdef in compounddef_child:
                     if memberdef.attrib['kind'] == 'enum':  # enum within public-type section
-                        member = parse_enum(state, memberdef)
-                        if member and member.has_details: compound.has_enum_details = True
+                        parsed_member = parse_enum(state, memberdef)
+                        if parsed_member and parsed_member.has_details: compound.has_enum_details = True
                     else:
                         assert memberdef.attrib['kind'] == 'typedef'
-                        member = parse_typedef(state, memberdef)
-                        if member and member.has_details: compound.has_typedef_details = True
+                        parsed_member = parse_typedef(state, memberdef)
+                        if parsed_member and parsed_member.has_details: compound.has_typedef_details = True
 
-                    if member: compound.public_types += [(memberdef.attrib['kind'], member)]
+                    if parsed_member: compound.public_types += [(memberdef.attrib['kind'], parsed_member)]
 
             elif compounddef_child.attrib['kind'] == 'public-static-func':  # public-static-func section
                 for memberdef in compounddef_child:
@@ -4508,14 +4532,14 @@ def parse_xml(state: State, xml: str):
             elif compounddef_child.attrib['kind'] == 'protected-type':  # protected-type section
                 for memberdef in compounddef_child:
                     if memberdef.attrib['kind'] == 'enum':  # enum within protected-type section
-                        member = parse_enum(state, memberdef)
-                        if member and member.has_details: compound.has_enum_details = True
+                        parsed_member = parse_enum(state, memberdef)
+                        if parsed_member and parsed_member.has_details: compound.has_enum_details = True
                     else:
                         assert memberdef.attrib['kind'] == 'typedef'
-                        member = parse_typedef(state, memberdef)
-                        if member and member.has_details: compound.has_typedef_details = True
+                        parsed_member = parse_typedef(state, memberdef)
+                        if parsed_member and parsed_member.has_details: compound.has_typedef_details = True
 
-                    if member: compound.protected_types += [(memberdef.attrib['kind'], member)]
+                    if parsed_member: compound.protected_types += [(memberdef.attrib['kind'], parsed_member)]
 
             elif compounddef_child.attrib['kind'] == 'protected-static-func':  # protected-static-func section
                 for memberdef in compounddef_child:
