@@ -384,7 +384,9 @@ class IndexEntry:
         self.kind: str = ""
         self.name: str = ""
         self.url: str = ""
+        self.markdown_url: str = ""
         self.brief: str = ""
+        self.brief_markdown: str = ""
         self.children = []
         self.deprecated: str | None = None
         self.since: str | None = None
@@ -532,6 +534,7 @@ class ReferenceLink:
 
     def __init__(self):
         self.url: str = "" # the format text to format with the extension, use .url.format(extension)
+        self.markdown_url: str | None = None
         self.link_text_html: str = ""
         self.link_text_markdown: str = ""
         self.css_class: str = "m-doc"
@@ -565,6 +568,7 @@ class Member:
     def __init__(self):
         self.base_url: str = ""
         self.id: str = ""
+        self.kind: str = ""
         self.include: tuple[str, str] | None = None
         self.has_details: bool = False
         self.location: Location | None = None
@@ -770,6 +774,7 @@ def markdown_folder_maker(kind: str | None, base_url: str = '', use_folders: boo
         'dir': 'dirs',
         'group': 'modules',
         'page': 'pages',
+        'example': 'examples',
     }
 
     folder = folder_map.get(kind, '')
@@ -814,6 +819,29 @@ def add_wbr(text: str) -> str:
     else:
         return text
 
+def markdown_relative_member_url(state: State, base_url: str, anchor: str) -> str:
+    """Return a member URL relative to the Markdown page being rendered."""
+    target_id = base_url[:-5] if base_url.endswith('.html') else base_url
+    target = target_id + '.md' + anchor
+
+    current_kind = None
+    if state.current_compound_url and state.current_compound_url.endswith('.html'):
+        current_id = state.current_compound_url[:-5]
+        if current_id in state.compounds:
+            current_kind = state.compounds[current_id].kind
+
+    if target_id == (state.current_compound_url[:-5] if state.current_compound_url and state.current_compound_url.endswith('.html') else state.current_compound_url):
+        return anchor
+
+    current_folder = markdown_folder_maker(current_kind, use_folders=True)
+    target_kind = state.compounds[target_id].kind if target_id in state.compounds else None
+    target_folder = markdown_folder_maker(target_kind, use_folders=True)
+
+    return os.path.relpath(
+        target_folder + target_id + '.md' + anchor,
+        start=current_folder or '.'
+    ).replace(os.path.sep, '/')
+
 def parse_reference(state: State, element: ET.Element) -> ReferenceLink:
     """Parse a Doxygen ``<ref>`` into a presentation-independent reference."""
     ref = ReferenceLink()
@@ -822,22 +850,55 @@ def parse_reference(state: State, element: ET.Element) -> ReferenceLink:
 
     # this is a reference to a compound - ie, something with its own xml file
     if element.attrib['kindref'] == 'compound':
-        # TODO Unlike below, where the filename is dropped if it matches the
-        # current compound URL, here I don't really know what to do because
-        # <a> with empty href="" gets treated as a non-link by browsers.
+        # HTML keeps Doxygen's extension-neutral compound URL.  Markdown,
+        # however, is emitted into a folder based on the compound kind, so the
+        # link has to be relative to the folder of the current page.
         url = id + '.{}'
+        if id in state.compounds:
+            target_kind = state.compounds[id].kind
+            current_folder = markdown_folder_maker(
+                state.current_kind, use_folders=True
+            )
+            target_folder = markdown_folder_maker(
+                target_kind, use_folders=True
+            )
+            target = target_folder + id + '.md'
+            ref.markdown_url = os.path.relpath(
+                target, start=current_folder or '.'
+            ).replace(os.path.sep, '/')
     # a reference to a member - ie, something inside another compound's xml file
     elif element.attrib['kindref'] == 'member':
         i = id.rindex('_1')
-        url = id[:i] + '.{}'
+        compound_id = id[:i]
+        url = compound_id + '.{}'
 
         # There's no point in including the filename itself if linking to an
         # anchor on the same page.
-        if url == state.current_compound_url:
+        same_page = url == state.current_compound_url
+        if same_page:
             url = ''
 
         anchor = '#' + id[i+2:]
         url += anchor
+
+        # Markdown output is split into folders by compound kind.  Markdown
+        # links must therefore be relative to the page currently being
+        # rendered, rather than rooted at the documentation output directory.
+        # Same-page references stay as bare anchors.
+        if same_page:
+            ref.markdown_url = anchor
+        elif compound_id in state.compounds:
+            target_kind = state.compounds[compound_id].kind
+            current_folder = markdown_folder_maker(
+                state.current_kind, use_folders=True
+            )
+            target_folder = markdown_folder_maker(
+                target_kind, use_folders=True
+            )
+            target = target_folder + compound_id + '.md' + anchor
+            ref.markdown_url = os.path.relpath(
+                target, start=current_folder or '.'
+            ).replace(os.path.sep, '/')
     else: # pragma: no cover
         logging.critical("{}: unknown <ref> kind {}".format(state.current, element.attrib['kindref']))
         assert False
@@ -870,8 +931,9 @@ def render_reference_html(reference: ReferenceLink, add_inline_css_class: str | 
 
 
 def render_reference_markdown(reference: ReferenceLink) -> str:
-    """Render a parsed reference as Markdown"""
-    return '[{}]({})'.format(reference.link_text_markdown, reference.url.format('md'))
+    """Render a parsed Doxygen reference as Markdown."""
+    url = reference.markdown_url if reference.markdown_url is not None else reference.url.format('md')
+    return '[{}]({})'.format(reference.link_text_markdown, url)
 
 # Returns a shortened path if the prefix matches
 def remove_path_prefix(path: str, prefix: str) -> str:
@@ -2965,6 +3027,7 @@ def parse_enum(state: State, element: ET.Element):
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'enum'
 
     enum = EnumMember()
+    enum.kind = element.attrib['kind']
     state.current_definition_url_base, enum.base_url, enum.id, enum.include, enum.has_details = parse_id_and_include(state, element)
     enum.location = parse_location(element)
     enum.name = element.find('name').text # type: ignore
@@ -2988,9 +3051,9 @@ def parse_enum(state: State, element: ET.Element):
     enum.references = parse_references(element)
 
     # Add markdown URL/anchor/folder generation for enum
-    enum.markdown_anchor = markdown_anchor_maker('enum', enum.name)
-    enum.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
-    enum.markdown_url = enum.base_url.replace('.html', '.md') + enum.markdown_anchor
+    enum.markdown_anchor = '#' + enum.id
+    enum.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    enum.markdown_url = markdown_relative_member_url(state, enum.base_url, enum.markdown_anchor)
 
     enum.has_value_details = False
     enumvalue: ET.Element
@@ -3006,9 +3069,9 @@ def parse_enum(state: State, element: ET.Element):
         value.description, value.description_markdown, value_search_keywords, value.deprecated, value.since = parse_enum_value_desc(state, enumvalue)
 
         # Add markdown URL/anchor/folder generation for enum value
-        value.markdown_anchor = markdown_anchor_maker('enumvalue', value.name)
-        value.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
-        value.markdown_url = enum.base_url.replace('.html', '.md') + value.markdown_anchor
+        value.markdown_anchor = '#' + value.id
+        value.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+        value.markdown_url = value.markdown_folder + enum.base_url.replace('.html', '.md') + value.markdown_anchor
         if value.brief or value.description:
             if enum.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
                 result = SearchResult()
@@ -3111,6 +3174,7 @@ def parse_typedef(state: State, element: ET.Element):
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'typedef'
 
     typedef = TypedefMember()
+    typedef.kind = element.attrib['kind']
     state.current_definition_url_base, typedef.base_url, typedef.id, typedef.include, typedef.has_details = parse_id_and_include(state, element)
     typedef.location = parse_location(element)
     typedef.is_using = element.findtext('definition', '').startswith('using')
@@ -3130,9 +3194,9 @@ def parse_typedef(state: State, element: ET.Element):
     typedef.references = parse_references(element)
 
     # Add markdown URL/anchor/folder generation for typedef
-    typedef.markdown_anchor = markdown_anchor_maker('typedef', typedef.name)
-    typedef.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
-    typedef.markdown_url = typedef.base_url.replace('.html', '.md') + typedef.markdown_anchor
+    typedef.markdown_anchor = '#' + typedef.id
+    typedef.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    typedef.markdown_url = markdown_relative_member_url(state, typedef.base_url, typedef.markdown_anchor)
 
     if typedef.base_url == state.current_compound_url and (typedef.description or typedef.has_template_details):
         typedef.has_details = True # has_details might already be True from above
@@ -3156,6 +3220,7 @@ def parse_func(state: State, element: ET.Element):
     assert element.tag == 'memberdef' and element.attrib['kind'] in ['function', 'friend', 'signal', 'slot']
 
     func = FunctionMember()
+    func.kind = element.attrib['kind']
     state.current_definition_url_base, func.base_url, func.id, func.include, func.has_details = parse_id_and_include(state, element)
     func.location = parse_location(element)
     func.name = fix_type_spacing(html.escape(element.find('name').text)) # type: ignore
@@ -3352,9 +3417,9 @@ def parse_func(state: State, element: ET.Element):
     func.references = parse_references(element)
 
     # Add markdown URL/anchor/folder generation for function
-    func.markdown_anchor = markdown_anchor_maker('function', func.name)
-    func.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
-    func.markdown_url = func.base_url.replace('.html', '.md') + func.markdown_anchor
+    func.markdown_anchor = '#' + func.id
+    func.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    func.markdown_url = markdown_relative_member_url(state, func.base_url, func.markdown_anchor)
 
     # If there's a detailed description or template, param, return value or
     # exception details, the function can have a detailed block
@@ -3414,6 +3479,7 @@ def parse_var(state: State, element: ET.Element):
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'variable'
 
     var = VariableMember()
+    var.kind = element.attrib['kind']
     state.current_definition_url_base, var.base_url, var.id, var.include, var.has_details = parse_id_and_include(state, element)
     var.location = parse_location(element)
     var.parsed_type = parse_linkable(state, element.find('type'))
@@ -3453,9 +3519,9 @@ def parse_var(state: State, element: ET.Element):
     var.references = parse_references(element)
 
     # Add markdown URL/anchor/folder generation for variable
-    var.markdown_anchor = markdown_anchor_maker('variable', var.name)
-    var.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
-    var.markdown_url = var.base_url.replace('.html', '.md') + var.markdown_anchor
+    var.markdown_anchor = '#' + var.id
+    var.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    var.markdown_url = markdown_relative_member_url(state, var.base_url, var.markdown_anchor)
 
     if var.base_url == state.current_compound_url and (var.description or var.has_template_details):
         var.has_details = True # has_details might already be True from above
@@ -3482,6 +3548,7 @@ def parse_define(state: State, element: ET.Element):
     assert element.tag == 'memberdef' and element.attrib['kind'] == 'define'
 
     define = DefineMember()
+    define.kind = element.attrib['kind']
     state.current_definition_url_base, define.base_url, define.id, define.include, define.has_details = parse_id_and_include(state, element)
     define.location = parse_location(element)
     define.name = element.find('name').text # type: ignore
@@ -3511,9 +3578,9 @@ def parse_define(state: State, element: ET.Element):
     define.references = parse_references(element)
 
     # Add markdown URL/anchor/folder generation for define
-    define.markdown_anchor = markdown_anchor_maker('define', define.name)
-    define.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=False)
-    define.markdown_url = define.base_url.replace('.html', '.md') + define.markdown_anchor
+    define.markdown_anchor = '#' + define.id
+    define.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    define.markdown_url = markdown_relative_member_url(state, define.base_url, define.markdown_anchor)
 
     if define.base_url == state.current_compound_url and (define.description or define.return_value):
         define.has_details = True # has_details might already be True from above
@@ -3655,8 +3722,8 @@ def extract_metadata(state: State, xml):
 
     # Add markdown URL/anchor/folder generation for compound
     compound.markdown_anchor = markdown_anchor_maker(compound.kind, compound.name)
-    compound.markdown_folder = markdown_folder_maker(compound.kind, use_folders=False)
-    compound.markdown_url = compound.url.replace('.html', '.md')
+    compound.markdown_folder = markdown_folder_maker(compound.kind, use_folders=True)
+    compound.markdown_url = compound.markdown_folder + compound.url.replace('.html', '.md')
 
     compound.brief, compound.brief_markdown = parse_desc_with_markdown(state, compounddef.find('briefdescription'))
     # Groups are explicitly created so they *have details*, other
@@ -3800,7 +3867,7 @@ def extract_metadata(state: State, xml):
     state.compounds[compound.id] = compound
 
 
-def postprocess_state(state: State, debug_template=False):
+def postprocess_state(state: State, debug_template=False, markdown_output=False):
     # Save parent for each child
     for _, compound in state.compounds.items():
         for child in compound.children:
@@ -3905,8 +3972,14 @@ def postprocess_state(state: State, debug_template=False):
 
     if debug_template:
         for compound_id, compound in state.compounds.items():
-            json_output = os.path.join(
-                os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT']), compound_id + '_meta.json')
+            output_dir = os.path.join(
+                state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT'])
+            if markdown_output:
+                output_dir = os.path.join(output_dir, compound.markdown_folder)
+                os.makedirs(output_dir, exist_ok=True)
+                json_output = os.path.join(output_dir, compound_id + '_meta.json')
+            else:
+                json_output = os.path.join(output_dir, compound_id + '_meta.json')
             with open(json_output, "w", encoding="utf8") as f:
                 logging.info("Writing compound {} as json".format(os.path.abspath(json_output)))
                 json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
@@ -5003,7 +5076,9 @@ def parse_index_xml(state: State, xml):
         entry.kind = compound.kind
         entry.name = compound.leaf_name
         entry.url = compound.url
+        entry.markdown_url = compound.markdown_url
         entry.brief = compound.brief
+        entry.brief_markdown = compound.brief_markdown
         entry.children = []
         entry.deprecated = compound.deprecated
         entry.since = compound.since
@@ -5529,7 +5604,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     for file in xml_files_metadata:
         extract_metadata(state, file)
 
-    postprocess_state(state, debug_template=debug_template)
+    postprocess_state(state, debug_template=debug_template, markdown_output=(template_type == 'md'))
 
     # output = os.path.join(html_output, "postProcessedState.dump")
     # with open(output, 'w', encoding="utf8") as f:
@@ -5597,17 +5672,26 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             parsed = parse_xml(state, file)
             if not parsed: continue
 
+            template = env.get_template(parsed.compound.kind + template_ext)
+            # Update output URL with correct extension. Markdown compound pages
+            # live in a folder determined by their compound kind.
+            output_url = parsed.compound.url.replace('.html', output_ext)
+            if template_type == 'md':
+                # Older/partial parsed compound objects may not have the folder
+                # initialized. Compute it from the compound kind as a fallback.
+                markdown_folder = parsed.compound.markdown_folder
+                if markdown_folder is None:
+                    markdown_folder = markdown_folder_maker(parsed.compound.kind, use_folders=True)
+                output_url = markdown_folder + output_url
+
             if debug_template:
                 json_output = os.path.join(
-                    html_output, os.path.basename(file).replace(".xml", ".json")
+                    html_output, os.path.splitext(output_url)[0] + '.json'
                 )
+                os.makedirs(os.path.dirname(json_output), exist_ok=True)
                 with open(json_output, "w", encoding="utf8") as f:
                     logging.info("Writing parsed {} ({}) json to {}".format(parsed.compound.name, parsed.compound.kind, os.path.abspath(json_output)))
                     json.dump(parsed, f, cls=MappingProxyEncoder, indent=2)
-
-            template = env.get_template(parsed.compound.kind + template_ext)
-            # Update output URL with correct extension
-            output_url = parsed.compound.url.replace('.html', output_ext)
             # Add template rendering timestamp
             parsed.compound.render_time = datetime.datetime.now()
             logging.info("Rendering {} from {}".format(parsed.compound.name, template))
@@ -5619,6 +5703,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 **state.doxyfile, **state.config)
 
             output = os.path.join(html_output, output_url)
+            os.makedirs(os.path.dirname(output), exist_ok=True)
             with open(output, 'wb') as f:
                 logging.info("Writing {} from {}".format(os.path.abspath(output), template))
                 f.write(rendered.encode('utf-8'))
@@ -5642,10 +5727,20 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         compound.kind = 'page'
         compound.name = state.doxyfile['PROJECT_NAME']
         compound.description = ''
+        compound.markdown_folder = markdown_folder_maker('page', use_folders=(template_type == 'md'))
+        if template_type == 'md':
+            index_file = compound.markdown_folder + index_file
+            compound.markdown_url = index_file
         compound.breadcrumb = [(state.doxyfile['PROJECT_NAME'], index_file)]
         # Add template rendering timestamp
         compound.render_time = datetime.datetime.now().isoformat()
         template = env.get_template('page' + template_ext)
+        if debug_template:
+            json_output = os.path.join(html_output, os.path.splitext(index_file)[0] + '.json')
+            os.makedirs(os.path.dirname(json_output), exist_ok=True)
+            with open(json_output, 'w', encoding='utf8') as f:
+                logging.info("Writing empty mainpage json to {}".format(os.path.abspath(json_output)))
+                json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
         logging.info("Rendering {} from {}".format(compound.name, template))
         rendered = template.render(compound=compound,
             DOXYGEN_VERSION=None,
@@ -5654,6 +5749,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             # TODO: whitelist only what matters from doxyfile
             **state.doxyfile, **state.config)
         output = os.path.join(html_output, index_file)
+        os.makedirs(os.path.dirname(output), exist_ok=True)
         with open(output, 'wb') as f:
             logging.info("Writing {} from {}".format(os.path.abspath(output), template))
             f.write(rendered.encode('utf-8'))

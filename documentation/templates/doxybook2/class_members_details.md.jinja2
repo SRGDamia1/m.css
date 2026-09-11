@@ -4,187 +4,206 @@
 ## Public Types Documentation
 
 {% for kind, child in compound.public_types %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{%- endfor -%}{%- endif -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
+{%- endif -%}
 
 {% if macros.exists(compound.protected_types) == "true" %}
 
 ## Protected Types Documentation
 
 {% for kind, child in compound.protected_types %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{%- endfor -%}{%- endif -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
+{%- endif -%}
 
 {% if macros.exists(compound.public_slots) == "true" %}
 
 ## Public Slots Documentation
 
 {% for child in compound.public_slots %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{%- endfor -%}{%- endif -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
+{%- endif -%}
 
 {% if macros.exists(compound.protected_slots) == "true" %}
 
 ## Protected Slots Documentation
 
 {% for child in compound.protected_slots %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{%- endfor -%}{%- endif -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
+{%- endif -%}
 
 {% if macros.exists(compound.signals) == "true" %}
 
 ## Public Signals Documentation
 
 {% for child in compound.signals %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{%- endfor -%}{%- endif -%}
-
-{%- if macros.exists(compound.groups) == "true" -%}
-{%- set has_public_funcs_in_groups = namespace(value=false) -%}
-{%- for group in compound.groups -%}
-{%- for kind, child in group.members -%}
-{%- if not child.is_protected -%}
-{%- set has_public_funcs_in_groups.value = true -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
 {%- endif -%}
-{%- endfor -%}
-{%- endfor -%}
-{%- if has_public_funcs_in_groups.value %}
 
-## Public Functions Documentation
-
-{%- for group in compound.groups -%}
-{%- set group_has_public_funcs = namespace(value=false) -%}
-{%- for kind, child in group.members -%}
-{%- if not child.is_protected -%}
-{%- set group_has_public_funcs.value = true -%}
-{%- endif -%}
-{%- endfor -%}
-{%- if group_has_public_funcs.value %}
-
-### {{group.name}}
-
-{{macros.render_if_exits(group.description_markdown)}}
-{%- for kind, child in group.members -%}
-{%- if not child.is_protected %}
-
-#### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endif -%}
-{%- if macros.exists(compound.public_funcs) == "true" %}
-{%- if macros.exists(compound.groups) == "true" -%}
-
-{%- endif -%}
+{% if macros.exists(compound.public_funcs) == "true" %}
 
 ## Public Functions Documentation
 
 {% for child in compound.public_funcs %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{% endfor %}{% endif -%}
-
-{%- if macros.exists(compound.groups) == "true" -%}
-{%- set has_protected_funcs_in_groups = namespace(value=false) -%}
-{%- for group in compound.groups -%}
-{%- for kind, child in group.members -%}
-{%- if child.is_protected -%}
-{%- set has_protected_funcs_in_groups.value = true -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
 {%- endif -%}
-{%- endfor -%}
-{%- endfor -%}
-{%- if has_protected_funcs_in_groups.value %}
 
-## Protected Functions Documentation
-
-{%- for group in compound.groups -%}
-{%- set group_has_protected_funcs = namespace(value=false) -%}
-{%- for kind, child in group.members -%}
-{%- if child.is_protected -%}
-{%- set group_has_protected_funcs.value = true -%}
-{%- endif -%}
-{%- endfor -%}
-{%- if group_has_protected_funcs.value %}
-
-### {{group.name}}
-
-{{macros.render_if_exits(group.description_markdown)}}
-{%- for kind, child in group.members -%}
-{%- if child.is_protected %}
-
-#### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endif -%}
-{%- if macros.exists(compound.protected_funcs) == "true" %}
-{%- if macros.exists(compound.groups) == "true" -%}
-
-{%- endif -%}
+{% if macros.exists(compound.protected_funcs) == "true" %}
 
 ## Protected Functions Documentation
 
 {% for child in compound.protected_funcs %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{% endfor %}{% endif -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
+{%- endif -%}
 
 {% if macros.exists(compound.public_vars) == "true" %}
 
 ## Public Attributes Documentation
 
 {% for child in compound.public_vars %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{% endfor %}{% endif -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
+{%- endif -%}
 
 {% if macros.exists(compound.protected_vars) == "true" %}
 
 ## Protected Attributes Documentation
 
 {% for child in compound.protected_vars %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
-
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{% endfor %}{% endif -%}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
+{%- endif -%}
 
 {% if macros.exists(compound.friends) == "true" %}
 
 ## Friends
 
 {% for child in compound.friends %}
+{% if not loop.first %}
 
-### {% if macros.exists(compound.groups) == "true" %}{{child.kind }}{% endif %}{{child.name}}
+{% endif %}
+### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% endfor -%}
+{%- endif -%}
 
-{% with compound=child %}{%- include "member_details.md.jinja2" -%}{%- endwith -%}
-{% endfor %}{% endif -%}
+
+{% if macros.exists(compound.groups) == "true" %}
+{% set has_public_funcs_in_groups = namespace(value=false) %}
+{% for group in compound.groups -%}
+{% for kind, child in group.members -%}
+{% if not child.is_protected -%}
+{% set has_public_funcs_in_groups.value = true %}
+{% endif -%}
+{% endfor -%}
+{% endfor -%}
+{% if has_public_funcs_in_groups.value %}
+
+## Public Functions Documentation
+{% for group in compound.groups -%}
+{% set group_has_public_funcs = namespace(value=false) %}
+{% for kind, child in group.members -%}
+{% if not child.is_protected -%}
+{% set group_has_public_funcs.value = true %}
+{% endif -%}
+{% endfor -%}
+{% if group_has_public_funcs.value %}
+
+### {{ group.name }}
+
+{{ macros.render_if_exits(group.description_markdown) }}
+
+{% for kind, child in group.members -%}
+{% if not child.is_protected %}
+#### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% if not loop.last %}
+
+{% endif -%}
+{% endif -%}
+{% endfor -%}
+{% endif -%}
+{% endfor -%}
+{% endif -%}
+{% endif -%}
+
+{% if macros.exists(compound.groups) == "true" %}
+{% set has_protected_funcs_in_groups = namespace(value=false) %}
+{% for group in compound.groups -%}
+{% for kind, child in group.members -%}
+{% if child.is_protected -%}
+{% set has_protected_funcs_in_groups.value = true %}
+{% endif -%}
+{% endfor -%}
+{% endfor -%}
+{% if has_protected_funcs_in_groups.value %}
+
+## Protected Functions Documentation
+{% for group in compound.groups -%}
+{% set group_has_protected_funcs = namespace(value=false) %}
+{% for kind, child in group.members -%}
+{% if child.is_protected -%}
+{% set group_has_protected_funcs.value = true %}
+{% endif -%}
+{% endfor -%}
+{% if group_has_protected_funcs.value %}
+
+### {{ group.name }}
+
+{{ macros.render_if_exits(group.description_markdown) }}
+
+{% for kind, child in group.members -%}
+{% if child.is_protected %}
+#### {{ child.kind if macros.exists(compound.groups) == "true" else "" }}{{ child.name }}
+{% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
+{% if not loop.last %}
+
+{% endif -%}
+{% endif -%}
+{% endfor -%}
+{% endif -%}
+{% endfor -%}
+{% endif -%}
+{% endif -%}

@@ -1,39 +1,8 @@
 {%- import "macros.md.jinja2" as macros -%}
-{% for child0 in children %}- **{{child0.kind}} {{ macros.linked_name(child0) }}** {% if child0.brief is defined %}<br>{{child0.brief}}{% endif %}
-
-{% if child0.children is defined and child0.children|length > 0 %}{% for child1 in child0.children %}
-    - **{{child1.kind}} {{ macros.linked_name(child1) }}** {% if child1.brief is defined %}<br>{{child1.brief}}{% endif %}
-
-{% if child1.children is defined and child1.children|length > 0 %}{% for child2 in child1.children %}
-    - **{{child2.kind}} {{ macros.linked_name(child2) }}** {% if child2.brief is defined %}<br>{{child2.brief}}{% endif %}
-
-    {% if child2.children is defined and child2.children|length > 0 %}{% for child3 in child2.children %}
-            - **{{child3.kind}} {{ macros.linked_name(child3) }}** {% if child3.brief is defined %}<br>{{child3.brief}}{% endif %}
-
-{% if child3.children is defined and child3.children|length > 0 %}{% for child4 in child3.children %}
-    - **{{child4.kind}} {{ macros.linked_name(child4) }}** {% if child4.brief is defined %}<br>{{child4.brief}}{% endif %}
-
-{% if child4.children is defined and child4.children|length > 0 %}{% for child5 in child4.children %}
-    - **{{child5.kind}} {{ macros.linked_name(child5) }}** {% if child5.brief is defined %}<br>{{child5.brief}}{% endif %}
-
-{% if child5.children is defined and child5.children|length > 0 %}{% for child6 in child5.children %}
-    - **{{child6.kind}} {{ macros.linked_name(child6) }}** {% if child6.brief is defined %}<br>{{child6.brief}}{% endif %}
-
-{% if child6.children is defined and child6.children|length > 0 %}{% for child7 in child6.children %}
-    - **{{child7.kind}} {{ macros.linked_name(child7) }}** {% if child7.brief is defined %}<br>{{child7.brief}}{% endif %}
-
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- endfor -%}
+{%- macro render_entries(entries, indent=0) -%}
+{%- for child in entries %}
+{{ ' ' * indent }}- **{{ child.kind }}** {{ macros.linked_name(child) }}{% if child.brief_markdown %} — {{ child.brief_markdown }}{% endif %}{{ '\n' }}
+{%- if child.children %}{{ render_entries(child.children, indent + 4) }}{%- endif %}
+{%- endfor %}
+{%- endmacro -%}
+{{ render_entries(children) }}

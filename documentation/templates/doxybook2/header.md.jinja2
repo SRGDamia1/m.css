@@ -1,33 +1,12 @@
 {%- import "macros.md.jinja2" as macros -%}
+{%- set page_title = title if title is defined else name if name is defined else compound.title if compound.title is defined else compound.name if compound.name is defined else none -%}
+{%- set page_heading = title if title is defined else name if name is defined else compound.title if compound.title is defined else (compound.name ~ " (" ~ compound.kind ~ ")") if macros.exists(compound.kind) == "true" and compound.kind != "page" and compound.kind != "module" else compound.name if macros.exists(compound.name) == "true" else none -%}
 ---
-{%- if title is defined -%}
-title: {{title}}
-{%- elif name is defined -%}
-title: {{name}}
-{%- elif compound.title is defined -%}
-title: {{compound.title}}
-{%- elif compound.name is defined -%}
-title: {{compound.name}}
-{%- endif -%}
-{%- if compound.summary is defined -%}
-summary: {{compound.summary}}
-{%- endif -%}
-{%- include "meta.md.jinja2" -%}
+{% if page_title is not none %}title: {{ page_title }}
+{% endif %}{% if compound.summary is defined %}summary: {{ compound.summary }}
+{% endif %}{% include "meta.md.jinja2" %}
 ---
 
-{%- if title is defined -%}
-
-# {{title}}
-{%- elif name is defined -%}
-
-# {{name}}
-{%- elif compound.title is defined -%}
-
-# {{compound.title}}
-{%- elif macros.exists(compound.kind) == "true" and compound.kind != "page" and compound.kind != "module" -%}
-
-# {{compound.name}} ({{compound.kind}})
-{%- elif macros.exists(compound.name) == "true" -%}
-
-# {{compound.name}}
+{% if page_heading is not none %}
+# {{ page_heading }}
 {%- endif -%}

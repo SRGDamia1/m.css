@@ -1,10 +1,13 @@
 ---
 title: Classes
 summary: Class Index
-{%- include "meta.md.jinja2" -%}
+{% include "meta.md.jinja2" %}
 ---
 
+{%- if index.symbols|length > 0 %}
 
-{% with children=index.annotated|selectattr('kind', 'ne', 'namespace') %}{% include "index.md.jinja2" %}{% endwith %}
-
-{%- include "footer.md.jinja2" -%}
+{% with children=index.symbols|selectattr('kind', 'ne', 'namespace') %}
+{% include "index.md.jinja2" %}
+{% endwith %}
+{% endif %}
+{%- include "footer.md.jinja2" %}
