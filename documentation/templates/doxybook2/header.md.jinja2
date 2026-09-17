@@ -1,9 +1,9 @@
 {%- import "macros.md.jinja2" as macros -%}
-{%- set page_title = title if title is defined else name if name is defined else compound.title if compound.title is defined else compound.name if compound.name is defined else none -%}
-{%- set page_heading = title if title is defined else name if name is defined else compound.title if compound.title is defined else (compound.name ~ " (" ~ compound.kind ~ ")") if macros.exists(compound.kind) == "true" and compound.kind != "page" and compound.kind != "module" else compound.name if macros.exists(compound.name) == "true" else none -%}
+{%- set page_title = title if macros.exists(title) == "true" else name if macros.exists(name) == "true" else compound.title if macros.exists(compound.title) == "true" else compound.name if macros.exists(compound.name) == "true" else none -%}
+{%- set page_heading = title if macros.exists(title) == "true" else name if macros.exists(name) == "true" else compound.title if macros.exists(compound.title) == "true" else (compound.name ~ " (" ~ compound.kind ~ ")") if macros.exists(compound.kind) == "true" and compound.kind != "page" and compound.kind != "module" else compound.name if macros.exists(compound.name) == "true" else none -%}
 ---
 {% if page_title is not none %}title: {{ page_title }}
-{% endif %}{% if compound.summary is defined %}summary: {{ compound.summary }}
+{% endif %}{% if macros.exists(compound.summary) == "true" %}summary: {{ compound.summary }}
 {% endif %}{% include "meta.md.jinja2" %}
 ---
 

@@ -1,11 +1,13 @@
-{% if compound.markdown_anchor is defined and compound.markdown_anchor %}<a id="{{ compound.markdown_anchor[1:] }}"></a>{{ "\n" }}{% endif %}
+{%- import "macros.md.jinja2" as macros -%}
+{% if macros.exists(compound.markdown_anchor) == "true" %}<a id="{{ compound.markdown_anchor[1:] }}"></a>{{ "\n" }}{% endif %}
 {% if compound.kind in ["function", "slot", "signal", "event"] %}
 
-```{{ compound.language if compound.language is defined else "cpp" }}
+```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
 {% if compound.has_template_details -%}
-template <{%- for param in compound.templates -%}{{ param.type }} {{ param.name }}{% if param.default is defined %} = {{ param.default }}{% endif %}{% if not loop.is_last %}, {% endif -%}{%- endfor -%}>
+{{ macros.template_params(compound) }}
 {%- endif %}
-{% if compound.is_static %}static {% endif %}{% if compound.is_explicit %}explicit {% endif %}{% if compound.is_virtual %}virtual {% endif %}{% if compound.type_markdown is defined %}{{ compound.type }} {% endif %}{{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param.type }} {{ param.name }}{% if param.default is defined %} = {{ param.default }}{% endif %}{% if not loop.is_last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if compound.is_override %} override{% endif %}{% if compound.is_defaulted %} = default{% endif %}{% if compound.is_deleted %} = delete{% endif %}{% if compound.is_pure_virtual %} = 0{% endif %}{{ '\n' }}```
+{% if compound.is_static %}static {% endif %}{% if compound.is_explicit %}explicit {% endif %}{% if compound.is_virtual %}virtual {% endif %}{{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param.type_markdown }} {{ param.name }}{% if macros.exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if compound.is_override %} override{% endif %}{% if compound.is_defaulted %} = default{% endif %}{% if compound.is_deleted %} = delete{% endif %}{% if compound.is_pure_virtual %} = 0{% endif %}{{ '\n' }}
+```
 
 {% endif -%}
 {% if compound.kind == "enum" %}
@@ -13,44 +15,44 @@ template <{%- for param in compound.templates -%}{{ param.type }} {{ param.name 
 | Enumerator | Value | Description |
 | ---------- | ----- | ----------- |
 {% for enumvalue in compound.values -%}
-| <a id="{{ enumvalue.markdown_anchor[1:] }}"></a>{{ enumvalue.name }} | {% if enumvalue.initializer is defined %}{{ enumvalue.initializer|replace("= ", "")|replace("|", "\\|") }}{% endif %} | {% if enumvalue.brief is defined %}{{ enumvalue.brief }}{% endif %}{% if enumvalue.description is defined %}{{ enumvalue.description }}{% endif %} |
+| <a id="{{ enumvalue.markdown_anchor[1:] }}"></a>{{ enumvalue.name }} | {% if macros.exists(enumvalue.initializer) == "true" %}{{ enumvalue.initializer|replace("= ", "")|replace("|", "\\|") }}{% endif %} | {{ macros.render_if_exists(enumvalue.brief) }}{{ macros.render_if_exists(enumvalue.description) }} |
 {% endfor -%}
 {% endif -%}
 {% if compound.kind in ["variable", "property", "enum constant"] %}
 
-```{{ compound.language if compound.language is defined else "cpp" }}
-{% if compound.is_static %}static {% endif %}{% if compound.type_markdown is defined %}{{ compound.type }} {% endif %}{{ compound.name }}{% if compound.initializer is defined %} {{ compound.initializer }}{% endif %};
+```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
+{% if compound.is_static %}static {% endif %}{{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}{% if macros.exists(compound.initializer) == "true" %} {{ compound.initializer }}{% endif %};
 ```
 
 {% endif -%}
 {% if compound.kind == "typedef" %}
 
-```{{ compound.language if compound.language is defined else "cpp" }}
+```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
 {{ compound.definition }};
 ```
 
 {% endif -%}
 {% if compound.kind == "using" %}
 
-```{{ compound.language if compound.language is defined else "cpp" }}
+```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
 {% if compound.has_template_details -%}
-template <{%- for param in compound.templates -%}{{ param.type }} {{ param.name }}{% if param.default is defined %} = {{ param.default }}{% endif %}{% if not loop.is_last %}, {% endif -%}{%- endfor -%}>
+{{ macros.template_params(compound) }}
 {%- endif %}
-{{ compound.type }};
+{{ compound.type_markdown }};
 ```
 
 {% endif -%}
 {% if compound.kind == "friend" %}
 
-```{{ compound.language if compound.language is defined else "cpp" }}
-friend {% if compound.type_markdown is defined %}{{ compound.type }} {% endif %}{{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param.type }} {{ param.name }}{% if param.default is defined %} = {{ param.default }}{% endif %}{% if not loop.is_last %}, {% endif %}{% endfor %}){% elif compound.type_markdown != "class" %}(){% endif %};
+```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
+friend {{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param.type_markdown }} {{ param.name }}{% if macros.exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% elif compound.type_markdown != "class" %}(){% endif %};
 ```
 
 {% endif -%}
 {% if compound.kind == "define" %}
 
-```{{ compound.language if compound.language is defined else "cpp" }}
-#define {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param[0] }}{% if not loop.is_last %}, {% endif %}{% endfor %}){% endif %}{% if compound.initializer is defined %} {{ compound.initializer }}{% endif %}{{ '\n' }}```
+```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
+#define {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(compound.initializer) == "true" %} {{ compound.initializer }}{% endif %}{{ '\n' }}```
 
 {% endif -%}
 {% include "details.md.jinja2" %}

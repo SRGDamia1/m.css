@@ -1,3 +1,4 @@
+{%- import "macros.md.jinja2" as macros -%}
 {%- if macros.exists(compound.breadcrumb) == "true" -%}
-{{ "\n\n" }}**Module:**{% for module in compound.breadcrumb %} **[{{ module[0] }}]({{ module[1] }})**{% if not loop.is_last %} **/**{% endif %}{% endfor %}
+{{ "\n\n" }}**Module:**{% for module in compound.breadcrumb %} **[{{ module[0] }}]({{ module[1] }})**{% if not loop.last %} **/**{% endif %}{% endfor %}
 {%- endif -%}

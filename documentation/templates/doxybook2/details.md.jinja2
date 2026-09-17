@@ -1,3 +1,4 @@
+{%- import "macros.md.jinja2" as macros -%}
 {%- set has_metadata = (
     (macros.exists(compound.params) == "true" and compound.has_param_details) or
     (macros.exists(compound.return_values) == "true") or
@@ -18,7 +19,7 @@
     (macros.exists(compound.copyright) == "true") or
     (macros.exists(compound.invariant) == "true")
 ) -%}
-{{ macros.render_if_exits(compound.description_markdown) }}
+{{ macros.render_if_exists(compound.description_markdown) }}
 {% if has_metadata %}
 
 {% if macros.exists(compound.params) == "true" and compound.has_param_details -%}
@@ -43,10 +44,10 @@
 {% endif -%}
 {% if macros.exists(compound.deprecated) == "true" -%}
 - **Deprecated**:
-{{ macros.render_if_exits(compound.deprecated) }}
+{{ macros.render_if_exists(compound.deprecated) }}
 {% endif -%}
 {% if macros.exists(compound.return_value) == "true" -%}
-- **Return**: {{ macros.render_if_exits(compound.return_value) }}
+- **Return**: {{ macros.render_if_exists(compound.return_value) }}
 {% endif -%}
 {% if macros.exists(compound.authors) == "true" -%}
 - **Author**:
@@ -172,9 +173,9 @@
 {% if macros.exists(compound.reimplemented_by) == "true" -%}
 
 **Reimplemented by**:
-{% for impl in compound.reimplemented_by %}[{{ impl.fullname }}]({{ impl.markdown_url }}){% if not loop.is_last %}, {% endif %}{% endfor %}
+{% for impl in compound.reimplemented_by %}[{{ impl.fullname }}]({{ impl.markdown_url }}){% if not loop.last %}, {% endif %}{% endfor %}
 {% endif -%}
 {% if macros.exists(compound.inbody) == "true" -%}
 
-{{ macros.render_if_exits(compound.inbody) }}
+{{ macros.render_if_exists(compound.inbody) }}
 {% endif -%}

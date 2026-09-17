@@ -1,4 +1,4 @@
-{% import "macros.md.jinja2" as macros %}
+{%- import "macros.md.jinja2" as macros -%}
 {% include "header.md.jinja2" %}
 
 {%- include "breadcrumbs.md.jinja2" %}
@@ -25,7 +25,7 @@
 
 ## Source code
 
-```{{ compound.language if compound.language is defined else "cpp" }}
+```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
 {{ compound.programlisting }}
 ```
 {% endif -%}

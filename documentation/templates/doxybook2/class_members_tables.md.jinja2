@@ -71,7 +71,7 @@
 
 ## {{ group.name }}
 
-{{ macros.render_if_exits(group.description_markdown) }}
+{{ macros.render_if_exists(group.description_markdown) }}
 {% set group_has_public_types = namespace(value=false) %}
 {% for kind, child in group.members -%}
 {% if kind in ["enum", "typedef"] and not child.is_protected -%}

@@ -1,8 +1,9 @@
 {%- import "macros.md.jinja2" as macros -%}
 {%- macro render_entries(entries, indent=0) -%}
 {%- for child in entries %}
-{{ ' ' * indent }}- **{{ child.kind }}** {{ macros.linked_name(child) }}{% if child.brief_markdown %} — {{ child.brief_markdown }}{% endif %}{{ '\n' }}
-{%- if child.children %}{{ render_entries(child.children, indent + 4) }}{%- endif %}
+{# {{ ' ' * indent }}- **{{ child.kind }}** {{ macros.linked_name(child) }}{% if child.brief_markdown %} — {{ child.brief_markdown }}{% endif %}{{ '\n' }} #}
+{{ ' ' * indent }}- {{ macros.linked_name(child) }}{% if child.brief_markdown %} — {{ child.brief_markdown|trim }}{% endif %}{{ '\n' }}
+{%- if child.children %}{{ render_entries(child.children, indent + 2) }}{%- endif %}
 {%- endfor %}
 {%- endmacro -%}
 {{ render_entries(children) }}
