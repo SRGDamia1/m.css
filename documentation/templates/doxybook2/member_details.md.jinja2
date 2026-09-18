@@ -6,7 +6,7 @@
 {% if compound.has_template_details -%}
 {{ macros.template_params(compound) }}
 {%- endif %}
-{% if compound.is_static %}static {% endif %}{% if compound.is_explicit %}explicit {% endif %}{% if compound.is_virtual %}virtual {% endif %}{{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param.type_markdown }} {{ param.name }}{% if macros.exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if compound.is_override %} override{% endif %}{% if compound.is_defaulted %} = default{% endif %}{% if compound.is_deleted %} = delete{% endif %}{% if compound.is_pure_virtual %} = 0{% endif %}{{ '\n' }}
+{% if compound.is_static %}static {% endif %}{% if compound.is_explicit %}explicit {% endif %}{% if compound.is_virtual %}virtual {% endif %}{{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param.type_markdown }} {{ param.name }}{% if macros.exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if compound.is_override %} override{% endif %}{% if compound.is_defaulted %} = default{% endif %}{% if compound.is_deleted %} = delete{% endif %}{% if compound.is_pure_virtual %} = 0{% endif %}
 ```
 
 {% endif -%}
@@ -52,7 +52,8 @@ friend {{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}
 {% if compound.kind == "define" %}
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
-#define {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(compound.initializer) == "true" %} {{ compound.initializer }}{% endif %}{{ '\n' }}```
+#define {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(compound.initializer) == "true" %} {{ compound.initializer }}{% endif %}
+```
 
 {% endif -%}
 {% include "details.md.jinja2" %}

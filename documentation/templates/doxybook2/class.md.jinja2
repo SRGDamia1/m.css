@@ -11,12 +11,14 @@
 
 {{ compound.description_markdown }}
 {% endif -%}
-{% if has_typedef_details or has_enum_details or has_func_details or has_var_details %}{{ "\n" }}[Member Details](#member-details)
+{% if has_typedef_details or has_enum_details or has_func_details or has_var_details %}
+[Member Details](#member-details)
 
 ## Member Details
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
-{% if compound.has_template_details %}{{ macros.template_params(compound) }}{{ '\n' }}{% endif -%}
+{% if compound.has_template_details %}{{ macros.template_params(compound) }}
+{% endif -%}
 {{ compound.kind }} {{ compound.name }};
 ```
 
