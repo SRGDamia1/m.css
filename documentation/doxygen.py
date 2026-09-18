@@ -67,10 +67,10 @@ from pygments.lexers import TextLexer, BashSessionLexer, ArduinoLexer, CppLexer,
 from _search import CssClass, ResultFlag, ResultMap, Trie, Serializer, serialize_search_data, base85encode_search_data, search_filename, searchdata_filename, searchdata_filename_b85, searchdata_format_version
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../plugins'))
-import dot2svg
-import latex2svg
-import latex2svgextra
-import ansilexer
+import dot2svg # pyright: ignore[reportMissingImports]
+import latex2svg # pyright: ignore[reportMissingImports]
+import latex2svgextra # pyright: ignore[reportMissingImports]
+import ansilexer # pyright: ignore[reportMissingImports]
 
 
 class JSONDictEncoder(json.JSONEncoder):
@@ -495,6 +495,7 @@ class ParameterInfo:
         self.name = name  # str
         self.direction: str | None = None  # 'in', 'out', 'inout', or None
         self.description: str = ""  # str
+        self.description_markdown: str = ""
         self.parsed_type: ParsedLinkable = ParsedLinkable()
         self.type_html: str = ''
         self.type_markdown: str = ''
@@ -1899,7 +1900,12 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                 param_names = param.find('parameternamelist')
                 assert param_names is not None and param_names.find('parametertype') is None
 
-                description = parse_desc(state, param.find('parameterdescription'))
+                parameter_description = param.find('parameterdescription')
+                assert parameter_description is not None
+                description_parsed = parse_desc_internal(
+                    state, parameter_description)
+                description = description_parsed.html.strip()
+                description_markdown = description_parsed.markdown.strip()
 
                 # Gather all names (so e.g. `@param x, y, z` is turned into
                 # three params sharing the same description)
@@ -1909,25 +1915,31 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                         param_info = ParameterInfo(name=name.text)
                         param_info.direction = name.attrib['direction'] if 'direction' in name.attrib else ''
                         param_info.description = description
+                        param_info.description_markdown = description_markdown
                         out.params[name.text] = param_info
                     elif i.attrib['kind'] == 'retval':
                         assert name.text is not None
                         ret_info = ParameterInfo(name.text)
                         ret_info.description = description
+                        ret_info.description_markdown = description_markdown
                         out.return_values += [ret_info]
                     elif i.attrib['kind'] == 'exception':
                         ref = name.find('ref')
-                        if (ref != None):
-                            ex_info = ParameterInfo(name=render_reference_html(parse_reference(state, ref)))
+                        if ref is not None:
+                            ex_info = ParameterInfo(
+                                name=render_reference_html(parse_reference(state, ref)))
                             ex_info.description = description
+                            ex_info.description_markdown = description_markdown
                             out.exceptions += [ex_info]
                         else:
                             assert name.text is not None, "Exception name is missing!"
                             ex_info = ParameterInfo(name=name.text)
                             ex_info.description = description
+                            ex_info.description_markdown = description_markdown
                             out.exceptions += [ex_info]
                     else:
                         assert i.attrib['kind'] == 'templateparam'
+                        assert name.text is not None
                         out.templates[name.text] = description
 
         elif i.tag == 'variablelist':
@@ -3745,14 +3757,15 @@ def extract_metadata(state: State, xml):
     compound.deprecated = None
     compound.since = None
     if state.config['VERSION_LABELS']:
-        for i in compounddef.find('detaileddescription').findall('.//simplesect'):
+        for i in compounddef.find('detaileddescription').findall('.//simplesect'): # type: ignore
             if i.attrib['kind'] != 'since': continue
             since = parse_inline_desc(state, i).strip()
             assert since.startswith('<p>') and since.endswith('</p>')
             compound.since = since[3:-4]
-    for i in compounddef.find('detaileddescription').findall('.//xrefsect'):
+    for i in compounddef.find('detaileddescription').findall('.//xrefsect'): # type: ignore
         id = i.attrib['id']
         match = xref_id_rx.match(id)
+        assert match is not None
         file = match.group(1)
         if file.startswith('deprecated'):
             if compound.since:
@@ -3812,7 +3825,7 @@ def extract_metadata(state: State, xml):
                 header = compounddef_child.find('header')
                 if header is None:
                     logging.error("{}: member groups without @name are not supported, ignoring".format(state.current))
-                member_group_name = header.text
+                member_group_name = header.text # type: ignore
                 member_group_id=slugify(member_group_name)
                 compound.children += [member_group_id]
             # if we only got complete memberdefs in this member group, then we can defer processing those members until parsing the xml in the next step
@@ -4114,7 +4127,7 @@ def parse_xml(state: State, xml: str):
         # test_compound.Ignored for a corresponding test case. Similar
         # difference is with anonymous enums.
         # https://github.com/doxygen/doxygen/commit/a18e4c76ed6415893800c7d77a2f798614fb638b
-        (compounddef.attrib['kind'] == 'namespace' and (compounddef.find('compoundname').text is None or '@' in compounddef.find('compoundname').text))):
+        (compounddef.attrib['kind'] == 'namespace' and (compounddef.find('compoundname').text is None or '@' in compounddef.find('compoundname').text))):  # type: ignore
         logging.debug("{}: only private things, skipping".format(state.current))
         return None
 
@@ -4131,7 +4144,7 @@ def parse_xml(state: State, xml: str):
     # to check that `briefdescription` / `detaileddescription` actually has any
     # children. Checking against None is not enough as it could be present but
     # be empty.
-    if not len(compounddef.find('briefdescription')) and not len(compounddef.find('detaileddescription')) and not compounddef.attrib['kind'] == 'group' and (not compounddef.attrib['kind'] == 'page' or is_a_stupid_empty_markdown_page(compounddef)):
+    if not len(compounddef.find('briefdescription')) and not len(compounddef.find('detaileddescription')) and not compounddef.attrib['kind'] == 'group' and (not compounddef.attrib['kind'] == 'page' or is_a_stupid_empty_markdown_page(compounddef)):  # type: ignore
         logging.debug("{}: neither brief nor detailed description present, skipping".format(state.current))
         return None
 
@@ -4141,7 +4154,7 @@ def parse_xml(state: State, xml: str):
     compound.location = parse_location(compounddef)
     # Compound name is page filename, so we have to use title there. The same
     # is for groups.
-    compound.name = compounddef.find('title').text if compound.kind in ['page', 'group'] and compounddef.findtext('title') else compounddef.find('compoundname').text
+    compound.name = compounddef.find('title').text if compound.kind in ['page', 'group'] and compounddef.findtext('title') else compounddef.find('compoundname').text  # type: ignore
     # Compound URL is ID, except for index page, where it is named "indexpage"
     # and so I have to override it back to "index". Can't use <compoundname>
     # for pages because that doesn't reflect CASE_SENSE_NAMES. THANKS DOXYGEN.
@@ -4240,7 +4253,7 @@ def parse_xml(state: State, xml: str):
     # namespaces without any class / group members too.
     state.current_kind = compound.kind
     if compound.kind in ['struct', 'class', 'union'] or (compound.kind == 'namespace' and compounddef.find('innerclass') is None and compounddef.find('innernamespace') is None and compounddef.find('sectiondef') is None):
-        location_attribs = compounddef.find('location').attrib
+        location_attribs = compounddef.find('location').attrib  # type: ignore
         file = location_attribs['declfile'] if 'declfile' in location_attribs else location_attribs['file']
 
         # Classes, structs and unions allow supplying custom header file and a
@@ -4540,9 +4553,9 @@ def parse_xml(state: State, xml: str):
             for memberdef in compounddef_child:
                 if memberdef.tag == 'member':
                     logging.debug("{}: sorry, the output will not list file / namespace {} members due to https://github.com/doxygen/doxygen/issues/8790. Parsing of non-self-contained XML not implemented.".format(state.current, compounddef_child.attrib['kind']))
-                    sectiondef_header = compounddef_child.find('header').text if compounddef_child.find('header') is not None else memberdef.find('name').text
-                    member_name = memberdef.find('name').text
-                    logging.debug("{}: Reference to {} inside {} dropped, find it at {}".format(state.current, member_name.strip(), sectiondef_header.strip(), memberdef.attrib['refid']))
+                    sectiondef_header = compounddef_child.find('header').text if compounddef_child.find('header') is not None else memberdef.find('name').text  # type: ignore
+                    member_name = memberdef.find('name').text  # type: ignore
+                    logging.debug("{}: Reference to {} inside {} dropped, find it at {}".format(state.current, member_name.strip(), sectiondef_header.strip(), memberdef.attrib['refid'])) # type: ignore
                     is_stupid = True
                     break
             if is_stupid:
@@ -4694,7 +4707,7 @@ def parse_xml(state: State, xml: str):
                 # Gather only private functions that are virtual and
                 # documented
                 for memberdef in compounddef_child:
-                    if memberdef.attrib['virt'] == 'non-virtual' or (not memberdef.find('briefdescription').text and not memberdef.find('detaileddescription').text):
+                    if memberdef.attrib['virt'] == 'non-virtual' or (not memberdef.find('briefdescription').text and not memberdef.find('detaileddescription').text):  # type: ignore
                         assert True # coverage.py can't handle continue
                         continue # pragma: no cover
 
@@ -4742,10 +4755,10 @@ def parse_xml(state: State, xml: str):
                     # classes written as `friend Foo;`, those are parsed as
                     # variables (ugh). Since Doxygen 1.9 the `friend ` prefix
                     # is omitted.
-                    if memberdef.find('type').text in ['class', 'struct', 'union', 'friend class', 'friend struct', 'friend union']:
+                    if memberdef.find('type').text in ['class', 'struct', 'union', 'friend class', 'friend struct', 'friend union']:  # type: ignore
                         # Print a warning in case these are documented
-                        if (''.join(memberdef.find('briefdescription').itertext()).strip() or ''.join(memberdef.find('detaileddescription').itertext()).strip()):
-                            logging.warning("{}: doxygen is unable to cross-link {}, ignoring, sorry".format(state.current, memberdef.find('definition').text))
+                        if (''.join(memberdef.find('briefdescription').itertext()).strip() or ''.join(memberdef.find('detaileddescription').itertext()).strip()): # type: ignore
+                            logging.warning("{}: doxygen is unable to cross-link {}, ignoring, sorry".format(state.current, memberdef.find('definition').text))  # type: ignore
                     # Only friend functions left, hopefully, parse as a func
                     else:
                         func = parse_func(state, memberdef)
@@ -4780,7 +4793,7 @@ def parse_xml(state: State, xml: str):
                     elif memberdef.attrib['kind'] in ['function', 'signal', 'slot']:  # functions within user-defined section/group
                         # Gather only private functions that are virtual and
                         # documented
-                        if memberdef.attrib['prot'] == 'private' and (memberdef.attrib['virt'] == 'non-virtual' or (not memberdef.find('briefdescription').text and not memberdef.find('detaileddescription').text)):
+                        if memberdef.attrib['prot'] == 'private' and (memberdef.attrib['virt'] == 'non-virtual' or (not memberdef.find('briefdescription').text and not memberdef.find('detaileddescription').text)):  # type: ignore
                             assert True # coverage.py can't handle continue
                             continue # pragma: no cover
 
@@ -4803,8 +4816,8 @@ def parse_xml(state: State, xml: str):
                         # classes written as `friend Foo;`, those are parsed as
                         # variables (ugh). Since Doxygen 1.9 the `friend `
                         # prefix is omitted.
-                        if memberdef.find('type').text in ['class', 'struct', 'union', 'friend class', 'friend struct', 'friend union'] and (memberdef.find('briefdescription').text or memberdef.find('detaileddescription').text):
-                            logging.warning("{}: doxygen is unable to cross-link {}, ignoring, sorry".format(state.current, memberdef.find('definition').text))
+                        if memberdef.find('type').text in ['class', 'struct', 'union', 'friend class', 'friend struct', 'friend union'] and (memberdef.find('briefdescription').text or memberdef.find('detaileddescription').text):  # type: ignore
+                            logging.warning("{}: doxygen is unable to cross-link {}, ignoring, sorry".format(state.current, memberdef.find('definition').text))  # type: ignore
                         # Only friend functions left, hopefully, parse as a func
                         else:
                             func = parse_func(state, memberdef)
@@ -4830,7 +4843,7 @@ def parse_xml(state: State, xml: str):
                         "{}: no memberdefs found within user-defined group {}".format(
                             state.current,
                             (
-                                compounddef_child.find('header').text
+                                compounddef_child.find('header').text  # type: ignore
                                 if compounddef_child.find('header') is not None
                                 else "un-named"
                             ),
@@ -5673,6 +5686,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             parsed = parse_xml(state, file)
             if not parsed: continue
 
+            assert parsed.compound is not None
             template = env.get_template(parsed.compound.kind + template_ext)
             # Update output URL with correct extension. Markdown compound pages
             # live in a folder determined by their compound kind.
