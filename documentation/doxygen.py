@@ -2414,12 +2414,13 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
 
             content_parsed = parse_inline_desc_internal(state, i)
             content = content_parsed.html.strip()
-            content_md = content_parsed.markdown.strip()
             if content:
                 out.html += '<{0}{1}>{2}</{0}>'.format(
                     mapping[i.tag],
                     ' class="{}"'.format(add_inline_css_class) if add_inline_css_class else '',
                     content)
+            content_md = content_parsed.markdown.strip()
+            if content_md:
                 md_pre, md_post = md_mapping[i.tag]
                 out.markdown += f'{md_pre}{content_md}{md_post}'
 
@@ -5657,9 +5658,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                     **state.doxyfile, **state.config)
 
                 output = os.path.join(html_output, file)
-                with open(output, 'wb') as f:
+                with open(output, 'w', encoding='utf-8', newline='\n') as f:
                     logging.info("Writing {} from {}".format(os.path.abspath(output), template))
-                    f.write(rendered.encode('utf-8'))
+                    f.write(rendered)
                     if template_type == 'html':
                         # Add back a trailing newline so we don't need to bother
                         # with patching test files to include a trailing newline to
@@ -5667,7 +5668,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                         # that'd add it also for nested templates :( The rendered
                         # file should never contain a trailing newline on its own.
                         assert not rendered.endswith('\n')
-                        f.write(b'\n')
+                        f.write('\n')
         else:
             parsed = parse_xml(state, file)
             if not parsed: continue
@@ -5704,9 +5705,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
 
             output = os.path.join(html_output, output_url)
             os.makedirs(os.path.dirname(output), exist_ok=True)
-            with open(output, 'wb') as f:
+            with open(output, 'w', encoding="utf8", newline='\n') as f:
                 logging.info("Writing {} from {}".format(os.path.abspath(output), template))
-                f.write(rendered.encode('utf-8'))
+                f.write(rendered)
                 if template_type == 'html':
                     # Add back a trailing newline so we don't need to bother with
                     # patching test files to include a trailing newline to make Git
@@ -5714,7 +5715,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                     # also for nested templates :( The rendered file should never
                     # contain a trailing newline on its own.
                     assert not rendered.endswith('\n')
-                    f.write(b'\n')
+                    f.write('\n')
 
     # Empty index page in case no mainpage documentation was provided so
     # there's at least some entrypoint. Doxygen version is not set in this
@@ -5750,9 +5751,9 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
             **state.doxyfile, **state.config)
         output = os.path.join(html_output, index_file)
         os.makedirs(os.path.dirname(output), exist_ok=True)
-        with open(output, 'wb') as f:
+        with open(output, 'w', encoding="utf8", newline='\n') as f:
             logging.info("Writing {} from {}".format(os.path.abspath(output), template))
-            f.write(rendered.encode('utf-8'))
+            f.write(rendered)
             if template_type == 'html':
                 # Add back a trailing newline so we don't need to bother with
                 # patching test files to include a trailing newline to make Git
@@ -5760,7 +5761,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 # also for nested templates :( The rendered file should never
                 # contain a trailing newline on its own.
                 assert not rendered.endswith('\n')
-                f.write(b'\n')
+                f.write('\n')
 
     if not state.config['SEARCH_DISABLED']:
         logging.debug("building search data for {} symbols".format(len(state.search)))
