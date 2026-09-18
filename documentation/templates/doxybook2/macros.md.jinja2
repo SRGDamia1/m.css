@@ -36,15 +36,15 @@ template <{%- for param in item.templates -%}{{ param.type_markdown }} {{ param.
 {%- endmacro -%}
 
 {%- macro table_val_name_brief(child) -%}
-**{{ linked_name(child) }}**{% if exists(child.brief) == "true" %} <br>{{ child.brief }}{% endif %}
+**{{ linked_name(child) }}**{% if exists(child.brief_markdown) == "true" %} <br>{{ child.brief_markdown }}{% endif %}
 {%- endmacro -%}
 
 {%- macro table_entry_function(child) -%}
-| {{ template_params(child) }}{%- if child.templates -%}<br>{% endif %}{% if child.is_virtual %}*virtual*<br>{% endif %}{% if child.is_override %}*override*<br>{% endif %}{{ render_if_exists(child.type_markdown) }} | {{ function_with_params(child) }}{% if child.is_const %} const{% endif %}{% if child.is_defaulted %} = default{% endif %}{% if child.is_deleted %} = delete{% endif %}{% if child.is_pure_virtual %} = 0{% endif %}{% if exists(child.brief) == "true" %} <br>{{ child.brief }}{% endif %} |
+| {{ template_params(child) }}{%- if child.templates -%}<br>{% endif %}{% if child.is_virtual %}*virtual*<br>{% endif %}{% if child.is_override %}*override*<br>{% endif %}{{ render_if_exists(child.type_markdown) }} | {{ function_with_params(child) }}{% if child.is_const %} const{% endif %}{% if child.is_defaulted %} = default{% endif %}{% if child.is_deleted %} = delete{% endif %}{% if child.is_pure_virtual %} = 0{% endif %}{% if exists(child.brief_markdown) == "true" %} <br>{{ child.brief_markdown }}{% endif %} |
 {%- endmacro -%}
 
 {%- macro table_entry_enum(child) -%}
-| {{ template_params(child) }}{%- if child.templates -%}<br>{% endif %}{{ child.kind }}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if exists(child.type_markdown) == "true" %} {{ child.type_markdown }}{% endif %} | {{ linked_name(child) }}{% if child.kind == "enum" and child.values %} { {% for enumvalue in child.values %}{{ enumvalue.name }}{% if exists(enumvalue.initializer) == "true" %} {{ enumvalue.initializer }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %} }{% endif %}{% if exists(child.brief) == "true" %} <br>{{ child.brief }}{% endif %} |
+| {{ template_params(child) }}{%- if child.templates -%}<br>{% endif %}{{ child.kind }}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if exists(child.type_markdown) == "true" %} {{ child.type_markdown }}{% endif %} | {{ linked_name(child) }}{% if child.kind == "enum" and child.values %} { {% for enumvalue in child.values %}{{ enumvalue.name }}{% if exists(enumvalue.initializer) == "true" %} {{ enumvalue.initializer }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %} }{% endif %}{% if exists(child.brief_markdown) == "true" %} <br>{{ child.brief_markdown }}{% endif %} |
 {%- endmacro -%}
 
 {%- macro table_entry_var(child) -%}
@@ -52,7 +52,7 @@ template <{%- for param in item.templates -%}{{ param.type_markdown }} {{ param.
 {%- endmacro -%}
 
 {%- macro table_entry_friend(child) -%}
-| {{ render_if_exists(child.type_markdown) }} | {{ linked_name(child) }}{% if child.type_markdown != "class" and child.type_markdown != "struct" %}{% if exists(child.params) == "true" %}({% for param in child.params %}{{ param.type_markdown }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if child.is_const %} const{% endif %}{% endif %}{% if exists(child.brief) == "true" %} <br>{{ child.brief }}{% endif %} |
+| {{ render_if_exists(child.type_markdown) }} | {{ linked_name(child) }}{% if child.type_markdown != "class" and child.type_markdown != "struct" %}{% if exists(child.params) == "true" %}({% for param in child.params %}{{ param.type_markdown }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if child.is_const %} const{% endif %}{% endif %}{% if exists(child.brief_markdown) == "true" %} <br>{{ child.brief_markdown }}{% endif %} |
 {%- endmacro -%}
 
 {%- macro table_entry_class(child) -%}

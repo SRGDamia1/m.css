@@ -1,5 +1,5 @@
 {%- import "macros.md.jinja2" as macros -%}
-{% if macros.exists(compound.markdown_anchor) == "true" %}<a id="{{ compound.markdown_anchor[1:] }}"></a>{{ "\n" }}{% endif %}
+{% if macros.exists(compound.markdown_anchor) == "true" %}<a id="{{ compound.markdown_anchor[1:] }}"></a>&#8203;{{ "\n" }}{% endif %}
 {% if compound.kind in ["function", "slot", "signal", "event"] %}
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
@@ -15,7 +15,7 @@
 | Enumerator | Value | Description |
 | ---------- | ----- | ----------- |
 {% for enumvalue in compound.values -%}
-| <a id="{{ enumvalue.markdown_anchor[1:] }}"></a>{{ enumvalue.name }} | {% if macros.exists(enumvalue.initializer) == "true" %}{{ enumvalue.initializer|replace("= ", "")|replace("|", "\\|") }}{% endif %} | {{ macros.render_if_exists(enumvalue.brief) }}{{ macros.render_if_exists(enumvalue.description) }} |
+| <a id="{{ enumvalue.markdown_anchor[1:] }}"></a>&#8203;{{ enumvalue.name }} | {% if macros.exists(enumvalue.initializer) == "true" %}{{ enumvalue.initializer|replace("= ", "")|replace("|", "\\|") }}{% endif %} | {{ macros.render_if_exists(enumvalue.brief_markdown) }}{{ macros.render_if_exists(enumvalue.description_markdown) }} |
 {% endfor -%}
 {% endif -%}
 {% if compound.kind in ["variable", "property", "enum constant"] %}

@@ -121,6 +121,6 @@
 |                | Name           |
 | -------------- | -------------- |
 {% for child in compound.defines -%}
-| {{ macros.render_if_exists(child.type_markdown) }} | **{{ macros.linked_name(child) }}**{% if macros.exists(child.params) == "true" %}({% for param in child.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(child.brief) == "true" %} <br>{{ child.brief }}{% endif %} |
+| {{ macros.render_if_exists(child.type_markdown) }} | **{{ macros.linked_name(child) }}**{% if macros.exists(child.params) == "true" %}({% for param in child.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(child.brief_markdown) == "true" %} <br>{{ child.brief_markdown }}{% endif %} |
 {% endfor -%}
 {% endif -%}

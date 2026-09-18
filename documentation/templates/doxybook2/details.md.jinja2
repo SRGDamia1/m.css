@@ -24,7 +24,7 @@
 
 {% if macros.exists(compound.params) == "true" and compound.has_param_details -%}
 - **Parameters**:
-{% for param in compound.params %}  - **{{ param.name }}** {{ param.description }}
+{% for param in compound.params %}  - **{{ param.name }}** {{ param.description_markdown }}
 {% endfor -%}
 {% endif -%}
 {% if macros.exists(compound.return_values) == "true" -%}
@@ -39,7 +39,7 @@
 {% endif -%}
 {% if compound.has_template_details -%}
 - **Template Parameters**:
-{% for param in compound.templates %}  - **{{ param.name }}** {{ param.description }}
+{% for param in compound.templates %}  - **{{ param.name }}** {{ param.description_markdown }}
 {% endfor -%}
 {% endif -%}
 {% if macros.exists(compound.deprecated) == "true" -%}
