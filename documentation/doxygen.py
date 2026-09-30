@@ -4725,17 +4725,17 @@ if __name__ == '__main__': # pragma: no cover
     parser.add_argument('--debug', help="verbose debug output", action='store_true')
     args = parser.parse_args()
 
-    if args.output is not None:
-        if args.debug:
-            logging.basicConfig(filename=args.output, filemode='w', level=logging.DEBUG)
-        else:
-            logging.basicConfig(filename=args.output, filemode='w', level=logging.INFO)
+    # if args.output is not None:
+    #     if args.debug:
+    #         logging.basicConfig(filename=args.output, filemode='w', level=logging.DEBUG)
+    #     else:
+    #         logging.basicConfig(filename=args.output, filemode='w', level=logging.INFO)
 
+    # else:
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
     else:
-        if args.debug:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.WARNING)
+        logging.basicConfig(level=logging.WARNING)
 
     config = copy.deepcopy(default_config)
 
