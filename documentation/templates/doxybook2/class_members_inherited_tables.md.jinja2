@@ -1,0 +1,173 @@
+{% import "macros.md.jinja2" as macros %}
+{% for base in base_classes %}
+{% if macros.exists(base.classes) == "true" %}
+
+**Public Classes inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.classes %}
+{{ macros.table_entry_class(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.protected_classes) == "true" %}
+
+**Protected Classes inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.protected_classes %}
+{{ macros.table_entry_class(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.public_types) == "true" %}
+
+**Public Types inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.public_types %}
+{{ macros.table_entry_enum(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.protected_types) == "true" %}
+
+**Protected Types inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.protected_types %}
+{{ macros.table_entry_enum(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.public_slots) == "true" %}
+
+**Public Slots inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.public_slots %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.protected_slots) == "true" %}
+
+**Protected Slots inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.protected_slots %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.signals) == "true" %}
+
+**Public Signals inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.signals %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.protected_signals) == "true" %}
+
+**Protected Signals inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.protected_signals %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.public_events) == "true" %}
+
+**Public Events inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.public_events %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.protected_events) == "true" %}
+
+**Protected Events inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.protected_events %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.public_funcs) == "true" %}
+
+**Public Functions inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.public_funcs %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.protected_funcs) == "true" %}
+
+**Protected Functions inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.protected_funcs %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.public_properties) == "true" %}
+
+**Public Properties inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.public_properties %}
+{{ macros.table_entry_var(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.protected_properties) == "true" %}
+
+**Protected Properties inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.protected_properties %}
+{{ macros.table_entry_var(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.public_vars) == "true" %}
+
+**Public Attributes inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.public_vars %}
+{{ macros.table_entry_var(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.protected_vars) == "true" %}
+
+**Protected Attributes inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.protected_vars %}
+{{ macros.table_entry_var(child) }}
+{% endfor %}
+{% endif %}
+{% if macros.exists(base.friends) == "true" %}
+
+**Friends inherited from {{ macros.linked_name(base) }}**
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in base.friends %}
+{{ macros.table_entry_friend(child) }}
+{% endfor %}
+{% endif %}
+{% endfor %}

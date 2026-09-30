@@ -68,7 +68,7 @@
               {% endif %}
 
               {% set j = joiner(', ') %}
-              <div class="m-doc-template">template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-dim">{{ t.type }}</span> {% if t.name %} <span class="m-param">{{ t.name }}</span>{% endif %}{% if t.default %}<span class="m-dim"> = {{ t.default }}</span>{% endif%}{% endfor %}&gt;</div>
+              <div class="m-doc-template">template&lt;{% for t in compound.templates %}{{ j() }}<span class="m-dim">{{ t.type_html }}</span> {% if t.name %} <span class="m-param">{{ t.name }}</span>{% endif %}{% if t.default %}<span class="m-dim"> = {{ t.default }}</span>{% endif%}{% endfor %}&gt;</div>
             {% endif %}
 
             {% if compound.include and compound.templates == None %}

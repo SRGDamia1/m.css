@@ -1,0 +1,8 @@
+---
+title: Pages
+summary: Page Index
+{% include "meta.md.jinja2" %}
+---
+
+{% if index.pages|length > 0 %}{{ "\n\n" }}{% with children=index.pages %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
+{% include "footer.md.jinja2" %}

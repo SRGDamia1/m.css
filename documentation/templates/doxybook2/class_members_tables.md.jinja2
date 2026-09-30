@@ -1,0 +1,240 @@
+{% import "macros.md.jinja2" as macros %}
+{% if macros.exists(compound.classes) == "true" %}
+
+## Public Classes
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.classes %}
+{{ macros.table_entry_class(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.public_types) == "true" %}
+
+## Public Types
+
+|                | Name           |
+| -------------- | -------------- |
+{% for kind, child in compound.public_types %}
+{{ macros.table_entry_enum(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.protected_types) == "true" %}
+
+## Protected Types
+
+|                | Name           |
+| -------------- | -------------- |
+{% for kind, child in compound.protected_types %}
+{{ macros.table_entry_enum(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.public_slots) == "true" %}
+
+## Public Slots
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.public_slots %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.protected_slots) == "true" %}
+
+## Protected Slots
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.protected_slots %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.signals) == "true" %}
+
+## Public Signals
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.signals %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+
+
+{% if macros.exists(compound.groups) == "true" %}
+{% for group in compound.groups %}
+
+## {{ group.name }}
+
+{{ macros.render_if_exists(group.description_markdown) }}
+{% set group_has_public_types = namespace(value=false) %}
+{% for kind, child in group.members %}
+{% if kind in ["enum", "typedef"] and not child.is_protected %}
+{% set group_has_public_types.value = true %}
+{% endif %}
+{% endfor %}
+{% if group_has_public_types.value %}
+
+### Public Types
+
+|                | Name           |
+| -------------- | -------------- |
+{% for kind, child in group.members %}
+{% if kind in ["enum", "typedef"] and not child.is_protected %}
+{{ macros.table_entry_enum(child) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% set group_has_public_funcs = namespace(value=false) %}
+{% for kind, child in group.members %}
+{% if kind == "func" and not child.is_protected %}
+{% set group_has_public_funcs.value = true %}
+{% endif %}
+{% endfor %}
+{% if group_has_public_funcs.value %}
+
+### Public Functions
+
+|                | Name           |
+| -------------- | -------------- |
+{% for kind, child in group.members %}
+{% if kind == "func" and not child.is_protected %}
+{{ macros.table_entry_function(child) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% set group_has_public_vars = namespace(value=false) %}
+{% for kind, child in group.members %}
+{% if kind == "var" and not child.is_protected %}
+{% set group_has_public_vars.value = true %}
+{% endif %}
+{% endfor %}
+{% if group_has_public_vars.value %}
+
+### Public Attributes
+
+|                | Name           |
+| -------------- | -------------- |
+{% for kind, child in group.members %}
+{% if kind == "var" and not child.is_protected %}
+{{ macros.table_entry_var(child) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% set group_has_protected_types = namespace(value=false) %}
+{% for kind, child in group.members %}
+{% if kind in ["enum", "typedef"] and child.is_protected %}
+{% set group_has_protected_types.value = true %}
+{% endif %}
+{% endfor %}
+{% if group_has_protected_types.value %}
+
+### Protected Types
+
+|                | Name           |
+| -------------- | -------------- |
+{% for kind, child in group.members %}
+{% if kind in ["enum", "typedef"] and child.is_protected %}
+{{ macros.table_entry_enum(child) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% set group_has_protected_funcs = namespace(value=false) %}
+{% for kind, child in group.members %}
+{% if kind == "func" and child.is_protected %}
+{% set group_has_protected_funcs.value = true %}
+{% endif %}
+{% endfor %}
+{% if group_has_protected_funcs.value %}
+
+### Protected Functions
+
+|                | Name           |
+| -------------- | -------------- |
+{% for kind, child in group.members %}
+{% if kind == "func" and child.is_protected %}
+{{ macros.table_entry_function(child) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% set group_has_protected_vars = namespace(value=false) %}
+{% for kind, child in group.members %}
+{% if kind == "var" and child.is_protected %}
+{% set group_has_protected_vars.value = true %}
+{% endif %}
+{% endfor %}
+{% if group_has_protected_vars.value %}
+
+### Protected Attributes
+
+|                | Name           |
+| -------------- | -------------- |
+{% for kind, child in group.members %}
+{% if kind == "var" and child.is_protected %}
+{{ macros.table_entry_var(child) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.public_funcs) == "true" %}
+
+## Public Functions
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.public_funcs %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.protected_funcs) == "true" %}
+
+## Protected Functions
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.protected_funcs %}
+{{ macros.table_entry_function(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.public_vars) == "true" %}
+
+## Public Attributes
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.public_vars %}
+{{ macros.table_entry_var(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.protected_vars) == "true" %}
+
+## Protected Attributes
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.protected_vars %}
+{{ macros.table_entry_var(child) }}
+{% endfor %}
+{% endif %}
+
+{% if macros.exists(compound.friends) == "true" %}
+
+## Friends
+
+|                | Name           |
+| -------------- | -------------- |
+{% for child in compound.friends %}
+{{ macros.table_entry_friend(child) }}
+{% endfor %}
+{% endif %}
