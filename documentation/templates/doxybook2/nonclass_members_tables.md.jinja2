@@ -1,14 +1,14 @@
-{%- import "macros.md.jinja2" as macros -%}
+{% import "macros.md.jinja2" as macros %}
 {% if macros.exists(compound.groups) == "true" %}
 
 ## Modules
 
 | Name           |
 | -------------- |
-{% for child in compound.groups -%}
+{% for child in compound.groups %}
 {{ macros.table_entry_simple(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 {% if macros.exists(compound.dirs) == "true" %}
 
@@ -16,10 +16,10 @@
 
 | Name           |
 | -------------- |
-{% for child in compound.dirs -%}
+{% for child in compound.dirs %}
 {{ macros.table_entry_simple(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 {% if macros.exists(compound.files) == "true" %}
 
@@ -27,10 +27,10 @@
 
 | Name           |
 | -------------- |
-{% for child in compound.files -%}
+{% for child in compound.files %}
 {{ macros.table_entry_simple(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 
 {% if macros.exists(compound.namespaces) == "true" %}
@@ -39,10 +39,10 @@
 
 | Name           |
 | -------------- |
-{% for child in compound.namespaces -%}
+{% for child in compound.namespaces %}
 {{ macros.table_entry_simple(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 {% if macros.exists(compound.classes) == "true" %}
 
@@ -50,10 +50,10 @@
 
 |                | Name           |
 | -------------- | -------------- |
-{% for child in compound.classes -%}
+{% for child in compound.classes %}
 {{ macros.table_entry_class(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 {% if ((macros.exists(compound.typedefs) == "true") or (macros.exists(compound.enums) == "true")) %}
 
@@ -61,13 +61,13 @@
 
 |                | Name           |
 | -------------- | -------------- |
-{% for child in compound.typedefs -%}
+{% for child in compound.typedefs %}
 {{ macros.table_entry_enum(child) }}
-{% endfor -%}
-{% for child in compound.enums -%}
+{% endfor %}
+{% for child in compound.enums %}
 {{ macros.table_entry_enum(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 {% if ((macros.exists(compound.public_slots) == "true") or (macros.exists(compound.signals) == "true")) %}
 
@@ -75,10 +75,10 @@
 
 |                | Name           |
 | -------------- | -------------- |
-{% for child in compound.public_slots -%}
+{% for child in compound.public_slots %}
 {{ macros.table_entry_function(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 {% if macros.exists(compound.signals) == "true" %}
 
@@ -86,10 +86,10 @@
 
 |                | Name           |
 | -------------- | -------------- |
-{% for child in compound.signals -%}
+{% for child in compound.signals %}
 {{ macros.table_entry_function(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 {% if macros.exists(compound.funcs) == "true" %}
 
@@ -97,10 +97,10 @@
 
 |                | Name           |
 | -------------- | -------------- |
-{% for child in compound.funcs -%}
+{% for child in compound.funcs %}
 {{ macros.table_entry_function(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 {% if macros.exists(compound.vars) == "true" %}
 
@@ -108,10 +108,10 @@
 
 |                | Name           |
 | -------------- | -------------- |
-{% for child in compound.vars -%}
+{% for child in compound.vars %}
 {{ macros.table_entry_var(child) }}
-{% endfor -%}
-{% endif -%}
+{% endfor %}
+{% endif %}
 
 
 {% if macros.exists(compound.defines) == "true" %}
@@ -120,7 +120,7 @@
 
 |                | Name           |
 | -------------- | -------------- |
-{% for child in compound.defines -%}
-| {{ macros.render_if_exists(child.type_markdown) }} | **{{ macros.linked_name(child) }}**{% if macros.exists(child.params) == "true" %}({% for param in child.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(child.brief_markdown) == "true" %} <br>{{ child.brief_markdown }}{% endif %} |
-{% endfor -%}
-{% endif -%}
+{% for child in compound.defines %}
+| {{ macros.render_if_exists(child.type_markdown) }} | **{{ macros.linked_name(child) }}**{% if macros.exists(child.params) == "true" %}({% for param in child.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(child.brief_markdown) == "true" %}<br>{{ child.brief_markdown }}{% endif %} |
+{% endfor %}
+{% endif %}

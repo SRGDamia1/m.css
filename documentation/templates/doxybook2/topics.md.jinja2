@@ -4,5 +4,5 @@ summary: Module Index
 {% include "meta.md.jinja2" %}
 ---
 
-{%- if index.topics|length > 0 %}{{ "\n\n" }}{% with children=index.topics %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
-{%- include "footer.md.jinja2" %}
+{% if index.topics|length > 0 %}{{ "\n\n" }}{% with children=index.topics %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
+{% include "footer.md.jinja2" %}
