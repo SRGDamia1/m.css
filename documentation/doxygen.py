@@ -2857,8 +2857,8 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
         assert out.html.startswith('<p>') and out.html.endswith('</p>')
         out.html = out.html[3:-4]
 
-    # Trim trailing whitespace from markdown before returning
-    out.markdown = out.markdown.rstrip()
+    # Trim leading and trailing whitespace from markdown before returning
+    out.markdown = out.markdown.strip()
 
     return out
 
@@ -5595,8 +5595,12 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 # If template not found, try with extension appended
                 return super().get_source(environment, template + self.template_ext)
 
-    env = Environment(loader=ExtensionFallbackLoader(template_paths, template_ext),
-                      trim_blocks=True, lstrip_blocks=True, enable_async=True)
+    env = Environment(
+        loader=ExtensionFallbackLoader(template_paths, template_ext),
+        trim_blocks=True,
+        lstrip_blocks=True,
+        enable_async=True,
+    )
 
     # Filter to return file basename or the full URL, if absolute
     def basename_or_url(path):
