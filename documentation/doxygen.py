@@ -5865,11 +5865,11 @@ if __name__ == '__main__': # pragma: no cover
     if args.templates == default_templates and args.template_type == 'md':
         args.templates = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates/doxybook2/')
 
-    if args.output is not None:
-        if args.debug:
-            logging.basicConfig(filename=args.output, filemode='w', level=logging.DEBUG)
-        else:
-            logging.basicConfig(filename=args.output, filemode='w', level=logging.INFO)
+    # if args.output is not None:
+    #     if args.debug:
+    #         logging.basicConfig(filename=args.output, filemode='w', level=logging.DEBUG)
+    #     else:
+    #         logging.basicConfig(filename=args.output, filemode='w', level=logging.INFO)
 
     else:
         if args.debug:
