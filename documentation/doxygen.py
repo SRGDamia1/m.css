@@ -1911,14 +1911,14 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                 # three params sharing the same description)
                 for name in param_names.findall('parametername'):
                     if i.attrib['kind'] == 'param':
-                        assert name.text is not None, "Parameter name is missing!"
+                        assert name.text is not None, f"Parameter name is missing in " + description + "!"
                         param_info = ParameterInfo(name=name.text)
                         param_info.direction = name.attrib['direction'] if 'direction' in name.attrib else ''
                         param_info.description = description
                         param_info.description_markdown = description_markdown
                         out.params[name.text] = param_info
                     elif i.attrib['kind'] == 'retval':
-                        assert name.text is not None
+                        assert name.text is not None, f"Return value name is missing in " + description + "!"
                         ret_info = ParameterInfo(name.text)
                         ret_info.description = description
                         ret_info.description_markdown = description_markdown
@@ -1932,15 +1932,23 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                             ex_info.description_markdown = description_markdown
                             out.exceptions += [ex_info]
                         else:
-                            assert name.text is not None, "Exception name is missing!"
+                            assert name.text is not None, f"Exception name is missing in " + description + "!"
                             ex_info = ParameterInfo(name=name.text)
                             ex_info.description = description
                             ex_info.description_markdown = description_markdown
                             out.exceptions += [ex_info]
                     else:
                         assert i.attrib['kind'] == 'templateparam'
-                        assert name.text is not None
-                        out.templates[name.text] = description
+                        ref = name.find('ref')
+                        if ref is not None:
+                            tp_info = ParameterInfo(
+                                name=render_reference_html(parse_reference(state, ref)))
+                            tp_info.description = description
+                            tp_info.description_markdown = description_markdown
+                            out.templates[tp_info.name] = [tp_info.description]
+                        else:
+                            assert name.text is not None, f"Template parameter name is missing in " + description + "!"
+                            out.templates[name.text] = [description]
 
         elif i.tag == 'variablelist':
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
