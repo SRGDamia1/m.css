@@ -2318,7 +2318,8 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                     lang = 'bash'
                 elif not isinstance(lexer, TextLexer):
                     lang = lexer.name.lower() if hasattr(lexer, 'name') else ''
-                out.markdown += f'\n```{lang}\n{code}```\n'
+                code_body = code.rstrip('\n')
+                out.markdown += f'\n\n```{lang}\n{code_body}\n```\n\n'
                 # Store the language so it can be used in templates
                 if lang:
                     out.language = lang
