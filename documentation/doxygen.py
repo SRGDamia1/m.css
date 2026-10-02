@@ -3995,19 +3995,19 @@ def postprocess_state(state: State, debug_template=False, markdown_output=False)
             links += [(html_, title, url, id, sublinks)]
         state.config[var] = links
 
-    if debug_template:
-        for compound_id, compound in state.compounds.items():
-            output_dir = os.path.join(
-                state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT'])
-            if markdown_output:
-                output_dir = os.path.join(output_dir, compound.markdown_folder)
-                os.makedirs(output_dir, exist_ok=True)
-                json_output = os.path.join(output_dir, compound_id + '_meta.json')
-            else:
-                json_output = os.path.join(output_dir, compound_id + '_meta.json')
-            with open(json_output, "w", encoding="utf8") as f:
-                logging.info("Writing compound {} as json".format(os.path.abspath(json_output)))
-                json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
+    # if debug_template:
+    #     for compound_id, compound in state.compounds.items():
+    #         output_dir = os.path.join(
+    #             state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['HTML_OUTPUT'])
+    #         if markdown_output:
+    #             output_dir = os.path.join(output_dir, compound.markdown_folder)
+    #             os.makedirs(output_dir, exist_ok=True)
+    #             json_output = os.path.join(output_dir, compound_id + '_meta.json')
+    #         else:
+    #             json_output = os.path.join(output_dir, compound_id + '_meta.json')
+    #         with open(json_output, "w", encoding="utf8") as f:
+    #             logging.info("Writing compound {} as json".format(os.path.abspath(json_output)))
+    #             json.dump(compound, f, cls=MappingProxyEncoder, indent=2)
 
 
 def build_search_data(state: State, merge_subtrees=True, add_lookahead_barriers=True, merge_prefixes=True) -> bytearray:
