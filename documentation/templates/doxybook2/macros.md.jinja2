@@ -1,5 +1,5 @@
 {% macro render_if_exists(value, before='', after='') %}
-{% if value is defined and value is not none and value != '' and value|length > 0 %}
+{% if exists(value) == "true" %}
 {{ before }}{{ value }}{{ after }}
 {%- endif %}
 {%- endmacro %}
@@ -19,7 +19,7 @@ true
 {%- endmacro %}
 
 {% macro table_cell(value) %}
-{{ (value if value is defined and value is not none else '')|replace('|', '\\|')|replace('\r\n', '\n')|replace('\n', '<br>') }}
+{{ (value if exists(value) == "true" else '')|replace('|', '\\|')|replace('\r\n', '\n')|replace('\n', '<br>') }}
 {%- endmacro %}
 
 {% macro table_type(value) %}
@@ -33,11 +33,15 @@ true
 {%- endmacro %}
 
 {% macro template_params(item, plain_types=false) %}
-{% if item.templates %}
+{% if exists(item.templates) == "true" %}
 template <{% for param in item.templates %}
 {{ plain_type(param.parsed_type) if plain_types else table_type(param.type_markdown) }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}
 {%- endfor %}>
 {%- endif %}
+{%- endmacro %}
+
+{% macro member_name(child) %}
+{{ child.name }}{% if child.kind in ['function', 'slot', 'signal', 'event'] %}({% for param in child.params %}{{ plain_type(param.parsed_type)|replace('*', '\\*') }}{% if not loop.last %}, {% endif %}{% endfor %}){% if child.is_const %} const{% endif %}{% endif %}
 {%- endmacro %}
 
 {% macro function_with_params(child) %}
@@ -55,19 +59,19 @@ template <{% for param in item.templates %}
 {%- endmacro %}
 
 {% macro table_entry_function(child) %}
-| {{ template_params(child) }}{% if child.templates %}<br>{% endif %}{% if child.is_virtual %}*virtual*<br>{% endif %}{% if child.is_override %}*override*<br>{% endif %}{{ table_type(child.type_markdown) }}{{ ' ' if child.type_markdown or child.templates or child.is_virtual or child.is_override else '' }}| {{ function_with_params(child) }}{% if child.is_const %} const{% endif %}{% if child.is_defaulted %} = default{% endif %}{% if child.is_deleted %} = delete{% endif %}{% if child.is_pure_virtual %} = 0{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
+| {{ template_params(child) }}{% if exists(child.templates) == "true" %}<br>{% endif %}{% if child.is_virtual %}*virtual*<br>{% endif %}{% if child.is_override %}*override*<br>{% endif %}{{ table_type(child.type_markdown) }}{{ ' ' if exists(child.type_markdown) == "true" or exists(child.templates) == "true" or child.is_virtual or child.is_override else '' }}| {{ function_with_params(child) }}{% if child.is_const %} const{% endif %}{% if child.is_defaulted %} = default{% endif %}{% if child.is_deleted %} = delete{% endif %}{% if child.is_pure_virtual %} = 0{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
 {%- endmacro %}
 
 {% macro table_entry_enum(child) %}
-| {{ template_params(child) }}{% if child.templates %}<br>{% endif %}{{ child.kind }}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if exists(child.type_markdown) == "true" %} {{ table_type(child.type_markdown) }}{% endif %} | {{ linked_name(child) }}{% if child.kind == "enum" and child.values %} { {% for enumvalue in child.values %}{{ enumvalue.name }}{% if exists(enumvalue.initializer) == "true" %} {{ table_cell(enumvalue.initializer) }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %} }{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
+| {{ template_params(child) }}{% if exists(child.templates) == "true" %}<br>{% endif %}{{ child.kind }}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if exists(child.type_markdown) == "true" %} {{ table_type(child.type_markdown) }}{% endif %} | {{ linked_name(child) }}{% if child.kind == "enum" and exists(child.values) == "true" %} { {% for enumvalue in child.values %}{{ enumvalue.name }}{% if exists(enumvalue.initializer) == "true" %} {{ table_cell(enumvalue.initializer) }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %} }{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
 {%- endmacro %}
 
 {% macro table_entry_var(child) %}
-| {{ table_type(child.type_markdown) }}{{ ' ' if child.type_markdown or child.templates or child.is_virtual or child.is_override else '' }}| {{ table_val_name_brief(child) }} |
+| {{ table_type(child.type_markdown) }}{{ ' ' if exists(child.type_markdown) == "true" or exists(child.templates) == "true" or child.is_virtual or child.is_override else '' }}| {{ table_val_name_brief(child) }} |
 {%- endmacro %}
 
 {% macro table_entry_friend(child) %}
-| {{ table_type(child.type_markdown) }}{{ ' ' if child.type_markdown or child.templates or child.is_virtual or child.is_override else '' }}| {{ linked_name(child) }}{% if child.type_markdown != "class" and child.type_markdown != "struct" %}{% if exists(child.params) == "true" %}({% for param in child.params %}{{ table_type(param.type_markdown) }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if child.is_const %} const{% endif %}{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
+| {{ table_type(child.type_markdown) }}{{ ' ' if exists(child.type_markdown) == "true" or exists(child.templates) == "true" or child.is_virtual or child.is_override else '' }}| {{ linked_name(child) }}{% if child.type_markdown != "class" and child.type_markdown != "struct" %}{% if exists(child.params) == "true" %}({% for param in child.params %}{{ table_type(param.type_markdown) }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if child.is_const %} const{% endif %}{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
 {%- endmacro %}
 
 {% macro table_entry_class(child) %}

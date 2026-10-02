@@ -1,8 +1,9 @@
+{% import "macros.md.jinja2" as macros %}
 ---
 title: Pages
 summary: Page Index
 {% include "meta.md.jinja2" %}
 ---
 
-{% if index.pages|length > 0 %}{{ "\n\n" }}{% with children=index.pages %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
+{% if macros.exists(index.pages) == "true" %}{{ "\n\n" }}{% with children=index.pages %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
 {% include "footer.md.jinja2" %}

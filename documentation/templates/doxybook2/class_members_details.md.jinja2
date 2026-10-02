@@ -6,7 +6,8 @@
 {% for kind, child in compound.public_types %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -17,7 +18,8 @@
 {% for kind, child in compound.protected_types %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -28,7 +30,8 @@
 {% for child in compound.public_slots %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -39,7 +42,8 @@
 {% for child in compound.protected_slots %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -50,7 +54,8 @@
 {% for child in compound.signals %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -61,7 +66,8 @@
 {% for child in compound.public_funcs %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -72,7 +78,8 @@
 {% for child in compound.protected_funcs %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -83,7 +90,8 @@
 {% for child in compound.public_vars %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -94,7 +102,8 @@
 {% for child in compound.protected_vars %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -105,7 +114,8 @@
 {% for child in compound.friends %}
 {% if not loop.first %}
 {% endif %}
-### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
@@ -135,7 +145,8 @@
 {{ macros.render_if_exists(group.description_markdown, after='\n\n') -}}
 {% for kind, child in group.members %}
 {% if not child.is_protected %}
-#### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+#### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% if not loop.last %}
 {% endif %}
@@ -171,7 +182,8 @@
 {{ macros.render_if_exists(group.description_markdown, after='\n\n') -}}
 {% for kind, child in group.members %}
 {% if child.is_protected %}
-#### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
+#### {{ (child.kind ~ ' ') if macros.exists(compound.groups) == "true" else "" }}{{ macros.member_name(child) }}
+
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% if not loop.last %}
 {% endif %}

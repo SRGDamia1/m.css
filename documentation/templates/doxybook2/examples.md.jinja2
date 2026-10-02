@@ -1,8 +1,9 @@
+{% import "macros.md.jinja2" as macros %}
 ---
 title: Examples
 summary: Example Index
 {% include "meta.md.jinja2" %}
 ---
 
-{% if index.examples|length > 0 %}{{ "\n\n" }}{% with children=index.examples %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
+{% if macros.exists(index.examples) == "true" %}{{ "\n\n" }}{% with children=index.examples %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
 {% include "footer.md.jinja2" %}

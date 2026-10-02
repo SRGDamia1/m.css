@@ -1,8 +1,9 @@
+{% import "macros.md.jinja2" as macros %}
 ---
 title: Files
 summary: File Index
 {% include "meta.md.jinja2" %}
 ---
 
-{% if index.files|length > 0 %}{{ "\n\n" }}{% with children=index.files %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
+{% if macros.exists(index.files) == "true" %}{{ "\n\n" }}{% with children=index.files %}{% include "index.md.jinja2" %}{% endwith %}{% else %}{{ "\n" }}{% endif %}
 {% include "footer.md.jinja2" %}

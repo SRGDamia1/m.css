@@ -109,6 +109,6 @@
 | | Name |
 | --- | --- |
 {% for child in compound.defines %}
-| {{ macros.table_type(child.type_markdown) }}{{ ' ' if child.type_markdown else '' }}| **{{ macros.linked_name(child) }}**{% if macros.exists(child.params) == "true" %}({% for param in child.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(child.brief_markdown) == "true" %}<br>{{ macros.table_cell(child.brief_markdown) }}{% endif %} |
+| {{ macros.table_type(child.type_markdown) }}{{ ' ' if macros.exists(child.type_markdown) == "true" else '' }}| **{{ macros.linked_name(child) }}**{% if macros.exists(child.params) == "true" %}({% for param in child.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(child.brief_markdown) == "true" %}<br>{{ macros.table_cell(child.brief_markdown) }}{% endif %} |
 {% endfor %}
 {% endif %}

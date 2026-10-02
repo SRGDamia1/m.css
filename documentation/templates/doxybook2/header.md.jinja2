@@ -6,6 +6,6 @@
 {% endif %}{% include "meta.md.jinja2" %}
 ---
 
-{% if page_heading is not none %}
+{% if macros.exists(page_heading) == "true" %}
 # {{ page_heading }}
 {% endif %}
