@@ -61,6 +61,17 @@
 {% endif %}
 {% if macros.exists(compound.groups) == "true" %}
 {% for group in compound.groups %}
+{% set subgroups = namespace(kinds=[]) %}
+{% for kind, child in group.members %}
+{% if kind in ["enum", "typedef", "func", "var"] %}
+{% set category = "type" if kind in ["enum", "typedef"] else kind %}
+{% set subgroup = (category, child.is_protected) %}
+{% if subgroup not in subgroups.kinds %}
+{% set subgroups.kinds = subgroups.kinds + [subgroup] %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% set show_subgroup_headings = subgroups.kinds|length > 1 %}
 
 ## {{ group.name }}
 
@@ -72,9 +83,11 @@
 {% endif %}
 {% endfor %}
 {% if group_has_public_types.value %}
+{% if show_subgroup_headings %}
 
 ### Public Types
 
+{% endif %}
 | | Name |
 | --- | --- |
 {% for kind, child in group.members %}
@@ -90,9 +103,11 @@
 {% endif %}
 {% endfor %}
 {% if group_has_public_funcs.value %}
+{% if show_subgroup_headings %}
 
 ### Public Functions
 
+{% endif %}
 | | Name |
 | --- | --- |
 {% for kind, child in group.members %}
@@ -108,9 +123,11 @@
 {% endif %}
 {% endfor %}
 {% if group_has_public_vars.value %}
+{% if show_subgroup_headings %}
 
 ### Public Attributes
 
+{% endif %}
 | | Name |
 | --- | --- |
 {% for kind, child in group.members %}
@@ -126,9 +143,11 @@
 {% endif %}
 {% endfor %}
 {% if group_has_protected_types.value %}
+{% if show_subgroup_headings %}
 
 ### Protected Types
 
+{% endif %}
 | | Name |
 | --- | --- |
 {% for kind, child in group.members %}
@@ -144,9 +163,11 @@
 {% endif %}
 {% endfor %}
 {% if group_has_protected_funcs.value %}
+{% if show_subgroup_headings %}
 
 ### Protected Functions
 
+{% endif %}
 | | Name |
 | --- | --- |
 {% for kind, child in group.members %}
@@ -162,9 +183,11 @@
 {% endif %}
 {% endfor %}
 {% if group_has_protected_vars.value %}
+{% if show_subgroup_headings %}
 
 ### Protected Attributes
 
+{% endif %}
 | | Name |
 | --- | --- |
 {% for kind, child in group.members %}
