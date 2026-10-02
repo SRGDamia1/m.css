@@ -175,7 +175,4 @@
 **Reimplemented by**:
 {% for impl in compound.reimplemented_by %}[{{ impl.fullname }}]({{ impl.markdown_url }}){% if not loop.last %}, {% endif %}{% endfor %}
 {% endif %}
-{% if macros.exists(compound.inbody) == "true" %}
-
-{{ macros.render_if_exists(compound.inbody) }}
-{% endif %}
+{{ macros.render_if_exists(compound.inbody, before='\n', after='\n') -}}

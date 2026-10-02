@@ -1,7 +1,4 @@
+{% import "macros.md.jinja2" as macros %}
 {% include "header.md.jinja2" %}
-
-{% if compound.description_markdown %}
-
-{{ compound.description_markdown }}
-{% endif %}
+{{ macros.render_if_exists(compound.description_markdown, before='\n', after='\n') -}}
 {% include "footer.md.jinja2" %}

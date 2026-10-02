@@ -132,8 +132,7 @@
 
 ### {{ group.name }}
 
-{{ macros.render_if_exists(group.description_markdown) }}
-
+{{ macros.render_if_exists(group.description_markdown, after='\n\n') -}}
 {% for kind, child in group.members %}
 {% if not child.is_protected %}
 #### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
@@ -169,8 +168,7 @@
 
 ### {{ group.name }}
 
-{{ macros.render_if_exists(group.description_markdown) }}
-
+{{ macros.render_if_exists(group.description_markdown, after='\n\n') -}}
 {% for kind, child in group.members %}
 {% if child.is_protected %}
 #### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}

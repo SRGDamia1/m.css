@@ -1,6 +1,6 @@
-{% macro render_if_exists(value) %}
+{% macro render_if_exists(value, before='', after='') %}
 {% if value is defined and value is not none and value != '' and value|length > 0 %}
-{{ value }}
+{{ before }}{{ value }}{{ after }}
 {%- endif %}
 {%- endmacro %}
 

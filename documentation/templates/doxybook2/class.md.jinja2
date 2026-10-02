@@ -1,14 +1,8 @@
 {% import "macros.md.jinja2" as macros %}
 {% include "header.md.jinja2" %}
 {% include "breadcrumbs.md.jinja2" %}
-{% if compound.brief_markdown %}
-
-{{ compound.brief_markdown }}
-{% endif %}
-{% if compound.description_markdown %}
-
-{{ compound.description_markdown }}
-{% endif %}
+{{ macros.render_if_exists(compound.brief_markdown, before='\n', after='\n') -}}
+{{ macros.render_if_exists(compound.description_markdown, before='\n', after='\n') -}}
 {% if has_typedef_details or has_enum_details or has_func_details or has_var_details %}
 [Member Details](#member-details)
 

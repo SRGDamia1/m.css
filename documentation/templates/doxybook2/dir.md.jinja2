@@ -1,14 +1,8 @@
 {% import "macros.md.jinja2" as macros %}
 {% include "header.md.jinja2" %}
 {% include "breadcrumbs.md.jinja2" %}
-{% if compound.brief_markdown %}
-
-{{ compound.brief_markdown }}
-{% endif %}
-{% if macros.exists(group.description_markdown) == "true" %}
-
-{{ compound.description_markdown }}
-{% endif %}
+{{ macros.render_if_exists(compound.brief_markdown, before='\n', after='\n') -}}
+{{ macros.render_if_exists(compound.description_markdown, before='\n', after='\n') -}}
 {% if has_typedef_details or has_enum_details or has_func_details or has_var_details or has_define_details %}{{ "\n" }}[Member Details](#member-details)
 {% endif %}
 {% include "nonclass_members_tables.md.jinja2" %}
