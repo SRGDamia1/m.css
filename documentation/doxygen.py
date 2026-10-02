@@ -5826,7 +5826,10 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                     f.write(b'\n')
 
     # Copy all referenced files
-    for i in state.images + state.config['STYLESHEETS'] + state.config['EXTRA_FILES'] + ([state.doxyfile['PROJECT_LOGO']] if state.doxyfile['PROJECT_LOGO'] else []) + ([state.config['FAVICON'][0]] if state.config['FAVICON'] else []) + ([] if state.config['SEARCH_DISABLED'] else ['search.js']):
+    referenced_files = state.images + state.config['EXTRA_FILES'] + ([state.doxyfile['PROJECT_LOGO']] if state.doxyfile['PROJECT_LOGO'] else [])
+    if template_type == 'html':
+        referenced_files += state.config['STYLESHEETS'] + ([state.config['FAVICON'][0]] if state.config['FAVICON'] else []) + ([] if state.config['SEARCH_DISABLED'] else ['search.js'])
+    for i in referenced_files:
         # Skip absolute URLs
         if urllib.parse.urlparse(i).netloc:
             logging.debug(f"Ignoring URL file: {i}")
