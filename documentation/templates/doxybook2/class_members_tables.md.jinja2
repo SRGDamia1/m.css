@@ -3,69 +3,62 @@
 
 ## Public Classes
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.classes %}
 {{ macros.table_entry_class(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.public_types) == "true" %}
 
 ## Public Types
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for kind, child in compound.public_types %}
 {{ macros.table_entry_enum(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.protected_types) == "true" %}
 
 ## Protected Types
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for kind, child in compound.protected_types %}
 {{ macros.table_entry_enum(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.public_slots) == "true" %}
 
 ## Public Slots
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.public_slots %}
 {{ macros.table_entry_function(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.protected_slots) == "true" %}
 
 ## Protected Slots
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.protected_slots %}
 {{ macros.table_entry_function(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.signals) == "true" %}
 
 ## Public Signals
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.signals %}
 {{ macros.table_entry_function(child) }}
 {% endfor %}
 {% endif %}
-
-
 {% if macros.exists(compound.groups) == "true" %}
 {% for group in compound.groups %}
 
@@ -82,8 +75,8 @@
 
 ### Public Types
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for kind, child in group.members %}
 {% if kind in ["enum", "typedef"] and not child.is_protected %}
 {{ macros.table_entry_enum(child) }}
@@ -100,8 +93,8 @@
 
 ### Public Functions
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for kind, child in group.members %}
 {% if kind == "func" and not child.is_protected %}
 {{ macros.table_entry_function(child) }}
@@ -118,8 +111,8 @@
 
 ### Public Attributes
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for kind, child in group.members %}
 {% if kind == "var" and not child.is_protected %}
 {{ macros.table_entry_var(child) }}
@@ -136,8 +129,8 @@
 
 ### Protected Types
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for kind, child in group.members %}
 {% if kind in ["enum", "typedef"] and child.is_protected %}
 {{ macros.table_entry_enum(child) }}
@@ -154,8 +147,8 @@
 
 ### Protected Functions
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for kind, child in group.members %}
 {% if kind == "func" and child.is_protected %}
 {{ macros.table_entry_function(child) }}
@@ -172,68 +165,62 @@
 
 ### Protected Attributes
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for kind, child in group.members %}
 {% if kind == "var" and child.is_protected %}
 {{ macros.table_entry_var(child) }}
 {% endif %}
 {% endfor %}
 {% endif %}
-
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.public_funcs) == "true" %}
 
 ## Public Functions
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.public_funcs %}
 {{ macros.table_entry_function(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.protected_funcs) == "true" %}
 
 ## Protected Functions
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.protected_funcs %}
 {{ macros.table_entry_function(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.public_vars) == "true" %}
 
 ## Public Attributes
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.public_vars %}
 {{ macros.table_entry_var(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.protected_vars) == "true" %}
 
 ## Protected Attributes
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.protected_vars %}
 {{ macros.table_entry_var(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.friends) == "true" %}
 
 ## Friends
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.friends %}
 {{ macros.table_entry_friend(child) }}
 {% endfor %}

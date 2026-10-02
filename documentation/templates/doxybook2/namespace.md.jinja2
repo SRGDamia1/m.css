@@ -1,8 +1,6 @@
 {% import "macros.md.jinja2" as macros %}
 {% include "header.md.jinja2" %}
-
 {% include "breadcrumbs.md.jinja2" %}
-
 {% if compound.brief_markdown %}
 
 {{ compound.brief_markdown }}
@@ -20,5 +18,4 @@
 
 {% include "details.md.jinja2" %}{% endif %}
 {% include "nonclass_members_details.md.jinja2" %}
-
 {% include "footer.md.jinja2" %}

@@ -13,7 +13,7 @@
 {% if compound.kind == "enum" %}
 
 | Enumerator | Value | Description |
-| ---------- | ----- | ----------- |
+| --- | --- | --- |
 {% for enumvalue in compound.values %}
 | <a id="{{ enumvalue.markdown_anchor[1:] }}"></a>&#8203;{{ enumvalue.name }} | {% if macros.exists(enumvalue.initializer) == "true" %}{{ enumvalue.initializer|replace("= ", "")|replace("|", "\\|") }}{% endif %} | {{ macros.render_if_exists(enumvalue.brief_markdown) }}{{ macros.render_if_exists(enumvalue.description_markdown) }} |
 {% endfor %}
@@ -52,8 +52,9 @@ friend {{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}
 {% if compound.kind == "define" %}
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
-#define {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(compound.initializer) == "true" %} {{ compound.initializer }}{% endif %}
+#define {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(compound.initializer) == "true" %} {{ compound.initializer }}{% endif +%}
 ```
 
 {% endif %}
 {% include "details.md.jinja2" %}
+{{ '\n' }}

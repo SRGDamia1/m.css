@@ -5,7 +5,6 @@ summary: Class Index
 ---
 
 {% if index.symbols|length > 0 %}
-
 {% with children=index.symbols|selectattr('kind', 'ne', 'namespace') %}
 {% include "index.md.jinja2" %}
 {% endwith %}

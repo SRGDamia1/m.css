@@ -5,57 +5,47 @@
 
 {% for child in compound.typedefs %}
 {% if not loop.first %}
-
 {% endif %}
 ### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
-
-
 {% if macros.exists(compound.enums) == "true" %}
 {% for child in compound.enums %}
 {% if not loop.first %}
-
 {% endif %}
 ### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.funcs) == "true" %}
 
 ## Functions Documentation
 
 {% for child in compound.funcs %}
 {% if not loop.first %}
-
 {% endif %}
 ### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.vars) == "true" %}
 
 ## Attributes Documentation
 
 {% for child in compound.vars %}
 {% if not loop.first %}
-
 {% endif %}
 ### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.defines) == "true" %}
 
 ## Macros Documentation
 
 {% for child in compound.defines %}
 {% if not loop.first %}
-
 {% endif %}
 ### {{ child.kind if macros.exists(compound.groups) == "true" else "" }} {{ child.name }}
 {% with compound=child %}{% include "member_details.md.jinja2" %}{% endwith %}

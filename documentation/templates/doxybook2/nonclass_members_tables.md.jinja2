@@ -3,64 +3,58 @@
 
 ## Modules
 
-| Name           |
-| -------------- |
+| Name |
+| --- |
 {% for child in compound.groups %}
 {{ macros.table_entry_simple(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.dirs) == "true" %}
 
 ## Directories
 
-| Name           |
-| -------------- |
+| Name |
+| --- |
 {% for child in compound.dirs %}
 {{ macros.table_entry_simple(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.files) == "true" %}
 
 ## Files
 
-| Name           |
-| -------------- |
+| Name |
+| --- |
 {% for child in compound.files %}
 {{ macros.table_entry_simple(child) }}
 {% endfor %}
 {% endif %}
-
-
 {% if macros.exists(compound.namespaces) == "true" %}
 
-## {% if macros.exists(compound.language) == "true" and compound.language == "java" %}Packages{% else %}Namespaces{% endif %}
+## {% if macros.exists(compound.language) == "true" and compound.language == "java" %}Packages{% else %}Namespaces{% endif +%}
 
-| Name           |
-| -------------- |
+| Name |
+| --- |
 {% for child in compound.namespaces %}
 {{ macros.table_entry_simple(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.classes) == "true" %}
 
 ## Classes
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.classes %}
 {{ macros.table_entry_class(child) }}
 {% endfor %}
 {% endif %}
-
 {% if ((macros.exists(compound.typedefs) == "true") or (macros.exists(compound.enums) == "true")) %}
 
 ## Types
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.typedefs %}
 {{ macros.table_entry_enum(child) }}
 {% endfor %}
@@ -68,58 +62,52 @@
 {{ macros.table_entry_enum(child) }}
 {% endfor %}
 {% endif %}
-
 {% if ((macros.exists(compound.public_slots) == "true") or (macros.exists(compound.signals) == "true")) %}
 
 ## Slots
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.public_slots %}
 {{ macros.table_entry_function(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.signals) == "true" %}
 
 ## Signals
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.signals %}
 {{ macros.table_entry_function(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.funcs) == "true" %}
 
 ## Functions
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.funcs %}
 {{ macros.table_entry_function(child) }}
 {% endfor %}
 {% endif %}
-
 {% if macros.exists(compound.vars) == "true" %}
 
 ## Attributes
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.vars %}
 {{ macros.table_entry_var(child) }}
 {% endfor %}
 {% endif %}
-
-
 {% if macros.exists(compound.defines) == "true" %}
 
 ## Defines
 
-|                | Name           |
-| -------------- | -------------- |
+| | Name |
+| --- | --- |
 {% for child in compound.defines %}
 | {{ macros.render_if_exists(child.type_markdown) }} | **{{ macros.linked_name(child) }}**{% if macros.exists(child.params) == "true" %}({% for param in child.params %}{{ param[0] }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}{% if macros.exists(child.brief_markdown) == "true" %}<br>{{ child.brief_markdown }}{% endif %} |
 {% endfor %}

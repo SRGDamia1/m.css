@@ -1391,13 +1391,13 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                 if not out.section: out.section = ('', '', [])
                 out.section = (out.section[0], out.section[1], out.section[2] + [parsed.section])
                 out.html += '<section id="{}">{}</section>'.format(extract_id_hash(state, i), parsed.html)
-                out.markdown += parsed.markdown
+                out.markdown += '\n\n' + parsed.markdown + '\n\n'
 
             # Render directly the contents otherwise, propagate parsed stuff up
             else:
                 merge_parsed_subsections(parsed)
                 out.html += parsed.html
-                out.markdown += parsed.markdown
+                out.markdown += '\n\n' + parsed.markdown + '\n\n'
 
             if parsed.search_keywords:
                 out.search_keywords += parsed.search_keywords
@@ -1540,7 +1540,9 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                     out.html += '<p{}>'.format(' class="{}"'.format(add_css_class) if add_css_class else '')
                     out.markdown += '\n'
                 out.html += parsed.html
-                out.markdown += parsed.markdown
+                # Recursive parsing strips surrounding whitespace. Paragraphs
+                # (including code blocks and lists) still need block boundaries.
+                out.markdown += '\n\n' + parsed.markdown + '\n\n'
                 if parsed.write_paragraph_close_tag:
                     out.html += '</p>'
                     out.markdown += '\n'
@@ -1687,7 +1689,7 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
             # Format markdown table
             if md_rows:
                 for i_row, md_row in enumerate(md_rows):
-                    out.markdown += '| ' + ' | '.join(md_row) + ' |\n'
+                    out.markdown += '|' + '|'.join(' ' + cell + ' ' if cell else ' ' for cell in md_row) + '|\n'
                     if i_row == 0 and md_has_header:
                         out.markdown += '| ' + ' | '.join(['---'] * len(md_row)) + ' |\n'
             out.markdown += '\n'
