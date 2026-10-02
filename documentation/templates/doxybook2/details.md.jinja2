@@ -19,12 +19,12 @@
     (macros.exists(compound.copyright) == "true") or
     (macros.exists(compound.invariant) == "true")
 ) %}
-{{ macros.render_if_exists(compound.description_markdown) }}
+{{ macros.render_if_exists(compound.description_markdown, after='\n') -}}
 {% if has_metadata %}
-
+{% if macros.exists(compound.description_markdown) == "true" %}{{ '\n' }}{% endif %}
 {% if macros.exists(compound.params) == "true" and compound.has_param_details %}
 - **Parameters**:
-{% for param in compound.params %}  - **{{ param.name }}** {{ param.description_markdown }}
+{% for param in compound.params %}  - **{{ param.name or macros.plain_type(param.parsed_type) or 'Unnamed parameter' }}**{{ macros.render_if_exists(param.description_markdown, before=' ') }}
 {% endfor %}
 {% endif %}
 {% if macros.exists(compound.return_values) == "true" %}

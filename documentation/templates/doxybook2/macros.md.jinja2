@@ -18,16 +18,31 @@ true
 {%- endif %}
 {%- endmacro %}
 
-{% macro template_params(item) %}
+{% macro table_cell(value) %}
+{{ (value if value is defined and value is not none else '')|replace('|', '\\|')|replace('\r\n', '\n')|replace('\n', '<br>') }}
+{%- endmacro %}
+
+{% macro table_type(value) %}
+{{ table_cell(value)|replace('*', '\\*') }}
+{%- endmacro %}
+
+{% macro plain_type(parsed) %}
+{% for part in parsed.parts %}
+{{ part.text if part.text is defined else part.link_text_markdown if part.link_text_markdown is defined else '' }}
+{%- endfor %}
+{%- endmacro %}
+
+{% macro template_params(item, plain_types=false) %}
 {% if item.templates %}
-template <{% for param in item.templates %}{{ param.type_markdown }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}
-{% endfor %}>
-{% endif %}
-{% endmacro %}
+template <{% for param in item.templates %}
+{{ plain_type(param.parsed_type) if plain_types else table_type(param.type_markdown) }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}
+{%- endfor %}>
+{%- endif %}
+{%- endmacro %}
 
 {% macro function_with_params(child) %}
 **{{ linked_name(child) }}**({% for param in child.params %}
-{{ param.type_markdown }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}
+{{ table_type(param.type_markdown) }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}
 {%- endfor %})
 {%- endmacro %}
 
@@ -40,19 +55,19 @@ template <{% for param in item.templates %}{{ param.type_markdown }} {{ param.na
 {%- endmacro %}
 
 {% macro table_entry_function(child) %}
-| {{ template_params(child) }}{% if child.templates %}<br>{% endif %}{% if child.is_virtual %}*virtual*<br>{% endif %}{% if child.is_override %}*override*<br>{% endif %}{{ render_if_exists(child.type_markdown) }} | {{ function_with_params(child) }}{% if child.is_const %} const{% endif %}{% if child.is_defaulted %} = default{% endif %}{% if child.is_deleted %} = delete{% endif %}{% if child.is_pure_virtual %} = 0{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ child.brief_markdown }}{% endif %} |
+| {{ template_params(child) }}{% if child.templates %}<br>{% endif %}{% if child.is_virtual %}*virtual*<br>{% endif %}{% if child.is_override %}*override*<br>{% endif %}{{ table_type(child.type_markdown) }}{{ ' ' if child.type_markdown or child.templates or child.is_virtual or child.is_override else '' }}| {{ function_with_params(child) }}{% if child.is_const %} const{% endif %}{% if child.is_defaulted %} = default{% endif %}{% if child.is_deleted %} = delete{% endif %}{% if child.is_pure_virtual %} = 0{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
 {%- endmacro %}
 
 {% macro table_entry_enum(child) %}
-| {{ template_params(child) }}{% if child.templates %}<br>{% endif %}{{ child.kind }}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if exists(child.type_markdown) == "true" %} {{ child.type_markdown }}{% endif %} | {{ linked_name(child) }}{% if child.kind == "enum" and child.values %} { {% for enumvalue in child.values %}{{ enumvalue.name }}{% if exists(enumvalue.initializer) == "true" %} {{ enumvalue.initializer }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %} }{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ child.brief_markdown }}{% endif %} |
+| {{ template_params(child) }}{% if child.templates %}<br>{% endif %}{{ child.kind }}{% if child.kind == "enum" and child.is_strong %} class{% endif %}{% if exists(child.type_markdown) == "true" %} {{ table_type(child.type_markdown) }}{% endif %} | {{ linked_name(child) }}{% if child.kind == "enum" and child.values %} { {% for enumvalue in child.values %}{{ enumvalue.name }}{% if exists(enumvalue.initializer) == "true" %} {{ table_cell(enumvalue.initializer) }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %} }{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
 {%- endmacro %}
 
 {% macro table_entry_var(child) %}
-| {{ render_if_exists(child.type_markdown) }} | {{ table_val_name_brief(child) }} |
+| {{ table_type(child.type_markdown) }}{{ ' ' if child.type_markdown or child.templates or child.is_virtual or child.is_override else '' }}| {{ table_val_name_brief(child) }} |
 {%- endmacro %}
 
 {% macro table_entry_friend(child) %}
-| {{ render_if_exists(child.type_markdown) }} | {{ linked_name(child) }}{% if child.type_markdown != "class" and child.type_markdown != "struct" %}{% if exists(child.params) == "true" %}({% for param in child.params %}{{ param.type_markdown }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if child.is_const %} const{% endif %}{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ child.brief_markdown }}{% endif %} |
+| {{ table_type(child.type_markdown) }}{{ ' ' if child.type_markdown or child.templates or child.is_virtual or child.is_override else '' }}| {{ linked_name(child) }}{% if child.type_markdown != "class" and child.type_markdown != "struct" %}{% if exists(child.params) == "true" %}({% for param in child.params %}{{ table_type(param.type_markdown) }} {{ param.name }}{% if exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if child.is_const %} const{% endif %}{% endif %}{% if exists(child.brief_markdown) == "true" %}<br>{{ table_cell(child.brief_markdown) }}{% endif %} |
 {%- endmacro %}
 
 {% macro table_entry_class(child) %}
@@ -60,5 +75,5 @@ template <{% for param in item.templates %}{{ param.type_markdown }} {{ param.na
 {%- endmacro %}
 
 {% macro table_entry_simple(child) %}
-| {{ table_val_name_brief(child) }} | |
+| {{ table_val_name_brief(child) }} |
 {%- endmacro %}

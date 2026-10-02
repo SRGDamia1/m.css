@@ -4,9 +4,9 @@
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
 {% if compound.has_template_details %}
-{{ macros.template_params(compound) }}
+{{ macros.template_params(compound, plain_types=true) }}
 {% endif %}
-{% if compound.is_static %}static {% endif %}{% if compound.is_explicit %}explicit {% endif %}{% if compound.is_virtual %}virtual {% endif %}{{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param.type_markdown }} {{ param.name }}{% if macros.exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if compound.is_override %} override{% endif %}{% if compound.is_defaulted %} = default{% endif %}{% if compound.is_deleted %} = delete{% endif %}{% if compound.is_pure_virtual %} = 0{% endif %}
+{% if compound.is_static %}static {% endif %}{% if compound.is_explicit %}explicit {% endif %}{% if compound.is_virtual %}virtual {% endif %}{{ macros.plain_type(compound.parsed_type) }} {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ macros.plain_type(param.parsed_type) }} {{ param.name }}{% if macros.exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% else %}(){% endif %}{% if compound.is_override %} override{% endif %}{% if compound.is_defaulted %} = default{% endif %}{% if compound.is_deleted %} = delete{% endif %}{% if compound.is_pure_virtual %} = 0{% endif +%}
 ```
 
 {% endif %}
@@ -15,13 +15,13 @@
 | Enumerator | Value | Description |
 | --- | --- | --- |
 {% for enumvalue in compound.values %}
-| <a id="{{ enumvalue.markdown_anchor[1:] }}"></a>&#8203;{{ enumvalue.name }} | {% if macros.exists(enumvalue.initializer) == "true" %}{{ enumvalue.initializer|replace("= ", "")|replace("|", "\\|") }}{% endif %} | {{ macros.render_if_exists(enumvalue.brief_markdown) }}{{ macros.render_if_exists(enumvalue.description_markdown) }} |
+| <a id="{{ enumvalue.markdown_anchor[1:] }}"></a>&#8203;{{ enumvalue.name }} | {% if macros.exists(enumvalue.initializer) == "true" %}{{ enumvalue.initializer|replace("= ", "")|replace("|", "\\|") }} {% endif %}| {{ macros.table_cell(enumvalue.brief_markdown) }}{{ macros.table_cell(enumvalue.description_markdown) }} |
 {% endfor %}
 {% endif %}
 {% if compound.kind in ["variable", "property", "enum constant"] %}
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
-{% if compound.is_static %}static {% endif %}{{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}{% if macros.exists(compound.initializer) == "true" %} {{ compound.initializer }}{% endif %};
+{% if compound.is_static %}static {% endif %}{{ macros.plain_type(compound.parsed_type) }} {{ compound.name }}{% if macros.exists(compound.initializer) == "true" %} {{ compound.initializer }}{% endif %};
 ```
 
 {% endif %}
@@ -36,16 +36,16 @@
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
 {% if compound.has_template_details %}
-{{ macros.template_params(compound) }}
+{{ macros.template_params(compound, plain_types=true) }}
 {% endif %}
-{{ compound.type_markdown }};
+{{ macros.plain_type(compound.parsed_type) }};
 ```
 
 {% endif %}
 {% if compound.kind == "friend" %}
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
-friend {{ macros.render_if_exists(compound.type_markdown) }} {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ param.type_markdown }} {{ param.name }}{% if macros.exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% elif compound.type_markdown != "class" %}(){% endif %};
+friend {{ macros.plain_type(compound.parsed_type) }} {{ compound.name }}{% if macros.exists(compound.params) == "true" %}({% for param in compound.params %}{{ macros.plain_type(param.parsed_type) }} {{ param.name }}{% if macros.exists(param.default) == "true" %} = {{ param.default }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}){% elif compound.type_markdown != "class" %}(){% endif %};
 ```
 
 {% endif %}

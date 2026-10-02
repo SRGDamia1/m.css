@@ -9,7 +9,7 @@
 ## Member Details
 
 ```{{ compound.language if macros.exists(compound.language) == "true" else "cpp" }}
-{% if compound.has_template_details %}{{ macros.template_params(compound) }}
+{% if compound.has_template_details %}{{ macros.template_params(compound, plain_types=true) }}
 {% endif %}
 {{ compound.kind }} {{ compound.name }};
 ```
