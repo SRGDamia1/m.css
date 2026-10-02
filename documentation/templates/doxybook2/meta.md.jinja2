@@ -1,0 +1,31 @@
+{% import "macros.md.jinja2" as macros %}
+{% if compound is defined and compound is not none %}
+{% if macros.exists(compound.brief_markdown) == "true" %}
+description: {{ compound.brief_markdown|tojson }}
+{% endif %}
+{% if macros.exists(compound.id) == "true" %}
+id: {{ compound.id|tojson }}
+{% endif %}
+{% if macros.exists(compound.kind) == "true" %}
+kind: {{ compound.kind|tojson }}
+{% endif %}
+{% endif %}
+{% if macros.exists(PROJECT_NAME) == "true" %}
+project: {{ PROJECT_NAME|tojson }}
+{% endif %}
+{% if macros.exists(PROJECT_NUMBER) == "true" %}
+version: {{ PROJECT_NUMBER|tojson }}
+{% endif %}
+{% if compound is defined and compound is not none %}
+{% if compound.location is defined and compound.location is not none %}
+{% if macros.exists(compound.location.file) == "true" %}
+source_file: {{ compound.location.file|tojson }}
+{% endif %}
+{% if macros.exists(compound.location.line) == "true" %}
+source_line: {{ compound.location.line|tojson }}
+{% endif %}
+{% endif %}
+{% if macros.exists(compound.render_time) == "true" %}
+generated_at: {{ (compound.render_time[:10] if compound.render_time is string else compound.render_time.date().isoformat())|tojson }}
+{% endif %}
+{% endif %}
