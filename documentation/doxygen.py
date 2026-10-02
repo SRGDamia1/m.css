@@ -1577,7 +1577,7 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
             out.html += '<blockquote>{}</blockquote>'.format(blockquote_parsed.html)
             # Format markdown as blockquote (prefix with "> ")
             if blockquote_parsed.markdown:
-                out.markdown += '\n' + '\n'.join('> ' + line for line in blockquote_parsed.markdown.split('\n')) + '\n'
+                out.markdown += '\n\n' + '\n'.join('> ' + line for line in blockquote_parsed.markdown.strip('\n').split('\n')) + '\n\n<!-- end blockquote -->\n\n'
 
         elif i.tag in ['itemizedlist', 'orderedlist']:
             assert element.tag in ['para', '{http://mcss.mosra.cz/doxygen/}div']
@@ -1721,7 +1721,17 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                     out.html = out.html.rstrip() + '</aside>'
 
                 # Not continuing with a section from before, put a header in
-                alert_type: str | None = None
+                # Each Markdown alert is a separate block, even when HTML
+                # merges adjacent sections of the same kind into one aside.
+                alert_type = {
+                    'note': 'NOTE',
+                    'remark': 'TIP',
+                    'tip': 'TIP',
+                    'important': 'IMPORTANT',
+                    'warning': 'WARNING',
+                    'attention': 'CAUTION',
+                    'caution': 'CAUTION',
+                }.get(i.attrib['kind'])
                 if not previous_section or (i.attrib['kind'] != 'par' and previous_section != i.attrib['kind']) or (i.attrib['kind'] == 'par' and i.find('title').text): # type: ignore
                     # TODO: make it possible to override the class using @m_class,
                     # document this and document behavior of @par
@@ -1795,19 +1805,7 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
                             heading=heading,
                             title=title)
 
-                        # GitHub-style alert formatting for markdown
-                        alert_type = {
-                            'note': 'NOTE',
-                            'remark': 'TIP',
-                            'tip': 'TIP',
-                            'important': 'IMPORTANT',
-                            'warning': 'WARNING',
-                            'attention': 'CAUTION',
-                            'caution': 'CAUTION',
-                        }.get(i.attrib['kind'])
-                        if alert_type:
-                            out.markdown += f'\n\n> [!{alert_type}]\n'
-                        else:
+                        if not alert_type:
                             out.markdown += '\n**' + title + '**\n'
 
                     else:
@@ -1820,11 +1818,13 @@ def parse_desc_internal(state: State, element: ET.Element | None, immediate_pare
 
                 # For GitHub flavored markdown, after we've set up an alert, we need to prefix the parsed content inside the alert with '> '
                 if alert_type:
+                    out.markdown += f'\n\n> [!{alert_type}]\n'
                     markdown = parsed_desc.markdown.strip('\n')
                     if markdown:
                         out.markdown += '\n'.join(
                             '> ' + line for line in markdown.split('\n')
                         ) + '\n'
+                    out.markdown += '\n<!-- end alert -->\n\n'
                 else:
                     out.markdown += parsed_desc.markdown
 
