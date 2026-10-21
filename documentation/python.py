@@ -35,7 +35,7 @@ import enum
 import urllib.parse
 import hashlib
 import html
-import importlib
+import importlib.util
 import inspect
 import logging
 import mimetypes
@@ -48,7 +48,6 @@ import typing
 from enum import Enum
 from pathlib import Path
 from types import SimpleNamespace as Empty
-from importlib.machinery import SourceFileLoader
 from typing import Tuple, Dict, Set, Any, List, Callable, Optional, Union
 from urllib.parse import urljoin
 from docutils.transforms import Transform
@@ -3317,8 +3316,11 @@ if __name__ == '__main__': # pragma: no cover
     # Load configuration from a file, update the defaults with it
     config = copy.deepcopy(default_config)
     name, _ = os.path.splitext(os.path.basename(args.conf))
-    module = SourceFileLoader(name, args.conf).load_module()
-    if module is not None:
+    spec = importlib.util.spec_from_file_location(name, args.conf)
+    if spec is not None and spec.loader is not None:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
         config.update((k, v) for k, v in inspect.getmembers(module) if k.isupper())
 
     if args.debug:

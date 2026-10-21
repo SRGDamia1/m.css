@@ -58,7 +58,7 @@ import json
 from types import MappingProxyType
 from typing import Tuple, Dict, Any, List
 
-from importlib.machinery import SourceFileLoader
+import importlib.util
 from jinja2 import Environment, FileSystemLoader
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
@@ -5895,8 +5895,11 @@ if __name__ == '__main__': # pragma: no cover
 
     if args.config.endswith('.py'):
         name, _ = os.path.splitext(os.path.basename(args.config))
-        module = SourceFileLoader(name, args.config).load_module()
-        if module is not None:
+        spec = importlib.util.spec_from_file_location(name, args.config)
+        if spec is not None and spec.loader is not None:
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
             logging.debug(f"Reading python config from {args.config}")
             config.update((k, v) for k, v in inspect.getmembers(module) if k.isupper())
         doxyfile = os.path.join(os.path.dirname(os.path.abspath(args.config)), config['DOXYFILE'])
