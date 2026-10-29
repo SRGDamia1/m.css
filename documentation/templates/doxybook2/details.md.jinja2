@@ -29,12 +29,12 @@
 {% endif %}
 {% if macros.exists(compound.return_values) == "true" %}
 - **Returns**:
-{% for param in compound.return_values %}  - **{{ param[0] }}** {{ param[1] }}
+{% for param in compound.return_values %}  - **{{ param.name }}** {{ param.description_markdown }}
 {% endfor %}
 {% endif %}
 {% if macros.exists(compound.exceptions) == "true" %}
 - **Exceptions**:
-{% for param in compound.exceptions %}  - **{{ param[0] }}** {{ param[1] }}
+{% for param in compound.exceptions %}  - **{{ param.name }}** {{ param.description_markdown }}
 {% endfor %}
 {% endif %}
 {% if compound.has_template_details %}

@@ -2242,8 +2242,6 @@ def extract_data_doc(state: State, parent, entry: Empty):
 
 
 def render(*, config, template: str, url: str, filename: str, env: jinja2.Environment, **kwargs):
-    site_root = '../' * filename.count('/')  # relative to generated page
-
     template = env.get_template(template)
     rendered = template.render(URL=url,
         SEARCHDATA_FORMAT_VERSION=searchdata_format_version,
@@ -2608,25 +2606,20 @@ def render_class(state: State, path, class_, env):
     # something unrelated
     state.current_module = None
 
-# Extracts image paths and transforms them to just the filenames
-class ExtractImages(Transform):
-    # Max Docutils priority is 990, be sure that this is applied at the very
-    # last
-    default_priority = 991
+# A helper function to work-around for stateless Docutils transforms
+def get_image_extracter(source, external_data:set, config):
 
-    # There is no simple way to have stateful transforms (the publisher always
-    # gets just the class, not the instance) so we have to make all data
-    # awfully global. UGH.
-    # TODO: maybe the pending nodes could solve this?
-    _url_formatter = None
-    _external_data = set()
+    # Extracts image paths and transforms them to just the filenames
+    class ExtractImages(Transform):
+        # Max Docutils priority is 990, be sure that this is applied at the very
+        # last
+        default_priority = 991
 
         def __init__(self, document, startnode):
             Transform.__init__(self, document, startnode=startnode)
 
         def apply(self):
             input_path = os.path.realpath(config['INPUT'])
-            ExtractImages._external_data = set()
             for image in self.document.findall(docutils.nodes.image):
                 # Skip absolute URLs
                 if urllib.parse.urlparse(image['uri']).netloc: continue
@@ -3014,7 +3007,7 @@ def run(basedir, config, *, templates=default_templates, search_add_lookahead_ba
         lstrip_blocks=True, enable_async=True)
 
     # Filter to return formatted URL or the full URL, if already absolute
-    def format_url(path, site_root):
+    def format_url(path):
         if urllib.parse.urlparse(path).netloc: return path
 
         # If file is found relative to the conf file, use that
@@ -3024,24 +3017,19 @@ def run(basedir, config, *, templates=default_templates, search_add_lookahead_ba
         else:
             path = os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
-        return site_root + config['URL_FORMATTER'](EntryType.STATIC, [path])[1]  # TODO: url shortening can be applied
+        return config['URL_FORMATTER'](EntryType.STATIC, [path])[1]
 
     # Filter to return URL for given symbol. If the path is a string, first try
     # to treat it as an URL -- either it needs to have the scheme or at least
     # one slash for relative links (in contrast, Python names don't have
     # slashes). If that fails,  turn it into a list and try to look it up in
     # various dicts.
-    def path_to_url(path, site_root):
+    def path_to_url(path):
         if isinstance(path, str):
-            if urllib.parse.urlparse(path).netloc:
-                return path
-            if '/' in path:
-                if path in state.name_map:
-                    path = state.name_map[path]
-                return site_root + path
+            if urllib.parse.urlparse(path).netloc or '/' in path: return path
             path = [path]
         entry = state.name_map['.'.join(path)]
-        return site_root + entry.url  # TODO: url shortening can be applied
+        return entry.url
 
     env.filters['format_url'] = format_url
     env.filters['path_to_url'] = path_to_url

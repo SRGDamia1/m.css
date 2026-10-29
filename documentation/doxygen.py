@@ -59,7 +59,7 @@ from types import MappingProxyType
 from typing import Tuple, Dict, Any, List
 
 import importlib.util
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import ChoiceLoader, Environment, FileSystemLoader, TemplateNotFound
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import TextLexer, BashSessionLexer, ArduinoLexer, CppLexer, get_lexer_by_name, find_lexer_class_for_filename
@@ -442,6 +442,7 @@ class State:
         self.examples: List[Any] = []
         self.doxyfile: Dict[str, Any] = {}
         self.config: Dict[str, Any] = config
+        self.use_folders: bool = config.get('USE_FOLDERS', False)
         self.images: List[str] = []
         self.current = '' # current file being processed (for logging)
         # Current kind of compound being processed. Affects current_include
@@ -834,9 +835,9 @@ def markdown_relative_member_url(state: State, base_url: str, anchor: str) -> st
     if target_id == (state.current_compound_url[:-5] if state.current_compound_url and state.current_compound_url.endswith('.html') else state.current_compound_url):
         return anchor
 
-    current_folder = markdown_folder_maker(current_kind, use_folders=True)
+    current_folder = markdown_folder_maker(current_kind, use_folders=state.use_folders)
     target_kind = state.compounds[target_id].kind if target_id in state.compounds else None
-    target_folder = markdown_folder_maker(target_kind, use_folders=True)
+    target_folder = markdown_folder_maker(target_kind, use_folders=state.use_folders)
 
     return os.path.relpath(
         target_folder + target_id + '.md' + anchor,
@@ -851,17 +852,17 @@ def parse_reference(state: State, element: ET.Element) -> ReferenceLink:
 
     # this is a reference to a compound - ie, something with its own xml file
     if element.attrib['kindref'] == 'compound':
-        # HTML keeps Doxygen's extension-neutral compound URL.  Markdown,
-        # however, is emitted into a folder based on the compound kind, so the
-        # link has to be relative to the folder of the current page.
+        # HTML keeps Doxygen's extension-neutral compound URL. Markdown can be
+        # emitted into a folder based on the compound kind, so the link has to
+        # be relative to the folder of the current page.
         url = id + '.{}'
         if id in state.compounds:
             target_kind = state.compounds[id].kind
             current_folder = markdown_folder_maker(
-                state.current_kind, use_folders=True
+                state.current_kind, use_folders=state.use_folders
             )
             target_folder = markdown_folder_maker(
-                target_kind, use_folders=True
+                target_kind, use_folders=state.use_folders
             )
             target = target_folder + id + '.md'
             ref.markdown_url = os.path.relpath(
@@ -882,19 +883,19 @@ def parse_reference(state: State, element: ET.Element) -> ReferenceLink:
         anchor = '#' + id[i+2:]
         url += anchor
 
-        # Markdown output is split into folders by compound kind.  Markdown
-        # links must therefore be relative to the page currently being
-        # rendered, rather than rooted at the documentation output directory.
-        # Same-page references stay as bare anchors.
+        # When Markdown output is split into folders by compound kind, links
+        # must be relative to the page currently being rendered rather than
+        # rooted at the documentation output directory. Same-page references
+        # stay as bare anchors.
         if same_page:
             ref.markdown_url = anchor
         elif compound_id in state.compounds:
             target_kind = state.compounds[compound_id].kind
             current_folder = markdown_folder_maker(
-                state.current_kind, use_folders=True
+                state.current_kind, use_folders=state.use_folders
             )
             target_folder = markdown_folder_maker(
-                target_kind, use_folders=True
+                target_kind, use_folders=state.use_folders
             )
             target = target_folder + compound_id + '.md' + anchor
             ref.markdown_url = os.path.relpath(
@@ -3076,7 +3077,7 @@ def parse_enum(state: State, element: ET.Element):
 
     # Add markdown URL/anchor/folder generation for enum
     enum.markdown_anchor = '#' + enum.id
-    enum.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    enum.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=state.use_folders)
     enum.markdown_url = markdown_relative_member_url(state, enum.base_url, enum.markdown_anchor)
 
     enum.has_value_details = False
@@ -3094,7 +3095,7 @@ def parse_enum(state: State, element: ET.Element):
 
         # Add markdown URL/anchor/folder generation for enum value
         value.markdown_anchor = '#' + value.id
-        value.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+        value.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=state.use_folders)
         value.markdown_url = value.markdown_folder + enum.base_url.replace('.html', '.md') + value.markdown_anchor
         if value.brief or value.description:
             if enum.base_url == state.current_compound_url and not state.config['SEARCH_DISABLED']:
@@ -3219,7 +3220,7 @@ def parse_typedef(state: State, element: ET.Element):
 
     # Add markdown URL/anchor/folder generation for typedef
     typedef.markdown_anchor = '#' + typedef.id
-    typedef.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    typedef.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=state.use_folders)
     typedef.markdown_url = markdown_relative_member_url(state, typedef.base_url, typedef.markdown_anchor)
 
     if typedef.base_url == state.current_compound_url and (typedef.description or typedef.has_template_details):
@@ -3442,7 +3443,7 @@ def parse_func(state: State, element: ET.Element):
 
     # Add markdown URL/anchor/folder generation for function
     func.markdown_anchor = '#' + func.id
-    func.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    func.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=state.use_folders)
     func.markdown_url = markdown_relative_member_url(state, func.base_url, func.markdown_anchor)
 
     # If there's a detailed description or template, param, return value or
@@ -3544,7 +3545,7 @@ def parse_var(state: State, element: ET.Element):
 
     # Add markdown URL/anchor/folder generation for variable
     var.markdown_anchor = '#' + var.id
-    var.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    var.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=state.use_folders)
     var.markdown_url = markdown_relative_member_url(state, var.base_url, var.markdown_anchor)
 
     if var.base_url == state.current_compound_url and (var.description or var.has_template_details):
@@ -3603,7 +3604,7 @@ def parse_define(state: State, element: ET.Element):
 
     # Add markdown URL/anchor/folder generation for define
     define.markdown_anchor = '#' + define.id
-    define.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=True)
+    define.markdown_folder = markdown_folder_maker(state.current_kind, use_folders=state.use_folders)
     define.markdown_url = markdown_relative_member_url(state, define.base_url, define.markdown_anchor)
 
     if define.base_url == state.current_compound_url and (define.description or define.return_value):
@@ -3746,7 +3747,7 @@ def extract_metadata(state: State, xml):
 
     # Add markdown URL/anchor/folder generation for compound
     compound.markdown_anchor = markdown_anchor_maker(compound.kind, compound.name)
-    compound.markdown_folder = markdown_folder_maker(compound.kind, use_folders=True)
+    compound.markdown_folder = markdown_folder_maker(compound.kind, use_folders=state.use_folders)
     compound.markdown_url = compound.markdown_folder + compound.url.replace('.html', '.md')
 
     compound.brief, compound.brief_markdown = parse_desc_with_markdown(state, compounddef.find('briefdescription'))
@@ -5549,7 +5550,49 @@ default_index_pages = ['pages', 'files', 'namespaces', 'topics', 'annotated']
 default_wildcard = '*.xml'
 default_templates = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates/doxygen/')
 
+
+class ExtensionFallbackLoader(FileSystemLoader):
+    """Load either suffixed Jinja templates or their plain counterparts."""
+
+    def __init__(self, searchpath, template_ext, **kwargs):
+        super().__init__(searchpath, **kwargs)
+        self.template_ext = template_ext
+        self.plain_ext = (
+            template_ext[:-len('.jinja2')]
+            if template_ext.endswith('.jinja2') else template_ext
+        )
+
+    def get_source(self, environment, template):
+        candidates = [template]
+        if template.endswith(self.template_ext):
+            candidates.append(template[:-len('.jinja2')])
+        elif template.endswith(self.plain_ext):
+            candidates.append(template + '.jinja2')
+        else:
+            candidates.append(template + self.template_ext)
+
+        for candidate in candidates:
+            try:
+                return super().get_source(environment, candidate)
+            except TemplateNotFound:
+                pass
+
+        raise TemplateNotFound(template)
+
+
+def make_template_loader(searchpaths, template_ext):
+    # Apply extension fallback within each directory before trying the next
+    # directory, so a custom template wins over every default fallback.
+    return ChoiceLoader([
+        ExtensionFallbackLoader(searchpath, template_ext)
+        for searchpath in searchpaths
+    ])
+
 def run(state: State, *, templates=default_templates, wildcard=default_wildcard, index_pages=default_index_pages, search_add_lookahead_barriers=True, search_merge_subtrees=True, search_merge_prefixes=True, sort_globbed_files=False, template_type='html', debug_template=False):
+    # Keep the historical per-template default while allowing conf.py to
+    # override it with USE_FOLDERS = True or False.
+    state.use_folders = state.config.get('USE_FOLDERS', template_type == 'md')
+
     xml_input = os.path.join(state.basedir, state.doxyfile['OUTPUT_DIRECTORY'], state.doxyfile['XML_OUTPUT'])
     xml_files_metadata = [os.path.join(xml_input, f) for f in glob.glob(os.path.join(xml_input, "*.xml"))]
     xml_files = [os.path.join(xml_input, f) for f in glob.glob(os.path.join(xml_input, wildcard))]
@@ -5593,21 +5636,8 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
     template_paths = [templates]
     if templates != default_templates: template_paths += [default_templates]
 
-    # Create a custom loader that tries to add template extension if file not found
-    class ExtensionFallbackLoader(FileSystemLoader):
-        def __init__(self, searchpath, template_ext, **kwargs):
-            super().__init__(searchpath, **kwargs)
-            self.template_ext = template_ext
-
-        def get_source(self, environment, template):
-            try:
-                return super().get_source(environment, template)
-            except:
-                # If template not found, try with extension appended
-                return super().get_source(environment, template + self.template_ext)
-
     env = Environment(
-        loader=ExtensionFallbackLoader(template_paths, template_ext),
+        loader=make_template_loader(template_paths, template_ext),
         trim_blocks=True,
         lstrip_blocks=True,
         enable_async=True,
@@ -5711,7 +5741,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
                 # initialized. Compute it from the compound kind as a fallback.
                 markdown_folder = parsed.compound.markdown_folder
                 if markdown_folder is None:
-                    markdown_folder = markdown_folder_maker(parsed.compound.kind, use_folders=True)
+                    markdown_folder = markdown_folder_maker(parsed.compound.kind, use_folders=state.use_folders)
                 output_url = markdown_folder + output_url
 
             if debug_template:
@@ -5757,7 +5787,7 @@ def run(state: State, *, templates=default_templates, wildcard=default_wildcard,
         compound.kind = 'page'
         compound.name = state.doxyfile['PROJECT_NAME']
         compound.description = ''
-        compound.markdown_folder = markdown_folder_maker('page', use_folders=(template_type == 'md'))
+        compound.markdown_folder = markdown_folder_maker('page', use_folders=state.use_folders)
         if template_type == 'md':
             index_file = compound.markdown_folder + index_file
             compound.markdown_url = index_file
@@ -5879,17 +5909,17 @@ if __name__ == '__main__': # pragma: no cover
     if args.templates == default_templates and args.template_type == 'md':
         args.templates = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates/doxybook2/')
 
-    # if args.output is not None:
-    #     if args.debug:
-    #         logging.basicConfig(filename=args.output, filemode='w', level=logging.DEBUG)
-    #     else:
-    #         logging.basicConfig(filename=args.output, filemode='w', level=logging.INFO)
+    if args.output is not None:
+        if args.debug:
+            logging.basicConfig(filename=args.output, filemode='w', level=logging.DEBUG)
+        else:
+            logging.basicConfig(filename=args.output, filemode='w', level=logging.WARNING)
 
-    # else:
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.WARNING)
+        if args.debug:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.WARNING)
 
     config = copy.deepcopy(default_config)
 

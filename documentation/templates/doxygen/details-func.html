@@ -72,10 +72,10 @@
               {% endif %}
               {% if func.return_values %}
               <tbody>
-                {% for value, description in func.return_values %}
+                {% for value in func.return_values %}
                 <tr>
-                  <td{% if loop.index == 1 and not func.has_template_details and not func.has_param_details and not func.return_value %} style="width: 1%"{% endif %}>{{ value }}</td>
-                  <td>{{ description }}</td>
+                  <td{% if loop.index == 1 and not func.has_template_details and not func.has_param_details and not func.return_value %} style="width: 1%"{% endif %}>{{ value.name }}</td>
+                  <td>{{ value.description }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -85,10 +85,10 @@
                 <tr><th colspan="2">Exceptions</th></tr>
               </thead>
               <tbody>
-                {% for exception, description in func.exceptions %}
+                {% for exception in func.exceptions %}
                 <tr>
-                  <td{% if loop.index == 1 and not func.has_template_details and not func.has_param_details and not func.return_value and not func.return_values %} style="width: 1%"{% endif %}>{{ exception }}</td>
-                  <td>{{ description }}</td>
+                  <td{% if loop.index == 1 and not func.has_template_details and not func.has_param_details and not func.return_value and not func.return_values %} style="width: 1%"{% endif %}>{{ exception.name }}</td>
+                  <td>{{ exception.description }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
